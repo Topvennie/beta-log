@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: beta-log
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5431:5432"
+
+  backend:
+    build:
+      dockerfile: Dockerfile.dev
+    command: sh -c "go mod tidy && air -c .air.toml"
+    ports:
+      - 3001:3001
+    environment:
+      - INFISICAL_TOKEN
+      - INFISICAL_API_URL
+    volumes:
+      - .:/backend
+      - /backend/ui
+      - backend_packages:/go/pkg/mod
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ui
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+    volumes:
+      - ./ui:/frontend
+      - frontend_packages:/frontend/node_modules
+    depends_on:
+      - backend
+
+  seed:
+    build:
+      dockerfile: Dockerfile.dev
+    command: sh -c "go build -o seed ./cmd/seed/ && ./seed"
+    restart: no
+    environment:
+      - INFISICAL_TOKEN
+      - INFISICAL_API_URL
+    volumes:
+      - .:/backend
+      - /backend/ui
+      - backend_packages:/go/pkg/mod
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  db_data:
+  backend_packages:
+  frontend_packages:

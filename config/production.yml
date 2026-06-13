@@ -1,0 +1,24 @@
+app:
+  name: "blueprint"
+
+server:
+  host: "0.0.0.0"
+  port: 3000
+
+auth:
+  oidc:
+    client_id: ""
+    client_secret: ""
+    callback_url: ""
+    discovery_url: ""
+  redirect_url: "/"
+
+logger:
+  file: "logs/backend.txt"
+  level: "warn"
+
+db:
+  host: ""
+  port: 5432
+  user: ""
+  password: ""
