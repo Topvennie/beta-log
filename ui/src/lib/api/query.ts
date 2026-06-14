@@ -8,6 +8,7 @@ export const queryClient = new QueryClient({
     queries: {
       throwOnError: true,
       retry: 0,
+      staleTime: 30 * 60 * 1000,
     },
     mutations: {
       throwOnError: false,
