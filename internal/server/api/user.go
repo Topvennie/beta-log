@@ -31,7 +31,7 @@ func (u *user) getMeHandler(c fiber.Ctx) error {
 		return fiber.ErrUnauthorized
 	}
 
-	user, err := u.user.GetByID(c.RequestCtx(), id)
+	user, err := u.user.GetByID(c, id)
 	if err != nil {
 		return err
 	}

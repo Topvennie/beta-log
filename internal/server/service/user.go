@@ -1,8 +1,6 @@
 package service
 
 import (
-	"context"
-
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/gofiber/fiber/v3"
@@ -21,7 +19,7 @@ func (s *Service) NewUser() *User {
 	}
 }
 
-func (u *User) GetByID(ctx context.Context, id int) (dto.User, error) {
+func (u *User) GetByID(ctx fiber.Ctx, id int) (dto.User, error) {
 	user, err := u.user.GetByID(ctx, id)
 	if err != nil {
 		return dto.User{}, err
@@ -33,7 +31,7 @@ func (u *User) GetByID(ctx context.Context, id int) (dto.User, error) {
 	return dto.UserDTO(*user), nil
 }
 
-func (u *User) GetByUID(ctx context.Context, uid string) (dto.User, error) {
+func (u *User) GetByUID(ctx fiber.Ctx, uid string) (dto.User, error) {
 	user, err := u.user.GetByUID(ctx, uid)
 	if err != nil {
 		return dto.User{}, err
@@ -45,7 +43,7 @@ func (u *User) GetByUID(ctx context.Context, uid string) (dto.User, error) {
 	return dto.UserDTO(*user), nil
 }
 
-func (u *User) Save(ctx context.Context, userSave dto.User) (dto.User, error) {
+func (u *User) Create(ctx fiber.Ctx, userSave dto.User) (dto.User, error) {
 	user := userSave.ToModel()
 	if err := u.user.Create(ctx, &user); err != nil {
 		return dto.User{}, err

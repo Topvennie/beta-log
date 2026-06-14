@@ -2,7 +2,10 @@
 package service
 
 import (
+	"context"
+
 	"github.com/Topvennie/beta-log/internal/database/repository"
+	"github.com/gofiber/fiber/v3"
 )
 
 type Service struct {
@@ -15,7 +18,6 @@ func New(repo repository.Repository) *Service {
 	}
 }
 
-// Uncomment this if ever needed (rollback in a service)
-// func (s *Service) withRollback(ctx context.Context, fn func(context.Context) error) error {
-// 	return s.repo.WithRollback(ctx, fn)
-// }
+func (s *Service) withRollback(ctx fiber.Ctx, fn func(context.Context) error) error {
+	return s.repo.WithRollback(ctx, fn)
+}

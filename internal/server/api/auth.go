@@ -61,7 +61,7 @@ func (r *auth) loginCallbackHandler(c fiber.Ctx) error {
 		return fmt.Errorf("complete user auth %w", err)
 	}
 
-	dtoUser, err := r.user.GetByUID(c.RequestCtx(), user.UserID)
+	dtoUser, err := r.user.GetByUID(c, user.UserID)
 	if err != nil && !errors.Is(err, fiber.ErrNotFound) {
 		return fmt.Errorf("get user by uid %w", err)
 	}
@@ -71,7 +71,7 @@ func (r *auth) loginCallbackHandler(c fiber.Ctx) error {
 			UID:  user.UserID,
 			Name: user.Name,
 		}
-		dtoUser, err = r.user.Save(c.RequestCtx(), dtoUser)
+		dtoUser, err = r.user.Create(c, dtoUser)
 		if err != nil {
 			return fmt.Errorf("save new user %w", err)
 		}

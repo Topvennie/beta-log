@@ -14,7 +14,10 @@ func New(router fiber.Router, service service.Service) error {
 
 	// Protected routes
 	routerProtected := router.Group("/auth", middlewares.AuthRoute)
+
 	newUser(routerProtected, service)
+	newExercise(routerProtected, service)
+	newSession(routerProtected, service)
 
 	return nil
 }
