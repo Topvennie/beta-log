@@ -15,13 +15,13 @@ FROM exercises
 WHERE id = ANY($1::int[]) AND NOT DELETED;
 
 -- name: ExerciseCreate :one
-INSERT INTO exercises (user_id, name, variant)
+INSERT INTO exercises (user_id, name, variants)
 VALUES ($1, $2, $3)
 RETURNING id;
 
 -- name: ExerciseUpdate :exec
 UPDATE exercises
-SET name = $2, variant = $3
+SET name = $2, variants = $3
 WHERE id = $1;
 
 -- name: ExerciseDelete :exec

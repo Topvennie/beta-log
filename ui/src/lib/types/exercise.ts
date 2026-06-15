@@ -5,7 +5,7 @@ import { JSONBody } from "./general";
 export interface Exercise {
   id: number;
   name: string;
-  variant: string;
+  variants: string[];
 };
 
 // Converts
@@ -13,22 +13,28 @@ export interface Exercise {
 export const convertExercise = (e: API.Exercise): Exercise => ({
   id: e.id,
   name: e.name,
-  variant: e.variant,
+  variants: e.variants,
 });
 
 export const convertExercises = (e: API.Exercise[]): Exercise[] => e.map(convertExercise);
 
+export const convertExerciseUpdateSchema = (e: Exercise): ExerciseUpdate => ({
+  id: e.id,
+  name: e.name,
+  variants: e.variants,
+})
+
 // Schemas
 
-export const ExerciseCreateSchema = z.object({
+export const exerciseCreateSchema = z.object({
   name: z.string(),
-  variant: z.string().optional(),
+  variants: z.array(z.string()),
 });
-export type ExerciseCreate = z.infer<typeof ExerciseCreateSchema> & JSONBody;
+export type ExerciseCreate = z.infer<typeof exerciseCreateSchema> & JSONBody;
 
-export const ExerciseUpdateSchema = z.object({
+export const exerciseUpdateSchema = z.object({
   id: z.number().positive(),
   name: z.string(),
-  variant: z.string().optional(),
+  variants: z.array(z.string()),
 });
-export type ExerciseUpdate = z.infer<typeof ExerciseUpdateSchema> & JSONBody;
+export type ExerciseUpdate = z.infer<typeof exerciseUpdateSchema> & JSONBody;

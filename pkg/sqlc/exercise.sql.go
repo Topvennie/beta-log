@@ -7,24 +7,22 @@ package sqlc
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const exerciseCreate = `-- name: ExerciseCreate :one
-INSERT INTO exercises (user_id, name, variant)
+INSERT INTO exercises (user_id, name, variants)
 VALUES ($1, $2, $3)
 RETURNING id
 `
 
 type ExerciseCreateParams struct {
-	UserID  int32
-	Name    string
-	Variant pgtype.Text
+	UserID   int32
+	Name     string
+	Variants []string
 }
 
 func (q *Queries) ExerciseCreate(ctx context.Context, arg ExerciseCreateParams) (int32, error) {
-	row := q.db.QueryRow(ctx, exerciseCreate, arg.UserID, arg.Name, arg.Variant)
+	row := q.db.QueryRow(ctx, exerciseCreate, arg.UserID, arg.Name, arg.Variants)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -42,7 +40,7 @@ func (q *Queries) ExerciseDelete(ctx context.Context, id int32) error {
 }
 
 const exerciseGet = `-- name: ExerciseGet :one
-SELECT id, user_id, name, variant, deleted_at
+SELECT id, user_id, name, variants, deleted_at
 FROM exercises
 WHERE id = $1
 `
@@ -54,14 +52,14 @@ func (q *Queries) ExerciseGet(ctx context.Context, id int32) (Exercise, error) {
 		&i.ID,
 		&i.UserID,
 		&i.Name,
-		&i.Variant,
+		&i.Variants,
 		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const exerciseGetAll = `-- name: ExerciseGetAll :many
-SELECT id, user_id, name, variant, deleted_at
+SELECT id, user_id, name, variants, deleted_at
 FROM exercises
 WHERE user_id = $1 AND NOT DELETED
 ORDER BY name
@@ -80,7 +78,7 @@ func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise,
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Variant,
+			&i.Variants,
 			&i.DeletedAt,
 		); err != nil {
 			return nil, err
@@ -94,7 +92,7 @@ func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise,
 }
 
 const exerciseGetByIDs = `-- name: ExerciseGetByIDs :many
-SELECT id, user_id, name, variant, deleted_at
+SELECT id, user_id, name, variants, deleted_at
 FROM exercises
 WHERE id = ANY($1::int[]) AND NOT DELETED
 `
@@ -112,7 +110,7 @@ func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]Exe
 			&i.ID,
 			&i.UserID,
 			&i.Name,
-			&i.Variant,
+			&i.Variants,
 			&i.DeletedAt,
 		); err != nil {
 			return nil, err
@@ -127,17 +125,17 @@ func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]Exe
 
 const exerciseUpdate = `-- name: ExerciseUpdate :exec
 UPDATE exercises
-SET name = $2, variant = $3
+SET name = $2, variants = $3
 WHERE id = $1
 `
 
 type ExerciseUpdateParams struct {
-	ID      int32
-	Name    string
-	Variant pgtype.Text
+	ID       int32
+	Name     string
+	Variants []string
 }
 
 func (q *Queries) ExerciseUpdate(ctx context.Context, arg ExerciseUpdateParams) error {
-	_, err := q.db.Exec(ctx, exerciseUpdate, arg.ID, arg.Name, arg.Variant)
+	_, err := q.db.Exec(ctx, exerciseUpdate, arg.ID, arg.Name, arg.Variants)
 	return err
 }

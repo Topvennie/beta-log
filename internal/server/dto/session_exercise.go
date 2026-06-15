@@ -6,8 +6,8 @@ type SessionExercise struct {
 	ID int `json:"id"`
 
 	// Exercise
-	Name    string `json:"name"`
-	Variant string `json:"variant"`
+	Name     string   `json:"name"`
+	Variants []string `json:"variants"`
 
 	// Session Exercise
 	Position  int `json:"position"`
@@ -21,7 +21,7 @@ func SessionExerciseDTO(s *model.SessionExercise, e *model.Exercise) SessionExer
 	return SessionExercise{
 		ID:        s.ID,
 		Name:      e.Name,
-		Variant:   e.Variant,
+		Variants:  e.Variants,
 		Position:  s.Position,
 		Sets:      s.Sets,
 		Reps:      s.Reps,

@@ -40,10 +40,6 @@ func (r *Repository) WithRollback(ctx context.Context, fn func(ctx context.Conte
 	})
 }
 
-func toPgText(s string) pgtype.Text {
-	return pgtype.Text{String: s, Valid: s != ""}
-}
-
 func toPgInt4(i int) pgtype.Int4 {
 	return pgtype.Int4{Int32: int32(i), Valid: i != 0}
 }

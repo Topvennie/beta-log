@@ -57,9 +57,9 @@ func (e *Exercise) GetByIDs(ctx context.Context, ids []int) ([]*model.Exercise, 
 
 func (e *Exercise) Create(ctx context.Context, exercise *model.Exercise) error {
 	id, err := e.repo.queries(ctx).ExerciseCreate(ctx, sqlc.ExerciseCreateParams{
-		UserID:  int32(exercise.UserID),
-		Name:    exercise.Name,
-		Variant: toPgText(exercise.Variant),
+		UserID:   int32(exercise.UserID),
+		Name:     exercise.Name,
+		Variants: exercise.Variants,
 	})
 	if err != nil {
 		return fmt.Errorf("create exercise %+v | %w", *exercise, err)
@@ -72,9 +72,9 @@ func (e *Exercise) Create(ctx context.Context, exercise *model.Exercise) error {
 
 func (e *Exercise) Update(ctx context.Context, exercise model.Exercise) error {
 	err := e.repo.queries(ctx).ExerciseUpdate(ctx, sqlc.ExerciseUpdateParams{
-		ID:      int32(exercise.ID),
-		Name:    exercise.Name,
-		Variant: toPgText(exercise.Variant),
+		ID:       int32(exercise.ID),
+		Name:     exercise.Name,
+		Variants: exercise.Variants,
 	})
 	if err != nil {
 		return fmt.Errorf("update exercise %+v | %w", exercise, err)

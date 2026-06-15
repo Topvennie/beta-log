@@ -15,6 +15,7 @@ done
 
 if [ "$LINT_BACKEND" = true ]; then
   echo "Linting Backend"
+  gofmt -w . || exit 1
   golangci-lint run ./... || exit 1
 fi
 

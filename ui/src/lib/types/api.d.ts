@@ -10,7 +10,7 @@ export namespace API {
 
   export interface Exercise extends Base {
     name: string;
-    variant: string;
+    variants: string[];
   }
 
   export interface Session extends Base {
@@ -22,7 +22,7 @@ export namespace API {
 
   export interface SessionExercise extends Base {
     name: string;
-    variant: string;
+    variants: string[];
     position: number;
     sets: number;
     reps?: number;

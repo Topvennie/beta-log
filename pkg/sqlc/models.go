@@ -12,7 +12,7 @@ type Exercise struct {
 	ID        int32
 	UserID    int32
 	Name      string
-	Variant   pgtype.Text
+	Variants  []string
 	DeletedAt pgtype.Timestamptz
 }
 
