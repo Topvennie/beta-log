@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   }, [logoutMutation])
 
   const value = useMemo(() => ({
-    user,
+    user: user ?? { id: 0, uid: "", name: "" },
     isLoading,
     forbidden,
     login: useUserLogin,

@@ -5,6 +5,8 @@ import { queryClient } from "./lib/api/query";
 import { Error404 } from "./pages/404";
 import { Error } from "./pages/Error";
 import { Index } from "./pages/auth/Index";
+import { Exercises } from "./pages/auth/Exercises";
+import { Dashboard } from "./pages/auth/Dashboard";
 
 type Context = {
   queryClient: QueryClient,
@@ -16,12 +18,27 @@ const root = createRootRouteWithContext<Context>()({
 
 const index = createRoute({
   getParentRoute: () => root,
-  path: "/",
+  id: "public-layout",
   component: Index,
 })
 
+const dashboard = createRoute({
+  getParentRoute: () => index,
+  path: "/",
+  component: Dashboard,
+})
+
+const exercises = createRoute({
+  getParentRoute: () => index,
+  path: "/exercises",
+  component: Exercises,
+})
+
 const routeTree = root.addChildren([
-  index,
+  index.addChildren([
+    dashboard,
+    exercises,
+  ]),
 ])
 
 export const router = createRouter({

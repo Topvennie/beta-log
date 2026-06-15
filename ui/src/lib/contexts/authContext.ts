@@ -2,7 +2,7 @@ import { createContext } from "react";
 import { User } from "../types/user";
 
 interface AuthContextType {
-  user?: User;
+  user: User;
   isLoading: boolean;
   forbidden: boolean;
   login: () => void;
