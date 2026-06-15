@@ -3,9 +3,8 @@ import { createRootRouteWithContext, createRoute, createRouter } from "@tanstack
 import { App } from "./App";
 import { queryClient } from "./lib/api/query";
 import { Error404 } from "./pages/404";
-import { Index as IndexAuth } from "./pages/auth/Index";
 import { Error } from "./pages/Error";
-import { Index as IndexPublic } from "./pages/public/Index";
+import { Index } from "./pages/auth/Index";
 
 type Context = {
   queryClient: QueryClient,
@@ -18,18 +17,11 @@ const root = createRootRouteWithContext<Context>()({
 const index = createRoute({
   getParentRoute: () => root,
   path: "/",
-  component: IndexPublic,
-})
-
-const permissionExample = createRoute({
-  getParentRoute: () => root,
-  path: "/auth",
-  component: IndexAuth,
+  component: Index,
 })
 
 const routeTree = root.addChildren([
   index,
-  permissionExample,
 ])
 
 export const router = createRouter({

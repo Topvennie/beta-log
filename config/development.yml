@@ -11,7 +11,7 @@ auth:
     client_secret: ""
     callback_url: ""
     discovery_url: ""
-  redirect_url: "http://localhost:3000/auth"
+  redirect_url: "http://localhost:3000/"
 
 logger:
   file: ""
