@@ -9,7 +9,6 @@ export const useSessionGetAll = () => {
   return useQuery({
     queryKey: ["session"],
     queryFn: async () => (await apiGet(ENDPOINT, convertSessions, true)).data,
-    throwOnError: false,
   });
 };
 

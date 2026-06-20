@@ -31,7 +31,7 @@ func (q *Queries) ExerciseCreate(ctx context.Context, arg ExerciseCreateParams) 
 const exerciseDelete = `-- name: ExerciseDelete :exec
 UPDATE exercises
 SET deleted_at = NOW()
-WHERE id = $1 AND NOT DELETED
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) ExerciseDelete(ctx context.Context, id int32) error {
@@ -61,8 +61,8 @@ func (q *Queries) ExerciseGet(ctx context.Context, id int32) (Exercise, error) {
 const exerciseGetAll = `-- name: ExerciseGetAll :many
 SELECT id, user_id, name, variants, deleted_at
 FROM exercises
-WHERE user_id = $1 AND NOT DELETED
-ORDER BY name
+WHERE user_id = $1 AND deleted_at IS NULL
+ORDER BY name, variants
 `
 
 func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise, error) {
@@ -94,7 +94,7 @@ func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise,
 const exerciseGetByIDs = `-- name: ExerciseGetByIDs :many
 SELECT id, user_id, name, variants, deleted_at
 FROM exercises
-WHERE id = ANY($1::int[]) AND NOT DELETED
+WHERE id = ANY($1::int[]) AND deleted_at IS NULL
 `
 
 func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]Exercise, error) {

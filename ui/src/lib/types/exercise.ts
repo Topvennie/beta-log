@@ -38,3 +38,4 @@ export const exerciseUpdateSchema = z.object({
   variants: z.array(z.string()),
 });
 export type ExerciseUpdate = z.infer<typeof exerciseUpdateSchema> & JSONBody;
+

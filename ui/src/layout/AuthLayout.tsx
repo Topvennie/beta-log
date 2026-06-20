@@ -15,7 +15,8 @@ export const AuthLayout = ({ children }: PropsWithChildren) => {
     return <Forbidden />
   }
 
-  if (!user) {
+  // TODO: Fix
+  if (user.id === 0) {
     return <Login />
   }
 

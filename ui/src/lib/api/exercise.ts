@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Exercise, ExerciseCreate, ExerciseUpdate } from "../types/exercise";
-import { convertExercises } from "../types/exercise";
+import { convertExercise, convertExercises } from "../types/exercise";
 import { apiDelete, apiGet, apiPost, apiPut, NO_CONVERTER, NO_FILES } from "./query";
 
 const ENDPOINT = "exercise";
@@ -9,7 +9,6 @@ export const useExerciseGetAll = () => {
   return useQuery({
     queryKey: ["exercise"],
     queryFn: async () => (await apiGet(ENDPOINT, convertExercises, true)).data,
-    throwOnError: false,
   });
 };
 
@@ -17,7 +16,7 @@ export const useExerciseCreate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (exercise: ExerciseCreate) => await apiPut(ENDPOINT, exercise, NO_CONVERTER, NO_FILES, true),
+    mutationFn: (exercise: ExerciseCreate) => apiPut(ENDPOINT, exercise, convertExercise, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exercise"] })
       queryClient.invalidateQueries({ queryKey: ["session"] })
@@ -29,7 +28,7 @@ export const useExerciseUpdate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (exercise: ExerciseUpdate) => apiPost(`${ENDPOINT}/${exercise.id}`, exercise, NO_CONVERTER, NO_FILES, true),
+    mutationFn: (exercise: ExerciseUpdate) => apiPost(`${ENDPOINT}/${exercise.id}`, exercise, convertExercise, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exercise"] })
       queryClient.invalidateQueries({ queryKey: ["session"] })

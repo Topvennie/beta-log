@@ -6,7 +6,7 @@ WHERE id = $1;
 -- name: SessionGetAll :many
 SELECT *
 FROM sessions
-WHERE user_id = $1 AND NOT DELETED
+WHERE user_id = $1 AND deleted_at IS NULL
 ORDER BY name;
 
 -- name: SessionCreate :one
@@ -22,4 +22,4 @@ WHERE id = $1;
 -- name: SessionDelete :exec
 UPDATE sessions
 SET deleted_at = NOW()
-WHERE id = $1 AND NOT DELETED;
+WHERE id = $1 AND deleted_at IS NULL;

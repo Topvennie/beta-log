@@ -13,7 +13,7 @@ export interface Session {
 export interface SessionExercise {
   id: number;
   name: string;
-  variant: string;
+  variants: string[];
   position: number;
   sets: number;
   reps?: number;
@@ -36,7 +36,7 @@ export const convertSessions = (s: API.Session[]): Session[] => s.map(convertSes
 const convertSessionExercise = (se: API.SessionExercise): SessionExercise => ({
   id: se.id,
   name: se.name,
-  variant: se.variant,
+  variants: se.variants,
   position: se.position,
   sets: se.sets,
   reps: se.reps,

@@ -1,8 +1,9 @@
 import { isResponseNot200Error } from "@/lib/api/query";
-import { Button, Text, Center, Stack, Title } from "@mantine/core";
+import { Button, Center, Stack, Text, Title } from "@mantine/core";
 import { ErrorComponentProps, useNavigate } from "@tanstack/react-router";
 import { Error404 } from "./404";
 import { Forbidden } from "./Forbidden";
+import { Unauthorized } from "./Unauthorized";
 
 export const Error = ({ error, reset }: ErrorComponentProps) => {
   const navigate = useNavigate()
@@ -13,6 +14,8 @@ export const Error = ({ error, reset }: ErrorComponentProps) => {
         return <Error404 />
       case 403:
         return <Forbidden />
+      case 401:
+        return <Unauthorized />
     }
   }
 

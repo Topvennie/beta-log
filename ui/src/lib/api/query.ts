@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { camelToSnake } from "../utils";
 import { JSONBody } from "../types/general";
 import { CONTENT_TYPE } from "../types/contentType";
+import { notifications } from "@mantine/notifications";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,12 +13,17 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       throwOnError: false,
+      onError: async (error) => {
+        console.log("oei oei")
+        const msg = isResponseNot200Error(error) ? await error.response.text() : error.message
+        notifications.show({ message: msg })
+      }
     }
   }
 });
 
 export const NO_DATA: JSONBody = {}
-export const NO_CONVERTER = undefined
+export const NO_CONVERTER = () => null
 export const NO_FILES = undefined
 
 export type QueryReponse<T> = {

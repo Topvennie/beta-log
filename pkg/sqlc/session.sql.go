@@ -39,7 +39,7 @@ func (q *Queries) SessionCreate(ctx context.Context, arg SessionCreateParams) (i
 const sessionDelete = `-- name: SessionDelete :exec
 UPDATE sessions
 SET deleted_at = NOW()
-WHERE id = $1 AND NOT DELETED
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) SessionDelete(ctx context.Context, id int32) error {
@@ -70,7 +70,7 @@ func (q *Queries) SessionGet(ctx context.Context, id int32) (Session, error) {
 const sessionGetAll = `-- name: SessionGetAll :many
 SELECT id, user_id, name, active, position, deleted_at
 FROM sessions
-WHERE user_id = $1 AND NOT DELETED
+WHERE user_id = $1 AND deleted_at IS NULL
 ORDER BY name
 `
 

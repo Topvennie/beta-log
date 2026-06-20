@@ -1,4 +1,5 @@
 import { LinkButton } from "@/components/atoms/LinkButton";
+import { Breadcrumb as BreadcrumbType } from "@/lib/contexts/breadcrumbContext";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useBreadcrumbs } from "@/lib/hooks/useBreadcrumb";
 import { AppShell, Avatar, Burger, Group, ScrollArea, Stack } from "@mantine/core";
@@ -7,7 +8,6 @@ import { LinkProps } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
 import { FaDumbbell } from "react-icons/fa6";
 import { LuLayoutDashboard } from "react-icons/lu";
-import { Breadcrumb as BreadcrumbType } from "@/lib/contexts/breadcrumbContext";
 
 type Props = PropsWithChildren
 
@@ -75,7 +75,6 @@ export const NavLayout = ({ children }: Props) => {
       layout="alt"
       header={{ height: 60 }}
       navbar={{ width: 200, breakpoint, collapsed: { mobile: !opened } }}
-      padding="xl"
     >
       <AppShell.Header>
         <Group h="100%" px="xl">
@@ -109,7 +108,9 @@ export const NavLayout = ({ children }: Props) => {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        {children}
+        <ScrollArea p="xl" h="calc(100vh - var(--app-shell-header-height, 0px) - var(--app-shell-footer-height, 0px))">
+          {children}
+        </ScrollArea>
       </AppShell.Main>
     </AppShell>
   )
