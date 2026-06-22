@@ -20,17 +20,12 @@ type Session struct {
 }
 
 func SessionModel(s sqlc.Session) *Session {
-	var deletedAt time.Time
-	if s.DeletedAt.Valid {
-		deletedAt = s.DeletedAt.Time
-	}
-
 	return &Session{
 		ID:        int(s.ID),
 		UserID:    int(s.UserID),
 		Name:      s.Name,
 		Active:    s.Active,
 		Position:  int(s.Position.Int32),
-		DeletedAt: deletedAt,
+		DeletedAt: fromTime(s.DeletedAt),
 	}
 }

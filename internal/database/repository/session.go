@@ -47,7 +47,7 @@ func (s *Session) Create(ctx context.Context, session *model.Session) error {
 		UserID:   int32(session.UserID),
 		Name:     session.Name,
 		Active:   session.Active,
-		Position: toPgInt4(session.Position),
+		Position: toInt(session.Position),
 	})
 	if err != nil {
 		return fmt.Errorf("create session %+v | %w", *session, err)
@@ -63,7 +63,7 @@ func (s *Session) Update(ctx context.Context, session model.Session) error {
 		ID:       int32(session.ID),
 		Name:     session.Name,
 		Active:   session.Active,
-		Position: toPgInt4(session.Position),
+		Position: toInt(session.Position),
 	})
 	if err != nil {
 		return fmt.Errorf("update session %+v | %w", session, err)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/Topvennie/beta-log/pkg/db"
 	"github.com/Topvennie/beta-log/pkg/sqlc"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Repository struct {
@@ -38,8 +37,4 @@ func (r *Repository) WithRollback(ctx context.Context, fn func(ctx context.Conte
 		txCtx := context.WithValue(ctx, queryKey, q)
 		return fn(txCtx)
 	})
-}
-
-func toPgInt4(i int) pgtype.Int4 {
-	return pgtype.Int4{Int32: int32(i), Valid: i != 0}
 }

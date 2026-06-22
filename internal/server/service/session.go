@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"slices"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
@@ -59,6 +60,33 @@ func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Se
 	sessionModel := sessionCreate.ToModel()
 	sessionModel.UserID = userID
 
+	// Validate active state and position
+	if sessionModel.Active {
+		currSessions, err := s.session.GetAllByUserID(ctx, userID)
+		if err != nil {
+			return dto.Session{}, err
+		}
+
+		// Session has an assigned position
+		// Check if it isn't already in use
+		if sessionModel.Position > 0 {
+			if idx := slices.IndexFunc(currSessions, func(s *model.Session) bool { return s.Position == sessionModel.Position }); idx != -1 {
+				return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "position already in use")
+			}
+		}
+		// No assigned position, give it the next available position
+		highestPosition := 1
+		for _, session := range currSessions {
+			if session.Position > highestPosition {
+				highestPosition = session.Position
+			}
+		}
+
+		sessionModel.Position = highestPosition + 1
+	} else {
+		sessionModel.Position = 0
+	}
+
 	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
 		if err := s.session.Create(ctx, &sessionModel); err != nil {
 			return err
@@ -112,42 +140,48 @@ func (s *Session) Update(ctx fiber.Ctx, sessionUpdate dto.SessionUpdate) (dto.Se
 	sessionModel := sessionUpdate.ToModel()
 	sessionModel.UserID = userID
 
+	// Validate active state and position
+	if sessionModel.Active {
+		currSessions, err := s.session.GetAllByUserID(ctx, userID)
+		if err != nil {
+			return dto.Session{}, err
+		}
+
+		// Session has an assigned position
+		// Check if it isn't already in use
+		if sessionModel.Position > 0 {
+			if idx := slices.IndexFunc(currSessions, func(s *model.Session) bool { return s.Position == sessionModel.Position }); idx != -1 {
+				if currSessions[idx].ID != sessionUpdate.ID {
+					return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "position already in use")
+				}
+			}
+		}
+		// No assigned position, give it the next available position
+		highestPosition := 1
+		for _, session := range currSessions {
+			if session.Position > highestPosition {
+				highestPosition = session.Position
+			}
+		}
+
+		sessionModel.Position = highestPosition + 1
+	} else {
+		sessionModel.Position = 0
+	}
+
 	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
 		if err := s.session.Update(ctx, sessionModel); err != nil {
 			return err
 		}
 
-		existingSE, err := s.sessionExercise.GetBySession(ctx, sessionModel.ID)
-		if err != nil {
+		if err := s.sessionExercise.DeleteBySession(ctx, sessionModel.ID); err != nil {
 			return err
-		}
-
-		incomingMap := make(map[int]bool)
-		for _, se := range sessionModel.Exercises {
-			if se.ID != 0 {
-				incomingMap[se.ID] = true
-			}
-		}
-
-		for _, se := range existingSE {
-			if ok := incomingMap[se.ID]; !ok {
-				if err := s.sessionExercise.Delete(ctx, se.ID); err != nil {
-					return err
-				}
-			}
 		}
 
 		for i := range sessionModel.Exercises {
 			sessionModel.Exercises[i].SessionID = sessionModel.ID
-
-			if sessionModel.Exercises[i].ID != 0 {
-				if err := s.sessionExercise.Update(ctx, sessionModel.Exercises[i]); err != nil {
-					return err
-				}
-			} else {
-				if err := s.sessionExercise.Create(ctx, &sessionModel.Exercises[i]); err != nil {
-					return err
-				}
+			if err := s.sessionExercise.Create(ctx, &sessionModel.Exercises[i]); err != nil {
+				return err
 			}
 		}
 

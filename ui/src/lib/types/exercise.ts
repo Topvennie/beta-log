@@ -27,14 +27,14 @@ export const convertExerciseUpdateSchema = (e: Exercise): ExerciseUpdate => ({
 // Schemas
 
 export const exerciseCreateSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   variants: z.array(z.string()),
 });
 export type ExerciseCreate = z.infer<typeof exerciseCreateSchema> & JSONBody;
 
 export const exerciseUpdateSchema = z.object({
   id: z.number().positive(),
-  name: z.string(),
+  name: z.string().min(1),
   variants: z.array(z.string()),
 });
 export type ExerciseUpdate = z.infer<typeof exerciseUpdateSchema> & JSONBody;

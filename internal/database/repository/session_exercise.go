@@ -46,11 +46,12 @@ func (s *SessionExercise) Create(ctx context.Context, sessionExercise *model.Ses
 	id, err := s.repo.queries(ctx).SessionExerciseCreate(ctx, sqlc.SessionExerciseCreateParams{
 		SessionID:  int32(sessionExercise.SessionID),
 		ExerciseID: int32(sessionExercise.ExerciseID),
+		Variant:    toString(sessionExercise.Variant),
 		Position:   int32(sessionExercise.Position),
 		Sets:       int32(sessionExercise.Sets),
-		Reps:       toPgInt4(sessionExercise.Reps),
-		Weight:     toPgInt4(sessionExercise.Weight),
-		DurationS:  toPgInt4(sessionExercise.DurationS),
+		Reps:       toInt(sessionExercise.Reps),
+		Weight:     toInt(sessionExercise.Weight),
+		DurationS:  toInt(sessionExercise.DurationS),
 	})
 	if err != nil {
 		return fmt.Errorf("create session exercise %+v | %w", *sessionExercise, err)
@@ -62,15 +63,15 @@ func (s *SessionExercise) Create(ctx context.Context, sessionExercise *model.Ses
 }
 
 func (s *SessionExercise) Update(ctx context.Context, sessionExercise model.SessionExercise) error {
-	err := s.repo.queries(ctx).SessionExerciseUpdate(ctx, sqlc.SessionExerciseUpdateParams{
+	if err := s.repo.queries(ctx).SessionExerciseUpdate(ctx, sqlc.SessionExerciseUpdateParams{
 		ID:        int32(sessionExercise.ID),
+		Variant:   toString(sessionExercise.Variant),
 		Position:  int32(sessionExercise.Position),
 		Sets:      int32(sessionExercise.Sets),
-		Reps:      toPgInt4(sessionExercise.Reps),
-		Weight:    toPgInt4(sessionExercise.Weight),
-		DurationS: toPgInt4(sessionExercise.DurationS),
-	})
-	if err != nil {
+		Reps:      toInt(sessionExercise.Reps),
+		Weight:    toInt(sessionExercise.Weight),
+		DurationS: toInt(sessionExercise.DurationS),
+	}); err != nil {
 		return fmt.Errorf("update session exercise %+v | %w", sessionExercise, err)
 	}
 
@@ -78,9 +79,16 @@ func (s *SessionExercise) Update(ctx context.Context, sessionExercise model.Sess
 }
 
 func (s *SessionExercise) Delete(ctx context.Context, id int) error {
-	err := s.repo.queries(ctx).SessionExerciseDelete(ctx, int32(id))
-	if err != nil {
+	if err := s.repo.queries(ctx).SessionExerciseDelete(ctx, int32(id)); err != nil {
 		return fmt.Errorf("delete session exercise with id %d | %w", id, err)
+	}
+
+	return nil
+}
+
+func (s *SessionExercise) DeleteBySession(ctx context.Context, sessionID int) error {
+	if err := s.repo.queries(ctx).SessionExerciseDeleteBySession(ctx, int32(sessionID)); err != nil {
+		return fmt.Errorf("delete session exercises by session id %d | %w", sessionID, err)
 	}
 
 	return nil

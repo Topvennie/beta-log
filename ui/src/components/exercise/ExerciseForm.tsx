@@ -95,7 +95,7 @@ const ExerciseFormInner = <T extends ExerciseCreate | ExerciseUpdate>({ form, on
     <>
       <Stack>
         <TextInput
-          label="Naam"
+          label="Name"
           placeholder="No Hang"
           required
           {...form.getInputProps("name")}

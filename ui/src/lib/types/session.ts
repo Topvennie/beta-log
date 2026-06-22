@@ -1,5 +1,6 @@
-import { API } from "./api";
 import { z } from "zod";
+import { API } from "./api";
+import { convertExercise, Exercise } from "./exercise";
 import { JSONBody } from "./general";
 
 export interface Session {
@@ -12,8 +13,7 @@ export interface Session {
 
 export interface SessionExercise {
   id: number;
-  name: string;
-  variants: string[];
+  exercise: Exercise;
   position: number;
   sets: number;
   reps?: number;
@@ -28,61 +28,80 @@ export const convertSession = (s: API.Session): Session => ({
   name: s.name,
   active: s.active,
   position: s.position,
-  exercises: s.exercises.map(convertSessionExercise),
+  exercises: convertSessionExercises(s.exercises),
 });
-
 export const convertSessions = (s: API.Session[]): Session[] => s.map(convertSession);
 
-const convertSessionExercise = (se: API.SessionExercise): SessionExercise => ({
+export const convertSessionExercise = (se: API.SessionExercise): SessionExercise => ({
   id: se.id,
-  name: se.name,
-  variants: se.variants,
+  exercise: convertExercise(se.exercise),
   position: se.position,
   sets: se.sets,
   reps: se.reps,
   weight: se.weight,
   durationS: se.duration_s,
 });
+export const convertSessionExercises = (se: API.SessionExercise[]): SessionExercise[] => se.map(convertSessionExercise)
+
+export const convertSessionUpdateSchema = (s: Session): SessionUpdate => ({
+  id: s.id,
+  name: s.name,
+  active: s.active,
+  position: s.position,
+  exercises: s.exercises.map((se) => ({
+    ...convertSessionExerciseUpdateSchema(se),
+    clientId: crypto.randomUUID(),
+  })),
+})
+
+export const convertSessionExerciseUpdateSchema = (se: SessionExercise) => ({
+  exerciseId: se.exercise.id,
+  position: se.position,
+  sets: se.sets,
+  reps: se.reps,
+  weight: se.weight,
+  durationS: se.durationS,
+})
 
 // Schemas
 
-export const SessionExerciseCreateSchema = z.object({
-  exercise_id: z.number().positive(),
+export const sessionExerciseCreateSchema = z.object({
+  clientId: z.string(),
+  exerciseId: z.number().positive(),
+  variant: z.string().optional(),
   position: z.number().positive(),
   sets: z.number().positive(),
   reps: z.number().optional(),
   weight: z.number().optional(),
-  duration_s: z.number().optional(),
+  durationS: z.number().optional(),
 });
+export type SessionExerciseCreate = z.infer<typeof sessionCreateSchema> & JSONBody;
 
-export const SessionCreateSchema = z.object({
-  name: z.string(),
+export const sessionCreateSchema = z.object({
+  name: z.string().min(1),
   active: z.boolean(),
   position: z.number().positive().optional(),
-  exercises: z.array(SessionExerciseCreateSchema).min(1),
-}).refine(data => data.active || (data.position ?? 0) > 0, {
-  message: "A position is required if session is active",
-  path: ["position"],
-});
-export type SessionCreate = z.infer<typeof SessionCreateSchema> & JSONBody;
+  exercises: z.array(sessionExerciseCreateSchema).min(1),
+})
+export type SessionCreate = z.infer<typeof sessionCreateSchema> & JSONBody;
 
-export const SessionExerciseUpdateSchema = z.object({
-  id: z.number().positive(),
+export const sessionExerciseUpdateSchema = z.object({
+  clientId: z.string(),
+  exerciseId: z.number().positive(),
+  variant: z.string().optional(),
   position: z.number().positive(),
   sets: z.number().positive(),
   reps: z.number().optional(),
   weight: z.number().optional(),
-  duration_s: z.number().optional(),
+  durationS: z.number().optional(),
 });
+export type SessionExerciseUpdateSchema = z.infer<typeof sessionExerciseUpdateSchema> & JSONBody;
 
-export const SessionUpdateSchema = z.object({
+export const sessionUpdateSchema = z.object({
   id: z.number().positive(),
-  name: z.string(),
+  name: z.string().min(1),
   active: z.boolean(),
   position: z.number().positive().optional(),
-  exercises: z.array(SessionExerciseUpdateSchema).min(1),
-}).refine(data => data.active || (data.position ?? 0) > 0, {
-  message: "A position is required if session is active",
-  path: ["position"],
-});
-export type SessionUpdate = z.infer<typeof SessionUpdateSchema> & JSONBody;
+  exercises: z.array(sessionExerciseUpdateSchema).min(1),
+})
+export type SessionUpdate = z.infer<typeof sessionUpdateSchema> & JSONBody;

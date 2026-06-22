@@ -21,8 +21,7 @@ export namespace API {
   }
 
   export interface SessionExercise extends Base {
-    name: string;
-    variants: string[];
+    exercise: Exercise;
     position: number;
     sets: number;
     reps?: number;

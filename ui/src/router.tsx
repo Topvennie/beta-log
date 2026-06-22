@@ -7,6 +7,7 @@ import { Error } from "./pages/Error";
 import { Index } from "./pages/auth/Index";
 import { Exercises } from "./pages/auth/Exercises";
 import { Dashboard } from "./pages/auth/Dashboard";
+import { Sessions } from "./pages/auth/Sessions";
 
 type Context = {
   queryClient: QueryClient,
@@ -34,10 +35,17 @@ const exercises = createRoute({
   component: Exercises,
 })
 
+const sessions = createRoute({
+  getParentRoute: () => index,
+  path: "/sessions",
+  component: Sessions,
+})
+
 const routeTree = root.addChildren([
   index.addChildren([
     dashboard,
     exercises,
+    sessions,
   ]),
 ])
 

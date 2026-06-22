@@ -3,6 +3,7 @@ CREATE TABLE sessions_exercises (
   id SERIAL PRIMARY KEY,
   session_id INTEGER NOT NULL REFERENCES sessions (id),
   exercise_id INTEGER NOT NULL REFERENCES exercises (id),
+  variant TEXT,
   position INTEGER NOT NULL,
   sets INTEGER NOT NULL,
   reps INTEGER,

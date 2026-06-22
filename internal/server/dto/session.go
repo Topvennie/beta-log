@@ -48,7 +48,7 @@ func SessionDTOPopulated(session *model.Session, sessionExercises []*model.Sessi
 type SessionCreate struct {
 	Name      string                  `json:"name" validate:"required"`
 	Active    *bool                   `json:"active" validate:"required"`
-	Position  int                     `json:"position,omitzero" validate:"required_if=Active true,min=1"`
+	Position  int                     `json:"position"`
 	Exercises []SessionExerciseCreate `json:"exercises" validate:"required,min=1"`
 }
 
@@ -65,7 +65,7 @@ type SessionUpdate struct {
 	ID        int                     `json:"id" validate:"required,min=1"`
 	Name      string                  `json:"name" validate:"required"`
 	Active    *bool                   `json:"active" validate:"required"`
-	Position  int                     `json:"position,omitzero" validate:"required_if=Active true,min=1"`
+	Position  int                     `json:"position"`
 	Exercises []SessionExerciseUpdate `json:"exercises" validate:"required,min=1"`
 }
 

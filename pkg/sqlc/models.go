@@ -29,6 +29,7 @@ type SessionsExercise struct {
 	ID         int32
 	SessionID  int32
 	ExerciseID int32
+	Variant    pgtype.Text
 	Position   int32
 	Sets       int32
 	Reps       pgtype.Int4

@@ -12,14 +12,15 @@ import (
 )
 
 const sessionExerciseCreate = `-- name: SessionExerciseCreate :one
-INSERT INTO sessions_exercises (session_id, exercise_id, position, sets, reps, weight, duration_s)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO sessions_exercises (session_id, exercise_id, variant, position, sets, reps, weight, duration_s)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
 type SessionExerciseCreateParams struct {
 	SessionID  int32
 	ExerciseID int32
+	Variant    pgtype.Text
 	Position   int32
 	Sets       int32
 	Reps       pgtype.Int4
@@ -31,6 +32,7 @@ func (q *Queries) SessionExerciseCreate(ctx context.Context, arg SessionExercise
 	row := q.db.QueryRow(ctx, sessionExerciseCreate,
 		arg.SessionID,
 		arg.ExerciseID,
+		arg.Variant,
 		arg.Position,
 		arg.Sets,
 		arg.Reps,
@@ -52,8 +54,18 @@ func (q *Queries) SessionExerciseDelete(ctx context.Context, id int32) error {
 	return err
 }
 
+const sessionExerciseDeleteBySession = `-- name: SessionExerciseDeleteBySession :exec
+DELETE FROM sessions_exercises
+WHERE session_id = $1
+`
+
+func (q *Queries) SessionExerciseDeleteBySession(ctx context.Context, sessionID int32) error {
+	_, err := q.db.Exec(ctx, sessionExerciseDeleteBySession, sessionID)
+	return err
+}
+
 const sessionExerciseGet = `-- name: SessionExerciseGet :one
-SELECT id, session_id, exercise_id, position, sets, reps, weight, duration_s
+SELECT id, session_id, exercise_id, variant, position, sets, reps, weight, duration_s
 FROM sessions_exercises
 WHERE id = $1
 `
@@ -65,6 +77,7 @@ func (q *Queries) SessionExerciseGet(ctx context.Context, id int32) (SessionsExe
 		&i.ID,
 		&i.SessionID,
 		&i.ExerciseID,
+		&i.Variant,
 		&i.Position,
 		&i.Sets,
 		&i.Reps,
@@ -75,7 +88,7 @@ func (q *Queries) SessionExerciseGet(ctx context.Context, id int32) (SessionsExe
 }
 
 const sessionExerciseGetBySession = `-- name: SessionExerciseGetBySession :many
-SELECT id, session_id, exercise_id, position, sets, reps, weight, duration_s
+SELECT id, session_id, exercise_id, variant, position, sets, reps, weight, duration_s
 FROM sessions_exercises
 WHERE session_id = $1
 ORDER BY position
@@ -94,6 +107,7 @@ func (q *Queries) SessionExerciseGetBySession(ctx context.Context, sessionID int
 			&i.ID,
 			&i.SessionID,
 			&i.ExerciseID,
+			&i.Variant,
 			&i.Position,
 			&i.Sets,
 			&i.Reps,
@@ -112,12 +126,13 @@ func (q *Queries) SessionExerciseGetBySession(ctx context.Context, sessionID int
 
 const sessionExerciseUpdate = `-- name: SessionExerciseUpdate :exec
 UPDATE sessions_exercises
-SET position = $2, sets = $3, reps = $4, weight = $5, duration_s = $6
+SET variant = $2, position = $3, sets = $4, reps = $5, weight = $6, duration_s = $7
 WHERE id = $1
 `
 
 type SessionExerciseUpdateParams struct {
 	ID        int32
+	Variant   pgtype.Text
 	Position  int32
 	Sets      int32
 	Reps      pgtype.Int4
@@ -128,6 +143,7 @@ type SessionExerciseUpdateParams struct {
 func (q *Queries) SessionExerciseUpdate(ctx context.Context, arg SessionExerciseUpdateParams) error {
 	_, err := q.db.Exec(ctx, sessionExerciseUpdate,
 		arg.ID,
+		arg.Variant,
 		arg.Position,
 		arg.Sets,
 		arg.Reps,

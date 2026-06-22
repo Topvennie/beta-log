@@ -15,16 +15,11 @@ type Exercise struct {
 }
 
 func ExerciseModel(e sqlc.Exercise) *Exercise {
-	var deletedAt time.Time
-	if e.DeletedAt.Valid {
-		deletedAt = e.DeletedAt.Time
-	}
-
 	return &Exercise{
 		ID:        int(e.ID),
 		UserID:    int(e.UserID),
 		Name:      e.Name,
 		Variants:  e.Variants,
-		DeletedAt: deletedAt,
+		DeletedAt: fromTime(e.DeletedAt),
 	}
 }

@@ -30,7 +30,7 @@ export const Exercises = () => {
   }
 
   const handleUpdate = (exercise: ExerciseUpdate) => {
-    return exerciseUpdate.mutateAsync(exercise as ExerciseUpdate, {
+    return exerciseUpdate.mutateAsync(exercise, {
       onSuccess: () => {
         notifications.show({ color: "green", title: "Exercise", message: `Updated ${exercise.name}` })
         setSelected(undefined)

@@ -14,7 +14,6 @@ export const queryClient = new QueryClient({
     mutations: {
       throwOnError: false,
       onError: async (error) => {
-        console.log("oei oei")
         const msg = isResponseNot200Error(error) ? await error.response.text() : error.message
         notifications.show({ message: msg })
       }

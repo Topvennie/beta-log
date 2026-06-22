@@ -6,8 +6,7 @@ type SessionExercise struct {
 	ID int `json:"id"`
 
 	// Exercise
-	Name     string   `json:"name"`
-	Variants []string `json:"variants"`
+	Exercise Exercise `json:"exercise"`
 
 	// Session Exercise
 	Position  int `json:"position"`
@@ -20,8 +19,7 @@ type SessionExercise struct {
 func SessionExerciseDTO(s *model.SessionExercise, e *model.Exercise) SessionExercise {
 	return SessionExercise{
 		ID:        s.ID,
-		Name:      e.Name,
-		Variants:  e.Variants,
+		Exercise:  ExerciseDTO(e),
 		Position:  s.Position,
 		Sets:      s.Sets,
 		Reps:      s.Reps,
@@ -51,21 +49,21 @@ func (s SessionExerciseCreate) ToModel() model.SessionExercise {
 }
 
 type SessionExerciseUpdate struct {
-	ID        int `json:"id" validate:"required,min=1"`
-	Position  int `json:"position" validate:"required,min=1"`
-	Sets      int `json:"sets" validate:"required,min=1"`
-	Reps      int `json:"reps"`
-	Weight    int `json:"weight"`
-	DurationS int `json:"duration_s"`
+	ExerciseID int `json:"exercise_id" validate:"required,min=1"`
+	Position   int `json:"position" validate:"required,min=1"`
+	Sets       int `json:"sets" validate:"required,min=1"`
+	Reps       int `json:"reps"`
+	Weight     int `json:"weight"`
+	DurationS  int `json:"duration_s"`
 }
 
 func (s SessionExerciseUpdate) ToModel() model.SessionExercise {
 	return model.SessionExercise{
-		ID:        s.ID,
-		Position:  s.Position,
-		Sets:      s.Sets,
-		Reps:      s.Reps,
-		Weight:    s.Weight,
-		DurationS: s.DurationS,
+		ExerciseID: s.ExerciseID,
+		Position:   s.Position,
+		Sets:       s.Sets,
+		Reps:       s.Reps,
+		Weight:     s.Weight,
+		DurationS:  s.DurationS,
 	}
 }
