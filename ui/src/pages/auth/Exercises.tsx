@@ -1,4 +1,5 @@
 import { ExerciseForm } from "@/components/exercise/ExerciseForm"
+import { LoadingLayout } from "@/layout/LoadingLayout"
 import { useExerciseCreate, useExerciseDelete, useExerciseGetAll, useExerciseUpdate } from "@/lib/api/exercise"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
 import { ExerciseCreate, Exercise as ExerciseType, ExerciseUpdate } from "@/lib/types/exercise"
@@ -17,8 +18,6 @@ export const Exercises = () => {
   const exerciseDelete = useExerciseDelete()
 
   const [selected, setSelected] = useState<ExerciseType | undefined>(undefined)
-
-  if (isLoading || exercises === undefined) return null
 
   const handleCreate = (exercise: ExerciseCreate) => {
     return exerciseCreate.mutateAsync(exercise, {
@@ -48,27 +47,29 @@ export const Exercises = () => {
   }
 
   return (
-    <div className="flex md:flex-row gap-8 h-full">
-      <Stack gap="xl" className="flex-3 h-full">
-        <Group justify="space-between">
-          <Title order={1}>Exercises</Title>
-          <p className="text-neutral-400">{exercises.length}</p>
-        </Group>
+    <LoadingLayout isLoading={isLoading}>
+      <div className="flex md:flex-row gap-8 h-full">
+        <Stack gap="xl" className="flex-3 h-full">
+          <Group justify="space-between">
+            <Title order={1}>Exercises</Title>
+            <p className="text-neutral-400">{exercises?.length}</p>
+          </Group>
 
-        <Stack gap="md">
-          {exercises.map(e => <Exercise key={e.id} exercise={e} onClick={setSelected} />)}
+          <Stack gap="md">
+            {exercises?.map(e => <Exercise key={e.id} exercise={e} onClick={setSelected} />)}
+          </Stack>
         </Stack>
-      </Stack>
 
-      <div className="border-l border-gray-200" />
+        <div className="border-l border-gray-200" />
 
-      <div className="flex-2">
-        {selected
-          ? <ExerciseForm key={selected.id} exercise={selected} onSubmit={handleUpdate} onCancel={() => setSelected(undefined)} onDelete={handleDelete} />
-          : <ExerciseForm onSubmit={handleCreate} onCancel={() => null} />
-        }
+        <div className="flex-2">
+          {selected
+            ? <ExerciseForm key={selected.id} exercise={selected} onSubmit={handleUpdate} onCancel={() => setSelected(undefined)} onDelete={handleDelete} />
+            : <ExerciseForm onSubmit={handleCreate} onCancel={() => null} />
+          }
+        </div>
       </div>
-    </div>
+    </LoadingLayout>
   )
 }
 

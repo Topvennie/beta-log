@@ -179,8 +179,6 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
   )
 }
 
-// TODO: Add loading states for everything
-
 type ExerciseProps<T extends SessionCreate | SessionUpdate> = {
   form: UseFormReturnType<T>;
   clientId: string;

@@ -8,6 +8,7 @@ import { useState } from "react"
 import { useHover } from "@mantine/hooks"
 import { FaChevronRight } from "react-icons/fa6"
 import { useExerciseGetAll } from "@/lib/api/exercise"
+import { LoadingLayout } from "@/layout/LoadingLayout"
 
 export const Sessions = () => {
   useBreadcrumb({ title: "Sessions", weight: 10, link: { to: "/sessions" } })
@@ -21,8 +22,7 @@ export const Sessions = () => {
 
   const [selected, setSelected] = useState<SessionType | undefined>(undefined)
 
-  if (isLoadingSessions || sessions === undefined || isLoadingExercises) return null
-  if (exercises?.length === 0) return <NoExercises />
+  if (!isLoadingExercises && exercises?.length === 0) return <NoExercises />
 
   const handleCreate = (session: SessionCreate) => {
     return sessionCreate.mutateAsync(session, {
@@ -52,28 +52,30 @@ export const Sessions = () => {
   }
 
   return (
-    <div className="flex md:flex-row gap-8 h-full">
-      <Stack gap="xl" className="flex-3 h-full">
-        <Group justify="space-between">
-          <Title order={1}>Sessions</Title>
-          <p className="text-neutral-400">{sessions.length}</p>
-        </Group>
+    <LoadingLayout isLoading={isLoadingSessions || isLoadingExercises}>
+      <div className="flex md:flex-row gap-8 h-full">
+        <Stack gap="xl" className="flex-3 h-full">
+          <Group justify="space-between">
+            <Title order={1}>Sessions</Title>
+            <p className="text-neutral-400">{sessions?.length}</p>
+          </Group>
 
-        <Stack gap="md">
-          {sessions.map(s => <Session key={s.id} session={s} onClick={setSelected} />)}
+          <Stack gap="md">
+            {sessions?.map(s => <Session key={s.id} session={s} onClick={setSelected} />)}
+          </Stack>
         </Stack>
-      </Stack>
 
-      <div className="border-l border-gray-200" />
+        <div className="border-l border-gray-200" />
 
-      <div className="flex-2">
-        {selected
-          ? <SessionForm key={selected.id} session={selected} onSubmit={handleUpdate} onCancel={() => setSelected(undefined)} onDelete={handleDelete} />
-          : <SessionForm onSubmit={handleCreate} onCancel={() => null} />
-        }
+        <div className="flex-2">
+          {selected
+            ? <SessionForm key={selected.id} session={selected} onSubmit={handleUpdate} onCancel={() => setSelected(undefined)} onDelete={handleDelete} />
+            : <SessionForm onSubmit={handleCreate} onCancel={() => null} />
+          }
+        </div>
+
       </div>
-
-    </div>
+    </LoadingLayout>
   )
 }
 
