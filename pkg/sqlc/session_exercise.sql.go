@@ -64,29 +64,6 @@ func (q *Queries) SessionExerciseDeleteBySession(ctx context.Context, sessionID 
 	return err
 }
 
-const sessionExerciseGet = `-- name: SessionExerciseGet :one
-SELECT id, session_id, exercise_id, variant_id, position, sets, reps, weight, duration_s
-FROM session_exercises
-WHERE id = $1
-`
-
-func (q *Queries) SessionExerciseGet(ctx context.Context, id int32) (SessionExercise, error) {
-	row := q.db.QueryRow(ctx, sessionExerciseGet, id)
-	var i SessionExercise
-	err := row.Scan(
-		&i.ID,
-		&i.SessionID,
-		&i.ExerciseID,
-		&i.VariantID,
-		&i.Position,
-		&i.Sets,
-		&i.Reps,
-		&i.Weight,
-		&i.DurationS,
-	)
-	return i, err
-}
-
 const sessionExerciseGetBySession = `-- name: SessionExerciseGetBySession :many
 SELECT id, session_id, exercise_id, variant_id, position, sets, reps, weight, duration_s
 FROM session_exercises
@@ -122,33 +99,4 @@ func (q *Queries) SessionExerciseGetBySession(ctx context.Context, sessionID int
 		return nil, err
 	}
 	return items, nil
-}
-
-const sessionExerciseUpdate = `-- name: SessionExerciseUpdate :exec
-UPDATE session_exercises
-SET variant_id = $2, position = $3, sets = $4, reps = $5, weight = $6, duration_s = $7
-WHERE id = $1
-`
-
-type SessionExerciseUpdateParams struct {
-	ID        int32
-	VariantID pgtype.Int4
-	Position  int32
-	Sets      int32
-	Reps      pgtype.Int4
-	Weight    pgtype.Int4
-	DurationS pgtype.Int4
-}
-
-func (q *Queries) SessionExerciseUpdate(ctx context.Context, arg SessionExerciseUpdateParams) error {
-	_, err := q.db.Exec(ctx, sessionExerciseUpdate,
-		arg.ID,
-		arg.VariantID,
-		arg.Position,
-		arg.Sets,
-		arg.Reps,
-		arg.Weight,
-		arg.DurationS,
-	)
-	return err
 }

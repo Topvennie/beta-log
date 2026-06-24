@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
@@ -19,18 +17,6 @@ func (r *Repository) NewSessionExercise() *SessionExercise {
 	return &SessionExercise{
 		repo: *r,
 	}
-}
-
-func (s *SessionExercise) Get(ctx context.Context, id int) (*model.SessionExercise, error) {
-	sessionExercise, err := s.repo.queries(ctx).SessionExerciseGet(ctx, int32(id))
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("get session exercise with id %d | %w", id, err)
-	}
-
-	return model.SessionExerciseModel(sessionExercise), nil
 }
 
 func (s *SessionExercise) GetBySession(ctx context.Context, sessionID int) ([]*model.SessionExercise, error) {
@@ -58,22 +44,6 @@ func (s *SessionExercise) Create(ctx context.Context, sessionExercise *model.Ses
 	}
 
 	sessionExercise.ID = int(id)
-
-	return nil
-}
-
-func (s *SessionExercise) Update(ctx context.Context, sessionExercise model.SessionExercise) error {
-	if err := s.repo.queries(ctx).SessionExerciseUpdate(ctx, sqlc.SessionExerciseUpdateParams{
-		ID:        int32(sessionExercise.ID),
-		VariantID: toInt(sessionExercise.VariantID),
-		Position:  int32(sessionExercise.Position),
-		Sets:      int32(sessionExercise.Sets),
-		Reps:      toInt(sessionExercise.Reps),
-		Weight:    toInt(sessionExercise.Weight),
-		DurationS: toInt(sessionExercise.DurationS),
-	}); err != nil {
-		return fmt.Errorf("update session exercise %+v | %w", sessionExercise, err)
-	}
 
 	return nil
 }
