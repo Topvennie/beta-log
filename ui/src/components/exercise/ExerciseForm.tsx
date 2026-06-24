@@ -66,6 +66,7 @@ const ExerciseFormInner = <T extends ExerciseCreate | ExerciseUpdate>({ form, on
 
   const handleSubmit = () => {
     if (form.validate().hasErrors) return
+
     const values = form.getValues()
 
     setSubmitting(true)

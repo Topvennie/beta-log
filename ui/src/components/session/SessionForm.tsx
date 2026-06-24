@@ -102,10 +102,7 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
   }
 
   const handleSubmit = () => {
-    if (form.validate().hasErrors) {
-      console.log(form.errors)
-      return
-    }
+    if (form.validate().hasErrors) return
 
     const values = form.getValues()
     const { exercises, ...rest } = values
@@ -182,7 +179,6 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
   )
 }
 
-// TODO: Validate backend and frontend to not delete an exercise if bound to session
 // TODO: Add loading states for everything
 
 type ExerciseProps<T extends SessionCreate | SessionUpdate> = {
@@ -205,8 +201,7 @@ const Exercise = <T extends SessionCreate | SessionUpdate>({ form, clientId, onD
   const sessionExercise = form.getValues().exercises[idx]
 
   const options = exercises?.flatMap(e => {
-    if (e.variants.length === 0) return [{ label: e.name, value: String(e.id) }]
-    return e.variants.map(v => ({ label: `${e.name} - ${v.variant}`, value: `${e.id}:${v.id}` }))
+    return [{ label: e.name, value: String(e.id) }, ...e.variants.map(v => ({ label: `${e.name} - ${v.variant}`, value: `${e.id}:${v.id}` }))]
   }) ?? []
 
   const selectedValue = sessionExercise.variantId ? `${sessionExercise.exerciseId}:${sessionExercise.variantId}` : String(sessionExercise.exerciseId)

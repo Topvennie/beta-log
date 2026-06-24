@@ -29,7 +29,7 @@ export const variantCreateSchema = z.object({
 export type VariantCreateSchema = z.infer<typeof variantCreateSchema> & JSONBody
 
 export const variantUpdateSchema = z.object({
-  id: z.number().positive(),
+  id: z.number().positive().optional(),
   variant: z.string().min(1),
 })
 export type VariantUpdateSchema = z.infer<typeof variantUpdateSchema> & JSONBody

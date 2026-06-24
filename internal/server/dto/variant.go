@@ -25,7 +25,7 @@ func (e VariantCreate) ToModel() model.Variant {
 }
 
 type VariantUpdate struct {
-	ID      int    `json:"id" validate:"required,min=1"`
+	ID      int    `json:"id" validate:"min=0"`
 	Variant string `json:"variant" validate:"required"`
 }
 
