@@ -74,7 +74,7 @@ func (s *Session) GetAllByUser(ctx context.Context, userID int) ([]*model.Sessio
 			session = model.SessionModel(row.Session)
 		}
 
-		if !row.SessionExercisesView.ID.Valid {
+		if row.SessionExercisesView.ID.Valid {
 			sessionExercise := model.SessionExerciseViewModel(row.SessionExercisesView)
 			sessionExercise.Exercise = *model.ExerciseViewModel(row.ExercisesView)
 			if row.VariantsView.ID.Valid {
@@ -143,7 +143,7 @@ func (s *Session) GetByVariants(ctx context.Context, variantIDs []int) ([]*model
 			session = model.SessionModel(row.Session)
 		}
 
-		if !row.SessionExercisesView.ID.Valid {
+		if row.SessionExercisesView.ID.Valid {
 			sessionExercise := model.SessionExerciseViewModel(row.SessionExercisesView)
 			sessionExercise.Exercise = *model.ExerciseViewModel(row.ExercisesView)
 			if row.VariantsView.ID.Valid {

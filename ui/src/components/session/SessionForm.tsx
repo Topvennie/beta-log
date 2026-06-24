@@ -184,7 +184,6 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
 
 // TODO: Validate backend and frontend to not delete an exercise if bound to session
 // TODO: Add loading states for everything
-// TODO: Disable sessions screen if there are no exercises
 
 type ExerciseProps<T extends SessionCreate | SessionUpdate> = {
   form: UseFormReturnType<T>;
@@ -250,13 +249,13 @@ const Exercise = <T extends SessionCreate | SessionUpdate>({ form, clientId, onD
         <NumberInput
           label="Weight"
           description="Added weight"
-          suffix="kg"
+          suffix=" kg"
           {...form.getInputProps(`exercises.${idx}.weight`)}
         />
         <NumberInput
           label="Duration"
           description="Amount of seconds to hold"
-          suffix="sec"
+          suffix=" sec"
           {...form.getInputProps(`exercises.${idx}.durationS`)}
         />
       </SimpleGrid>

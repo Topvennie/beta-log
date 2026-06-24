@@ -81,7 +81,7 @@ const Exercise = ({ exercise, onClick }: ExerciseProps) => {
   const { hovered, ref } = useHover()
 
   return (
-    <Group ref={ref} onClick={() => onClick(exercise)} p="xs" justify="space-between" className="rounded-md cursor-pointer hover:bg-blue-50">
+    <Group ref={ref} onClick={() => onClick(exercise)} p="xs" justify="space-between" className="rounded-sm cursor-pointer hover:bg-blue-50">
       <Stack>
         <p>{exercise.name}</p>
         <Group>

@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
       throwOnError: false,
       onError: async (error) => {
         const msg = isResponseNot200Error(error) ? await error.response.text() : error.message
-        notifications.show({ message: msg })
+        notifications.show({ color: "red", message: msg })
       }
     }
   }

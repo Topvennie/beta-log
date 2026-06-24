@@ -11,8 +11,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-// TODO: Validate session  exercises  position
-
 type Session struct {
 	service Service
 
