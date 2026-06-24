@@ -1,6 +1,10 @@
 package service
 
 import (
+	"context"
+	"slices"
+
+	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/Topvennie/beta-log/pkg/utils"
@@ -11,17 +15,21 @@ type Exercise struct {
 	service Service
 
 	exercise repository.Exercise
+	session  repository.Session
+	variant  repository.Variant
 }
 
 func (s *Service) NewExercise() *Exercise {
 	return &Exercise{
 		service:  *s,
 		exercise: *s.repo.NewExercise(),
+		session:  *s.repo.NewSession(),
+		variant:  *s.repo.NewVariant(),
 	}
 }
 
 func (e *Exercise) GetAll(ctx fiber.Ctx, userID int) ([]dto.Exercise, error) {
-	exercises, err := e.exercise.GetAllByUserID(ctx, userID)
+	exercises, err := e.exercise.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +46,20 @@ func (e *Exercise) Create(ctx fiber.Ctx, exerciseCreate dto.ExerciseCreate) (dto
 	exercise := exerciseCreate.ToModel()
 	exercise.UserID = userID
 
-	if err := e.exercise.Create(ctx, &exercise); err != nil {
+	if err := e.service.withRollback(ctx, func(ctx context.Context) error {
+		if err := e.exercise.Create(ctx, &exercise); err != nil {
+			return err
+		}
+
+		for _, variant := range exercise.Variants {
+			variant.ExerciseID = exercise.ID
+			if err := e.variant.Create(ctx, &variant); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return dto.Exercise{}, err
 	}
 
@@ -72,7 +93,54 @@ func (e *Exercise) Update(ctx fiber.Ctx, exerciseUpdate dto.ExerciseUpdate) (dto
 		return dto.Exercise{}, fiber.ErrNotFound
 	}
 
-	if err := e.exercise.Update(ctx, exercise); err != nil {
+	// Make sure we don't delete a variant assigned to a session
+	variantsToDelete := []int{}
+	for _, variantOld := range exerciseOld.Variants {
+		if idx := slices.IndexFunc(exercise.Variants, func(v model.Variant) bool { return variantOld.ID == v.ID }); idx == -1 {
+			// Variant doesn't exist anymore -> delete
+			variantsToDelete = append(variantsToDelete, variantOld.ID)
+		}
+	}
+
+	sessions, err := e.session.GetByVariants(ctx, variantsToDelete)
+	if err != nil {
+		return dto.Exercise{}, err
+	}
+	if len(sessions) != 0 {
+		return dto.Exercise{}, fiber.NewError(fiber.StatusBadRequest, "deleted variant is assigned to a session")
+	}
+
+	if err := e.service.withRollback(ctx, func(context.Context) error {
+		if err := e.exercise.Update(ctx, exercise); err != nil {
+			return err
+		}
+
+		for _, variant := range exercise.Variants {
+			variant.ExerciseID = exercise.ID
+
+			if idx := slices.IndexFunc(exerciseOld.Variants, func(v model.Variant) bool { return variant.ID == v.ID }); idx == -1 {
+				// Variant doesn't exist yet -> create
+				if err := e.variant.Create(ctx, &variant); err != nil {
+					return err
+				}
+
+				continue
+			}
+
+			// Variant already exists -> update
+			if err := e.variant.Update(ctx, variant); err != nil {
+				return err
+			}
+		}
+
+		for _, variantToDelete := range variantsToDelete {
+			if err := e.variant.Delete(ctx, variantToDelete); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return dto.Exercise{}, err
 	}
 
@@ -103,7 +171,25 @@ func (e *Exercise) Delete(ctx fiber.Ctx, id int) error {
 		return fiber.ErrNotFound
 	}
 
-	if err := e.exercise.Delete(ctx, id); err != nil {
+	session, err := e.session.GetByExercise(ctx, exercise.ID)
+	if err != nil {
+		return err
+	}
+	if session != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "exercise is connected to session "+session.Name)
+	}
+
+	if err := e.service.withRollback(ctx, func(ctx context.Context) error {
+		if err := e.variant.DeleteByExerciseID(ctx, exercise.ID); err != nil {
+			return err
+		}
+
+		if err := e.exercise.Delete(ctx, id); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return err
 	}
 

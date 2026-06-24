@@ -46,7 +46,7 @@ func (s *SessionExercise) Create(ctx context.Context, sessionExercise *model.Ses
 	id, err := s.repo.queries(ctx).SessionExerciseCreate(ctx, sqlc.SessionExerciseCreateParams{
 		SessionID:  int32(sessionExercise.SessionID),
 		ExerciseID: int32(sessionExercise.ExerciseID),
-		Variant:    toString(sessionExercise.Variant),
+		VariantID:  toInt(sessionExercise.VariantID),
 		Position:   int32(sessionExercise.Position),
 		Sets:       int32(sessionExercise.Sets),
 		Reps:       toInt(sessionExercise.Reps),
@@ -65,7 +65,7 @@ func (s *SessionExercise) Create(ctx context.Context, sessionExercise *model.Ses
 func (s *SessionExercise) Update(ctx context.Context, sessionExercise model.SessionExercise) error {
 	if err := s.repo.queries(ctx).SessionExerciseUpdate(ctx, sqlc.SessionExerciseUpdateParams{
 		ID:        int32(sessionExercise.ID),
-		Variant:   toString(sessionExercise.Variant),
+		VariantID: toInt(sessionExercise.VariantID),
 		Position:  int32(sessionExercise.Position),
 		Sets:      int32(sessionExercise.Sets),
 		Reps:      toInt(sessionExercise.Reps),

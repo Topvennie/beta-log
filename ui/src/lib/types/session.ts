@@ -2,18 +2,18 @@ import { z } from "zod";
 import { API } from "./api";
 import { convertExercise, Exercise } from "./exercise";
 import { JSONBody } from "./general";
+import { convertVariant, Variant } from "./variant";
 
 export interface Session {
   id: number;
   name: string;
-  active: boolean;
-  position?: number;
   exercises: SessionExercise[];
 };
 
 export interface SessionExercise {
   id: number;
-  exercise: Exercise;
+  exercise: Omit<Exercise, "variants">;
+  variant?: Variant;
   position: number;
   sets: number;
   reps?: number;
@@ -26,8 +26,6 @@ export interface SessionExercise {
 export const convertSession = (s: API.Session): Session => ({
   id: s.id,
   name: s.name,
-  active: s.active,
-  position: s.position,
   exercises: convertSessionExercises(s.exercises),
 });
 export const convertSessions = (s: API.Session[]): Session[] => s.map(convertSession);
@@ -35,6 +33,7 @@ export const convertSessions = (s: API.Session[]): Session[] => s.map(convertSes
 export const convertSessionExercise = (se: API.SessionExercise): SessionExercise => ({
   id: se.id,
   exercise: convertExercise(se.exercise),
+  variant: se.variant ? convertVariant(se.variant) : undefined,
   position: se.position,
   sets: se.sets,
   reps: se.reps,
@@ -46,16 +45,13 @@ export const convertSessionExercises = (se: API.SessionExercise[]): SessionExerc
 export const convertSessionUpdateSchema = (s: Session): SessionUpdate => ({
   id: s.id,
   name: s.name,
-  active: s.active,
-  position: s.position,
-  exercises: s.exercises.map((se) => ({
-    ...convertSessionExerciseUpdateSchema(se),
-    clientId: crypto.randomUUID(),
-  })),
+  exercises: s.exercises.map(convertSessionExerciseUpdateSchema),
 })
 
-export const convertSessionExerciseUpdateSchema = (se: SessionExercise) => ({
+export const convertSessionExerciseUpdateSchema = (se: SessionExercise): SessionExerciseUpdate => ({
+  clientId: crypto.randomUUID(),
   exerciseId: se.exercise.id,
+  variantId: se.variant ? se.variant.id : undefined,
   position: se.position,
   sets: se.sets,
   reps: se.reps,
@@ -68,19 +64,17 @@ export const convertSessionExerciseUpdateSchema = (se: SessionExercise) => ({
 export const sessionExerciseCreateSchema = z.object({
   clientId: z.string(),
   exerciseId: z.number().positive(),
-  variant: z.string().optional(),
+  variantId: z.number().optional(),
   position: z.number().positive(),
   sets: z.number().positive(),
-  reps: z.number().optional(),
-  weight: z.number().optional(),
-  durationS: z.number().optional(),
+  reps: z.number().positive().optional(),
+  weight: z.number().positive().optional(),
+  durationS: z.number().positive().optional(),
 });
 export type SessionExerciseCreate = z.infer<typeof sessionCreateSchema> & JSONBody;
 
 export const sessionCreateSchema = z.object({
   name: z.string().min(1),
-  active: z.boolean(),
-  position: z.number().positive().optional(),
   exercises: z.array(sessionExerciseCreateSchema).min(1),
 })
 export type SessionCreate = z.infer<typeof sessionCreateSchema> & JSONBody;
@@ -88,20 +82,18 @@ export type SessionCreate = z.infer<typeof sessionCreateSchema> & JSONBody;
 export const sessionExerciseUpdateSchema = z.object({
   clientId: z.string(),
   exerciseId: z.number().positive(),
-  variant: z.string().optional(),
+  variantId: z.number().optional(),
   position: z.number().positive(),
   sets: z.number().positive(),
-  reps: z.number().optional(),
-  weight: z.number().optional(),
-  durationS: z.number().optional(),
+  reps: z.number().positive().optional(),
+  weight: z.number().positive().optional(),
+  durationS: z.number().positive().optional(),
 });
-export type SessionExerciseUpdateSchema = z.infer<typeof sessionExerciseUpdateSchema> & JSONBody;
+export type SessionExerciseUpdate = z.infer<typeof sessionExerciseUpdateSchema> & JSONBody;
 
 export const sessionUpdateSchema = z.object({
   id: z.number().positive(),
   name: z.string().min(1),
-  active: z.boolean(),
-  position: z.number().positive().optional(),
   exercises: z.array(sessionExerciseUpdateSchema).min(1),
 })
 export type SessionUpdate = z.infer<typeof sessionUpdateSchema> & JSONBody;

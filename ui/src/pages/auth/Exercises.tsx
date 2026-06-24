@@ -85,7 +85,7 @@ const Exercise = ({ exercise, onClick }: ExerciseProps) => {
       <Stack>
         <p>{exercise.name}</p>
         <Group>
-          {exercise.variants.map(v => <Badge key={v} variant="light" size="sm">{v}</Badge>)}
+          {exercise.variants.map(v => <Badge key={v.id} variant="light" size="sm">{v.variant}</Badge>)}
         </Group>
       </Stack>
       <FaChevronRight className={`text-blue-500 duration-300 ${hovered ? "translate-x-1" : ""}`} />

@@ -1,27 +1,31 @@
--- name: ExerciseGet :one
-SELECT *
-FROM exercises
-WHERE id = $1;
+-- name: ExerciseGet :many
+SELECT sqlc.embed(e), sqlc.embed(ev)
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.id = $1;
 
 -- name: ExerciseGetAll :many
-SELECT *
-FROM exercises
-WHERE user_id = $1 AND deleted_at IS NULL
-ORDER BY name, variants;
+SELECT sqlc.embed(e), sqlc.embed(ev)
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.user_id = $1 AND e.deleted_at IS NULL
+ORDER BY e.name, ev.id;
 
 -- name: ExerciseGetByIDs :many
-SELECT *
-FROM exercises
-WHERE id = ANY($1::int[]) AND deleted_at IS NULL;
+SELECT sqlc.embed(e), sqlc.embed(ev)
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.id = ANY($1::int[]) AND e.deleted_at IS NULL
+ORDER BY e.name, ev.id;
 
 -- name: ExerciseCreate :one
-INSERT INTO exercises (user_id, name, variants)
-VALUES ($1, $2, $3)
+INSERT INTO exercises (user_id, name)
+VALUES ($1, $2)
 RETURNING id;
 
 -- name: ExerciseUpdate :exec
 UPDATE exercises
-SET name = $2, variants = $3
+SET name = $2
 WHERE id = $1;
 
 -- name: ExerciseDelete :exec

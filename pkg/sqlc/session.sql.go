@@ -12,25 +12,18 @@ import (
 )
 
 const sessionCreate = `-- name: SessionCreate :one
-INSERT INTO sessions (user_id, name, active, position)
-VALUES ($1, $2, $3, $4)
+INSERT INTO sessions (user_id, name)
+VALUES ($1, $2)
 RETURNING id
 `
 
 type SessionCreateParams struct {
-	UserID   int32
-	Name     string
-	Active   bool
-	Position pgtype.Int4
+	UserID int32
+	Name   string
 }
 
 func (q *Queries) SessionCreate(ctx context.Context, arg SessionCreateParams) (int32, error) {
-	row := q.db.QueryRow(ctx, sessionCreate,
-		arg.UserID,
-		arg.Name,
-		arg.Active,
-		arg.Position,
-	)
+	row := q.db.QueryRow(ctx, sessionCreate, arg.UserID, arg.Name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -47,49 +40,224 @@ func (q *Queries) SessionDelete(ctx context.Context, id int32) error {
 	return err
 }
 
-const sessionGet = `-- name: SessionGet :one
-SELECT id, user_id, name, active, position, deleted_at
-FROM sessions
-WHERE id = $1
+const sessionGet = `-- name: SessionGet :many
+SELECT s.id, s.user_id, s.name, s.deleted_at, se.id, se.session_id, se.exercise_id, se.variant_id, se.position, se.sets, se.reps, se.weight, se.duration_s, e.id, e.user_id, e.name, e.deleted_at, v.id, v.exercise_id, v.variant
+FROM sessions s
+LEFT JOIN session_exercises_view se ON se.session_id = s.id
+LEFT JOIN exercises_view e ON se.exercise_id = e.id
+LEFT JOIN variants_view v ON se.variant_id = v.id
+WHERE s.id = $1
 `
 
-func (q *Queries) SessionGet(ctx context.Context, id int32) (Session, error) {
-	row := q.db.QueryRow(ctx, sessionGet, id)
-	var i Session
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Active,
-		&i.Position,
-		&i.DeletedAt,
-	)
-	return i, err
+type SessionGetRow struct {
+	Session              Session
+	SessionExercisesView SessionExercisesView
+	ExercisesView        ExercisesView
+	VariantsView         VariantsView
+}
+
+func (q *Queries) SessionGet(ctx context.Context, id int32) ([]SessionGetRow, error) {
+	rows, err := q.db.Query(ctx, sessionGet, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SessionGetRow
+	for rows.Next() {
+		var i SessionGetRow
+		if err := rows.Scan(
+			&i.Session.ID,
+			&i.Session.UserID,
+			&i.Session.Name,
+			&i.Session.DeletedAt,
+			&i.SessionExercisesView.ID,
+			&i.SessionExercisesView.SessionID,
+			&i.SessionExercisesView.ExerciseID,
+			&i.SessionExercisesView.VariantID,
+			&i.SessionExercisesView.Position,
+			&i.SessionExercisesView.Sets,
+			&i.SessionExercisesView.Reps,
+			&i.SessionExercisesView.Weight,
+			&i.SessionExercisesView.DurationS,
+			&i.ExercisesView.ID,
+			&i.ExercisesView.UserID,
+			&i.ExercisesView.Name,
+			&i.ExercisesView.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const sessionGetAll = `-- name: SessionGetAll :many
-SELECT id, user_id, name, active, position, deleted_at
-FROM sessions
-WHERE user_id = $1 AND deleted_at IS NULL
-ORDER BY name
+SELECT s.id, s.user_id, s.name, s.deleted_at, se.id, se.session_id, se.exercise_id, se.variant_id, se.position, se.sets, se.reps, se.weight, se.duration_s, e.id, e.user_id, e.name, e.deleted_at, v.id, v.exercise_id, v.variant
+FROM sessions s
+LEFT JOIN session_exercises_view se ON se.session_id = s.id
+LEFT JOIN exercises_view e ON se.exercise_id = e.id
+LEFT JOIN variants_view v ON se.variant_id = v.id
+WHERE s.user_id = $1 AND s.deleted_at IS NULL
+ORDER BY s.name, s.id
 `
 
-func (q *Queries) SessionGetAll(ctx context.Context, userID int32) ([]Session, error) {
+type SessionGetAllRow struct {
+	Session              Session
+	SessionExercisesView SessionExercisesView
+	ExercisesView        ExercisesView
+	VariantsView         VariantsView
+}
+
+func (q *Queries) SessionGetAll(ctx context.Context, userID int32) ([]SessionGetAllRow, error) {
 	rows, err := q.db.Query(ctx, sessionGetAll, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Session
+	var items []SessionGetAllRow
 	for rows.Next() {
-		var i Session
+		var i SessionGetAllRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Name,
-			&i.Active,
-			&i.Position,
-			&i.DeletedAt,
+			&i.Session.ID,
+			&i.Session.UserID,
+			&i.Session.Name,
+			&i.Session.DeletedAt,
+			&i.SessionExercisesView.ID,
+			&i.SessionExercisesView.SessionID,
+			&i.SessionExercisesView.ExerciseID,
+			&i.SessionExercisesView.VariantID,
+			&i.SessionExercisesView.Position,
+			&i.SessionExercisesView.Sets,
+			&i.SessionExercisesView.Reps,
+			&i.SessionExercisesView.Weight,
+			&i.SessionExercisesView.DurationS,
+			&i.ExercisesView.ID,
+			&i.ExercisesView.UserID,
+			&i.ExercisesView.Name,
+			&i.ExercisesView.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const sessionGetByExercise = `-- name: SessionGetByExercise :many
+SELECT s.id, s.user_id, s.name, s.deleted_at, se.id, se.session_id, se.exercise_id, se.variant_id, se.position, se.sets, se.reps, se.weight, se.duration_s, e.id, e.user_id, e.name, e.deleted_at, v.id, v.exercise_id, v.variant
+FROM sessions s
+LEFT JOIN session_exercises_view se ON se.session_id = s.id
+LEFT JOIN exercises_view e ON se.exercise_id = e.id
+LEFT JOIN variants_view v ON se.variant_id = v.id
+WHERE e.id = $1
+`
+
+type SessionGetByExerciseRow struct {
+	Session              Session
+	SessionExercisesView SessionExercisesView
+	ExercisesView        ExercisesView
+	VariantsView         VariantsView
+}
+
+func (q *Queries) SessionGetByExercise(ctx context.Context, id pgtype.Int4) ([]SessionGetByExerciseRow, error) {
+	rows, err := q.db.Query(ctx, sessionGetByExercise, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SessionGetByExerciseRow
+	for rows.Next() {
+		var i SessionGetByExerciseRow
+		if err := rows.Scan(
+			&i.Session.ID,
+			&i.Session.UserID,
+			&i.Session.Name,
+			&i.Session.DeletedAt,
+			&i.SessionExercisesView.ID,
+			&i.SessionExercisesView.SessionID,
+			&i.SessionExercisesView.ExerciseID,
+			&i.SessionExercisesView.VariantID,
+			&i.SessionExercisesView.Position,
+			&i.SessionExercisesView.Sets,
+			&i.SessionExercisesView.Reps,
+			&i.SessionExercisesView.Weight,
+			&i.SessionExercisesView.DurationS,
+			&i.ExercisesView.ID,
+			&i.ExercisesView.UserID,
+			&i.ExercisesView.Name,
+			&i.ExercisesView.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const sessionGetByVariants = `-- name: SessionGetByVariants :many
+SELECT s.id, s.user_id, s.name, s.deleted_at, se.id, se.session_id, se.exercise_id, se.variant_id, se.position, se.sets, se.reps, se.weight, se.duration_s, e.id, e.user_id, e.name, e.deleted_at, v.id, v.exercise_id, v.variant
+FROM sessions s
+LEFT JOIN session_exercises_view se ON se.session_id = s.id
+LEFT JOIN exercises_view e ON se.exercise_id = e.id
+LEFT JOIN variants_view v ON se.variant_id = v.id
+WHERE v.id = ANY($1::int[])
+`
+
+type SessionGetByVariantsRow struct {
+	Session              Session
+	SessionExercisesView SessionExercisesView
+	ExercisesView        ExercisesView
+	VariantsView         VariantsView
+}
+
+func (q *Queries) SessionGetByVariants(ctx context.Context, dollar_1 []int32) ([]SessionGetByVariantsRow, error) {
+	rows, err := q.db.Query(ctx, sessionGetByVariants, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SessionGetByVariantsRow
+	for rows.Next() {
+		var i SessionGetByVariantsRow
+		if err := rows.Scan(
+			&i.Session.ID,
+			&i.Session.UserID,
+			&i.Session.Name,
+			&i.Session.DeletedAt,
+			&i.SessionExercisesView.ID,
+			&i.SessionExercisesView.SessionID,
+			&i.SessionExercisesView.ExerciseID,
+			&i.SessionExercisesView.VariantID,
+			&i.SessionExercisesView.Position,
+			&i.SessionExercisesView.Sets,
+			&i.SessionExercisesView.Reps,
+			&i.SessionExercisesView.Weight,
+			&i.SessionExercisesView.DurationS,
+			&i.ExercisesView.ID,
+			&i.ExercisesView.UserID,
+			&i.ExercisesView.Name,
+			&i.ExercisesView.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
 		); err != nil {
 			return nil, err
 		}
@@ -103,23 +271,16 @@ func (q *Queries) SessionGetAll(ctx context.Context, userID int32) ([]Session, e
 
 const sessionUpdate = `-- name: SessionUpdate :exec
 UPDATE sessions
-SET name = $2, active = $3, position = $4
+SET name = $2
 WHERE id = $1
 `
 
 type SessionUpdateParams struct {
-	ID       int32
-	Name     string
-	Active   bool
-	Position pgtype.Int4
+	ID   int32
+	Name string
 }
 
 func (q *Queries) SessionUpdate(ctx context.Context, arg SessionUpdateParams) error {
-	_, err := q.db.Exec(ctx, sessionUpdate,
-		arg.ID,
-		arg.Name,
-		arg.Active,
-		arg.Position,
-	)
+	_, err := q.db.Exec(ctx, sessionUpdate, arg.ID, arg.Name)
 	return err
 }

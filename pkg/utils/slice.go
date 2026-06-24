@@ -26,14 +26,15 @@ func SliceFilter[T any](input []T, filter func(T) bool) []T {
 
 // SliceFind returns a pointer to the first item determined by the equal function, nil if not found
 // The second argument returns true if found, false otherwise
-func SliceFind[T any](input []T, equal func(T) bool) (*T, bool) {
+func SliceFind[T any](input []T, equal func(T) bool) (T, bool) {
 	for _, item := range input {
 		if equal(item) {
-			return &item, true
+			return item, true
 		}
 	}
 
-	return nil, false
+	var zero T
+	return zero, false
 }
 
 // SliceUnique filters out all duplicate elements

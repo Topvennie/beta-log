@@ -11,44 +11,34 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+// TODO: Validate session  exercises  position
+
 type Session struct {
-	service         Service
+	service Service
+
+	exercise        repository.Exercise
 	session         repository.Session
 	sessionExercise repository.SessionExercise
-	exercise        repository.Exercise
+	variant         repository.Variant
 }
 
 func (s *Service) NewSession() *Session {
 	return &Session{
 		service:         *s,
+		exercise:        *s.repo.NewExercise(),
 		session:         *s.repo.NewSession(),
 		sessionExercise: *s.repo.NewSessionExercise(),
-		exercise:        *s.repo.NewExercise(),
+		variant:         *s.repo.NewVariant(),
 	}
 }
 
 func (s *Session) GetAll(ctx fiber.Ctx, userID int) ([]dto.Session, error) {
-	sessions, err := s.session.GetAllByUserID(ctx, userID)
+	sessions, err := s.session.GetAllByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]dto.Session, 0, len(sessions))
-	for _, session := range sessions {
-		se, err := s.sessionExercise.GetBySession(ctx, session.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		exercises, err := s.populateExercises(ctx, se)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, dto.SessionDTOPopulated(session, se, exercises))
-	}
-
-	return result, nil
+	return utils.SliceMap(sessions, dto.SessionDTO), nil
 }
 
 func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Session, error) {
@@ -57,44 +47,50 @@ func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Se
 		return dto.Session{}, err
 	}
 
-	sessionModel := sessionCreate.ToModel()
-	sessionModel.UserID = userID
+	session := sessionCreate.ToModel()
+	session.UserID = userID
 
-	// Validate active state and position
-	if sessionModel.Active {
-		currSessions, err := s.session.GetAllByUserID(ctx, userID)
-		if err != nil {
-			return dto.Session{}, err
+	// Check if all used exercises are owned by the user
+	exercises, err := s.exercise.GetByIDs(ctx, utils.SliceMap(session.Exercises, func(s model.SessionExercise) int { return s.ExerciseID }))
+	if err != nil {
+		return dto.Session{}, err
+	}
+	if idx := slices.IndexFunc(exercises, func(e *model.Exercise) bool { return e.UserID != userID }); idx != -1 {
+		return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown exercise")
+	}
+
+	// Check if all variants do exist for that exercise
+	for _, sessionExercise := range session.Exercises {
+		// Find the actual exercise
+		exercise, ok := utils.SliceFind(exercises, func(e *model.Exercise) bool { return e.ID == sessionExercise.ExerciseID })
+		if !ok {
+			return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown exercise")
 		}
 
-		// Session has an assigned position
-		// Check if it isn't already in use
-		if sessionModel.Position > 0 {
-			if idx := slices.IndexFunc(currSessions, func(s *model.Session) bool { return s.Position == sessionModel.Position }); idx != -1 {
-				return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "position already in use")
-			}
+		// Check the variant
+		if sessionExercise.VariantID == 0 {
+			continue
 		}
-		// No assigned position, give it the next available position
-		highestPosition := 1
-		for _, session := range currSessions {
-			if session.Position > highestPosition {
-				highestPosition = session.Position
-			}
+		if _, ok = utils.SliceFind(exercise.Variants, func(v model.Variant) bool { return v.ID == sessionExercise.VariantID }); !ok {
+			return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown variant")
 		}
+	}
 
-		sessionModel.Position = highestPosition + 1
-	} else {
-		sessionModel.Position = 0
+	// Verify exercises position
+	for i := range len(session.Exercises) {
+		if _, ok := utils.SliceFind(session.Exercises, func(e model.SessionExercise) bool { return e.Position == i+1 }); !ok {
+			return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "positions need to increment by one starting with one")
+		}
 	}
 
 	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
-		if err := s.session.Create(ctx, &sessionModel); err != nil {
+		if err := s.session.Create(ctx, &session); err != nil {
 			return err
 		}
 
-		for i := range sessionModel.Exercises {
-			sessionModel.Exercises[i].SessionID = sessionModel.ID
-			if err := s.sessionExercise.Create(ctx, &sessionModel.Exercises[i]); err != nil {
+		for i := range session.Exercises {
+			session.Exercises[i].SessionID = session.ID
+			if err := s.sessionExercise.Create(ctx, &session.Exercises[i]); err != nil {
 				return err
 			}
 		}
@@ -106,17 +102,12 @@ func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Se
 
 	// Refetch data
 
-	sessionExercises, err := s.sessionExercise.GetBySession(ctx, sessionModel.ID)
+	newSession, err := s.session.Get(ctx, session.ID)
 	if err != nil {
 		return dto.Session{}, err
 	}
 
-	exercises, err := s.populateExercises(ctx, sessionExercises)
-	if err != nil {
-		return dto.Session{}, err
-	}
-
-	return dto.SessionDTOPopulated(&sessionModel, sessionExercises, exercises), nil
+	return dto.SessionDTO(newSession), nil
 }
 
 // nolint:gocognit // It's fine
@@ -137,50 +128,47 @@ func (s *Session) Update(ctx fiber.Ctx, sessionUpdate dto.SessionUpdate) (dto.Se
 		return dto.Session{}, fiber.ErrNotFound
 	}
 
-	sessionModel := sessionUpdate.ToModel()
-	sessionModel.UserID = userID
+	session := sessionUpdate.ToModel()
+	session.UserID = userID
 
-	// Validate active state and position
-	if sessionModel.Active {
-		currSessions, err := s.session.GetAllByUserID(ctx, userID)
-		if err != nil {
-			return dto.Session{}, err
+	// Check if all used exercises are owned by the user
+	exercises, err := s.exercise.GetByIDs(ctx, utils.SliceMap(session.Exercises, func(s model.SessionExercise) int { return s.ExerciseID }))
+	if err != nil {
+		return dto.Session{}, err
+	}
+	if idx := slices.IndexFunc(exercises, func(e *model.Exercise) bool { return e.UserID != userID }); idx != -1 {
+		return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown exercise")
+	}
+
+	// Check if all variants do exist for that exercise
+	for _, sessionExercise := range session.Exercises {
+		// Find the actual exercise
+		exercise, ok := utils.SliceFind(exercises, func(e *model.Exercise) bool { return e.ID == sessionExercise.ExerciseID })
+		if !ok {
+			return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown exercise")
 		}
 
-		// Session has an assigned position
-		// Check if it isn't already in use
-		if sessionModel.Position > 0 {
-			if idx := slices.IndexFunc(currSessions, func(s *model.Session) bool { return s.Position == sessionModel.Position }); idx != -1 {
-				if currSessions[idx].ID != sessionUpdate.ID {
-					return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "position already in use")
-				}
-			}
+		// Check the variant
+		if sessionExercise.VariantID == 0 {
+			continue
 		}
-		// No assigned position, give it the next available position
-		highestPosition := 1
-		for _, session := range currSessions {
-			if session.Position > highestPosition {
-				highestPosition = session.Position
-			}
+		if _, ok = utils.SliceFind(exercise.Variants, func(v model.Variant) bool { return v.ID == sessionExercise.VariantID }); !ok {
+			return dto.Session{}, fiber.NewError(fiber.StatusBadRequest, "unknown variant")
 		}
-
-		sessionModel.Position = highestPosition + 1
-	} else {
-		sessionModel.Position = 0
 	}
 
 	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
-		if err := s.session.Update(ctx, sessionModel); err != nil {
+		if err := s.session.Update(ctx, session); err != nil {
 			return err
 		}
 
-		if err := s.sessionExercise.DeleteBySession(ctx, sessionModel.ID); err != nil {
+		if err := s.sessionExercise.DeleteBySession(ctx, session.ID); err != nil {
 			return err
 		}
 
-		for i := range sessionModel.Exercises {
-			sessionModel.Exercises[i].SessionID = sessionModel.ID
-			if err := s.sessionExercise.Create(ctx, &sessionModel.Exercises[i]); err != nil {
+		for i := range session.Exercises {
+			session.Exercises[i].SessionID = session.ID
+			if err := s.sessionExercise.Create(ctx, &session.Exercises[i]); err != nil {
 				return err
 			}
 		}
@@ -192,17 +180,12 @@ func (s *Session) Update(ctx fiber.Ctx, sessionUpdate dto.SessionUpdate) (dto.Se
 
 	// Refetch data
 
-	sessionExercises, err := s.sessionExercise.GetBySession(ctx, sessionModel.ID)
+	newSession, err := s.session.Get(ctx, session.ID)
 	if err != nil {
 		return dto.Session{}, err
 	}
 
-	exercises, err := s.populateExercises(ctx, sessionExercises)
-	if err != nil {
-		return dto.Session{}, err
-	}
-
-	return dto.SessionDTOPopulated(&sessionModel, sessionExercises, exercises), nil
+	return dto.SessionDTO(newSession), nil
 }
 
 func (s *Session) Delete(ctx fiber.Ctx, id int) error {
@@ -236,12 +219,4 @@ func (s *Session) Delete(ctx fiber.Ctx, id int) error {
 
 		return s.session.Delete(ctx, id)
 	})
-}
-
-func (s *Session) populateExercises(ctx context.Context, sessionExercises []*model.SessionExercise) ([]*model.Exercise, error) {
-	if len(sessionExercises) == 0 {
-		return []*model.Exercise{}, nil
-	}
-
-	return s.exercise.GetByIDs(ctx, utils.SliceMap(sessionExercises, func(se *model.SessionExercise) int { return se.ExerciseID }))
 }

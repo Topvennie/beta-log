@@ -12,7 +12,13 @@ type Exercise struct {
 	ID        int32
 	UserID    int32
 	Name      string
-	Variants  []string
+	DeletedAt pgtype.Timestamptz
+}
+
+type ExercisesView struct {
+	ID        pgtype.Int4
+	UserID    pgtype.Int4
+	Name      pgtype.Text
 	DeletedAt pgtype.Timestamptz
 }
 
@@ -20,18 +26,28 @@ type Session struct {
 	ID        int32
 	UserID    int32
 	Name      string
-	Active    bool
-	Position  pgtype.Int4
 	DeletedAt pgtype.Timestamptz
 }
 
-type SessionsExercise struct {
+type SessionExercise struct {
 	ID         int32
 	SessionID  int32
 	ExerciseID int32
-	Variant    pgtype.Text
+	VariantID  pgtype.Int4
 	Position   int32
 	Sets       int32
+	Reps       pgtype.Int4
+	Weight     pgtype.Int4
+	DurationS  pgtype.Int4
+}
+
+type SessionExercisesView struct {
+	ID         pgtype.Int4
+	SessionID  pgtype.Int4
+	ExerciseID pgtype.Int4
+	VariantID  pgtype.Int4
+	Position   pgtype.Int4
+	Sets       pgtype.Int4
 	Reps       pgtype.Int4
 	Weight     pgtype.Int4
 	DurationS  pgtype.Int4
@@ -41,4 +57,16 @@ type User struct {
 	ID   int32
 	Uid  string
 	Name string
+}
+
+type Variant struct {
+	ID         int32
+	ExerciseID int32
+	Variant    string
+}
+
+type VariantsView struct {
+	ID         pgtype.Int4
+	ExerciseID pgtype.Int4
+	Variant    pgtype.Text
 }

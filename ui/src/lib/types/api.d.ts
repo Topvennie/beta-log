@@ -10,18 +10,21 @@ export namespace API {
 
   export interface Exercise extends Base {
     name: string;
-    variants: string[];
+    variants?: Variant[];
+  }
+
+  export interface Variant extends Base {
+    variant: string;
   }
 
   export interface Session extends Base {
     name: string;
-    active: boolean;
-    position?: number;
     exercises: SessionExercise[];
   }
 
   export interface SessionExercise extends Base {
-    exercise: Exercise;
+    exercise: Omit<Exercise, "variants">;
+    variant?: Variant;
     position: number;
     sets: number;
     reps?: number;

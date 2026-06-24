@@ -3,14 +3,14 @@
 import { useExerciseGetAll } from "@/lib/api/exercise";
 import { QueryReponse } from "@/lib/api/query";
 import { convertSessionUpdateSchema, Session, SessionCreate, sessionCreateSchema, SessionUpdate, sessionUpdateSchema } from "@/lib/types/session";
-import { ActionIcon, Button, Checkbox, Group, NumberInput, Select, SimpleGrid, Stack, TextInput } from "@mantine/core";
+import { closestCenter, DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ActionIcon, Button, Group, NumberInput, Select, SimpleGrid, Stack, TextInput } from "@mantine/core";
 import { useForm, UseFormReturnType } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useState } from "react";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { FaGripVertical, FaTrashCan } from "react-icons/fa6";
 import { Confirm } from "../atoms/Confirm";
 
@@ -39,8 +39,6 @@ const SessionFormCreate = (props: CreateProps) => {
   const form = useForm<SessionCreate>({
     initialValues: {
       name: "",
-      active: false,
-      position: 1,
       exercises: [],
     },
     validate: zod4Resolver(sessionCreateSchema)
@@ -89,7 +87,13 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
 
   const handleExerciseAdd = () => {
     const exercises = form.getValues().exercises
-    form.setFieldValue("exercises", [...exercises, { clientId: crypto.randomUUID(), exerciseId: 0, variant: "", position: exercises.length + 1, sets: 0 }] as any)
+    form.setFieldValue("exercises", [...exercises, {
+      clientId: crypto.randomUUID(),
+      exerciseId: 0,
+      variantId: 0,
+      position: exercises.length + 1,
+      sets: 0,
+    }] as any)
   }
 
   const handleExerciseDelete = (clientId: string) => {
@@ -99,10 +103,10 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
 
   const handleSubmit = () => {
     if (form.validate().hasErrors) {
-      console.log(form.getValues())
       console.log(form.errors)
       return
     }
+
     const values = form.getValues()
     const { exercises, ...rest } = values
     const cleanValues = {
@@ -113,8 +117,6 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
         return rest
       }),
     } as T
-
-    console.log(cleanValues)
 
     setSubmitting(true)
     onSubmit(cleanValues)
@@ -145,14 +147,10 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
     <>
       <Stack>
         <TextInput
-          label="Nane"
+          label="Name"
           placeholder="No Hang"
           required
           {...form.getInputProps("name")}
-        />
-        <Checkbox
-          label="Active"
-          {...form.getInputProps("active", { type: "checkbox" })}
         />
         <Stack gap={0}>
           <p>Exercises</p>
@@ -160,7 +158,7 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
         </Stack>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={form.getValues().exercises.map((e) => e.clientId)} strategy={verticalListSortingStrategy}>
-            {form.getValues().exercises.map((exercise) => <Exercise key={exercise.clientId} exercise={exercise} form={form} onDelete={handleExerciseDelete} />)}
+            {form.getValues().exercises.map((exercise) => <Exercise key={exercise.clientId} clientId={exercise.clientId} form={form} onDelete={handleExerciseDelete} />)}
           </SortableContext>
         </DndContext>
         <div onClick={handleExerciseAdd} className="cursor-pointer rounded-sm border-4 border-dotted border-gray-200 py-2 px-4">
@@ -185,36 +183,34 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
 }
 
 // TODO: Validate backend and frontend to not delete an exercise if bound to session
-// TODO: Validate backend to update variant if the exercise gets updated with a new variant (better to abstract it)
 // TODO: Add loading states for everything
 // TODO: Disable sessions screen if there are no exercises
 
 type ExerciseProps<T extends SessionCreate | SessionUpdate> = {
   form: UseFormReturnType<T>;
-  exercise: { clientId: string };
+  clientId: string;
   onDelete: (clientId: string) => void;
 }
 
-const Exercise = <T extends SessionCreate | SessionUpdate>({ form, exercise, onDelete }: ExerciseProps<T>) => {
+const Exercise = <T extends SessionCreate | SessionUpdate>({ form, clientId, onDelete }: ExerciseProps<T>) => {
   const { data: exercises } = useExerciseGetAll()
 
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: exercise.clientId })
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: clientId })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   }
 
-  const idx = form.getValues().exercises.findIndex((e) => e.clientId === exercise.clientId)
-
+  const idx = form.getValues().exercises.findIndex(e => e.clientId === clientId)
   const sessionExercise = form.getValues().exercises[idx]
 
   const options = exercises?.flatMap(e => {
     if (e.variants.length === 0) return [{ label: e.name, value: String(e.id) }]
-    return e.variants.map(v => ({ label: `${e.name} - ${v}`, value: `${e.id}:${v}` }))
+    return e.variants.map(v => ({ label: `${e.name} - ${v.variant}`, value: `${e.id}:${v.id}` }))
   }) ?? []
 
-  const selectedValue = sessionExercise.variant ? `${sessionExercise.exerciseId}:${sessionExercise.variant}` : String(sessionExercise.exerciseId)
+  const selectedValue = sessionExercise.variantId ? `${sessionExercise.exerciseId}:${sessionExercise.variantId}` : String(sessionExercise.exerciseId)
 
   return (
     <Stack ref={setNodeRef} style={style} p="xs" className="border border-gray-200 rounded-sm">
@@ -229,11 +225,11 @@ const Exercise = <T extends SessionCreate | SessionUpdate>({ form, exercise, onD
             if (!value) return
             const [id, variant] = value.split(":")
             form.setFieldValue(`exercises.${idx}.exerciseId`, Number(id) as any)
-            form.setFieldValue(`exercises.${idx}.variant`, variant || undefined as any)
+            form.setFieldValue(`exercises.${idx}.variantId`, variant ? Number(variant) : undefined as any)
           }}
           error={form.errors[`exercises.${idx}.exerciseId`]}
         />
-        <ActionIcon onClick={() => onDelete(exercise.clientId)} variant="subtle" color="red">
+        <ActionIcon onClick={() => onDelete(clientId)} variant="subtle" color="red">
           <FaTrashCan />
         </ActionIcon>
       </Group>

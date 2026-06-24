@@ -10,19 +10,18 @@ import (
 )
 
 const exerciseCreate = `-- name: ExerciseCreate :one
-INSERT INTO exercises (user_id, name, variants)
-VALUES ($1, $2, $3)
+INSERT INTO exercises (user_id, name)
+VALUES ($1, $2)
 RETURNING id
 `
 
 type ExerciseCreateParams struct {
-	UserID   int32
-	Name     string
-	Variants []string
+	UserID int32
+	Name   string
 }
 
 func (q *Queries) ExerciseCreate(ctx context.Context, arg ExerciseCreateParams) (int32, error) {
-	row := q.db.QueryRow(ctx, exerciseCreate, arg.UserID, arg.Name, arg.Variants)
+	row := q.db.QueryRow(ctx, exerciseCreate, arg.UserID, arg.Name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -39,47 +38,76 @@ func (q *Queries) ExerciseDelete(ctx context.Context, id int32) error {
 	return err
 }
 
-const exerciseGet = `-- name: ExerciseGet :one
-SELECT id, user_id, name, variants, deleted_at
-FROM exercises
-WHERE id = $1
+const exerciseGet = `-- name: ExerciseGet :many
+SELECT e.id, e.user_id, e.name, e.deleted_at, ev.id, ev.exercise_id, ev.variant
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.id = $1
 `
 
-func (q *Queries) ExerciseGet(ctx context.Context, id int32) (Exercise, error) {
-	row := q.db.QueryRow(ctx, exerciseGet, id)
-	var i Exercise
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Variants,
-		&i.DeletedAt,
-	)
-	return i, err
+type ExerciseGetRow struct {
+	Exercise     Exercise
+	VariantsView VariantsView
+}
+
+func (q *Queries) ExerciseGet(ctx context.Context, id int32) ([]ExerciseGetRow, error) {
+	rows, err := q.db.Query(ctx, exerciseGet, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExerciseGetRow
+	for rows.Next() {
+		var i ExerciseGetRow
+		if err := rows.Scan(
+			&i.Exercise.ID,
+			&i.Exercise.UserID,
+			&i.Exercise.Name,
+			&i.Exercise.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const exerciseGetAll = `-- name: ExerciseGetAll :many
-SELECT id, user_id, name, variants, deleted_at
-FROM exercises
-WHERE user_id = $1 AND deleted_at IS NULL
-ORDER BY name, variants
+SELECT e.id, e.user_id, e.name, e.deleted_at, ev.id, ev.exercise_id, ev.variant
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.user_id = $1 AND e.deleted_at IS NULL
+ORDER BY e.name, ev.id
 `
 
-func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise, error) {
+type ExerciseGetAllRow struct {
+	Exercise     Exercise
+	VariantsView VariantsView
+}
+
+func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]ExerciseGetAllRow, error) {
 	rows, err := q.db.Query(ctx, exerciseGetAll, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Exercise
+	var items []ExerciseGetAllRow
 	for rows.Next() {
-		var i Exercise
+		var i ExerciseGetAllRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Name,
-			&i.Variants,
-			&i.DeletedAt,
+			&i.Exercise.ID,
+			&i.Exercise.UserID,
+			&i.Exercise.Name,
+			&i.Exercise.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
 		); err != nil {
 			return nil, err
 		}
@@ -92,26 +120,35 @@ func (q *Queries) ExerciseGetAll(ctx context.Context, userID int32) ([]Exercise,
 }
 
 const exerciseGetByIDs = `-- name: ExerciseGetByIDs :many
-SELECT id, user_id, name, variants, deleted_at
-FROM exercises
-WHERE id = ANY($1::int[]) AND deleted_at IS NULL
+SELECT e.id, e.user_id, e.name, e.deleted_at, ev.id, ev.exercise_id, ev.variant
+FROM exercises e
+LEFT JOIN variants_view ev ON e.id = ev.exercise_id
+WHERE e.id = ANY($1::int[]) AND e.deleted_at IS NULL
+ORDER BY e.name, ev.id
 `
 
-func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]Exercise, error) {
+type ExerciseGetByIDsRow struct {
+	Exercise     Exercise
+	VariantsView VariantsView
+}
+
+func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]ExerciseGetByIDsRow, error) {
 	rows, err := q.db.Query(ctx, exerciseGetByIDs, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Exercise
+	var items []ExerciseGetByIDsRow
 	for rows.Next() {
-		var i Exercise
+		var i ExerciseGetByIDsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Name,
-			&i.Variants,
-			&i.DeletedAt,
+			&i.Exercise.ID,
+			&i.Exercise.UserID,
+			&i.Exercise.Name,
+			&i.Exercise.DeletedAt,
+			&i.VariantsView.ID,
+			&i.VariantsView.ExerciseID,
+			&i.VariantsView.Variant,
 		); err != nil {
 			return nil, err
 		}
@@ -125,17 +162,16 @@ func (q *Queries) ExerciseGetByIDs(ctx context.Context, dollar_1 []int32) ([]Exe
 
 const exerciseUpdate = `-- name: ExerciseUpdate :exec
 UPDATE exercises
-SET name = $2, variants = $3
+SET name = $2
 WHERE id = $1
 `
 
 type ExerciseUpdateParams struct {
-	ID       int32
-	Name     string
-	Variants []string
+	ID   int32
+	Name string
 }
 
 func (q *Queries) ExerciseUpdate(ctx context.Context, arg ExerciseUpdateParams) error {
-	_, err := q.db.Exec(ctx, exerciseUpdate, arg.ID, arg.Name, arg.Variants)
+	_, err := q.db.Exec(ctx, exerciseUpdate, arg.ID, arg.Name)
 	return err
 }

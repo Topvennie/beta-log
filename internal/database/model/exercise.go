@@ -10,8 +10,10 @@ type Exercise struct {
 	ID        int
 	UserID    int
 	Name      string
-	Variants  []string
 	DeletedAt time.Time
+
+	// Non db fields
+	Variants []Variant
 }
 
 func ExerciseModel(e sqlc.Exercise) *Exercise {
@@ -19,7 +21,15 @@ func ExerciseModel(e sqlc.Exercise) *Exercise {
 		ID:        int(e.ID),
 		UserID:    int(e.UserID),
 		Name:      e.Name,
-		Variants:  e.Variants,
+		DeletedAt: fromTime(e.DeletedAt),
+	}
+}
+
+func ExerciseViewModel(e sqlc.ExercisesView) *Exercise {
+	return &Exercise{
+		ID:        fromInt(e.ID),
+		UserID:    fromInt(e.UserID),
+		Name:      fromString(e.Name),
 		DeletedAt: fromTime(e.DeletedAt),
 	}
 }
