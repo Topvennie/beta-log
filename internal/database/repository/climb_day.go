@@ -8,6 +8,7 @@ import (
 
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/pkg/sqlc"
+	"github.com/Topvennie/beta-log/pkg/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -57,7 +58,7 @@ func (c *ClimbDay) GetPopulated(ctx context.Context, id int) (*model.ClimbDay, e
 	}
 
 	day := model.ClimbDayModel(rows[0].ClimbDay)
-	day.Gym = model.ClimbGymPopulatedModel(rows[0].ClimbGym)
+	day.Gym = *model.ClimbGymModel(rows[0].ClimbGym)
 
 	for _, row := range rows {
 		climb := model.ClimbPopulatedModel(row.Climb)
@@ -81,7 +82,7 @@ func (c *ClimbDay) GetPopulatedByExternal(ctx context.Context, externalID string
 	}
 
 	day := model.ClimbDayModel(rows[0].ClimbDay)
-	day.Gym = model.ClimbGymPopulatedModel(rows[0].ClimbGym)
+	day.Gym = *model.ClimbGymModel(rows[0].ClimbGym)
 
 	for _, row := range rows {
 		climb := model.ClimbPopulatedModel(row.Climb)
@@ -89,6 +90,38 @@ func (c *ClimbDay) GetPopulatedByExternal(ctx context.Context, externalID string
 	}
 
 	return day, nil
+}
+
+func (c *ClimbDay) GetAllPopulatedByExternal(ctx context.Context, externalIDs []int) ([]*model.ClimbDay, error) {
+	rows, err := c.repo.queries(ctx).ClimbDayGetAllPopulatedByExternal(ctx, utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get all climb days populated by external ids %v | %w", externalIDs, err)
+	}
+
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	dayMap := make(map[int]*model.ClimbDay)
+
+	for _, row := range rows {
+		day, ok := dayMap[int(row.ClimbDay.ID)]
+		if !ok {
+			day = model.ClimbDayModel(row.ClimbDay)
+			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+		}
+
+		if climb := model.ClimbPopulatedModel(row.Climb); climb != nil {
+			day.Climbs = append(day.Climbs, *climb)
+		}
+
+		dayMap[day.ID] = day
+	}
+
+	return utils.MapValues(dayMap), nil
 }
 
 func (c *ClimbDay) Create(ctx context.Context, day *model.ClimbDay) error {

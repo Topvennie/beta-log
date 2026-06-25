@@ -51,7 +51,9 @@ func main() {
 		zap.S().Fatalf("Failed to create the server %v", err)
 	}
 
-	task.Init(*repo)
+	if err := task.Init(*repo); err != nil {
+		zap.S().Fatalf("Failed to init task %v", err)
+	}
 
 	zap.S().Infof("Server is running on %s", s.Addr)
 	if err := s.Listen(s.Addr); err != nil {

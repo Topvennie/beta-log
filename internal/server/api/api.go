@@ -18,6 +18,7 @@ func New(router fiber.Router, service service.Service) error {
 	newUser(routerProtected, service)
 	newExercise(routerProtected, service)
 	newSession(routerProtected, service)
+	newTask(routerProtected, service)
 
 	return nil
 }

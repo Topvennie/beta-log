@@ -11,9 +11,7 @@ CREATE TABLE climbs (
   color TEXT NOT NULL,
   hold_color TEXT NOT NULL,
   climb_type CLIMB_TYPE NOT NULL,
-  finish_type FINISH_TYPE NOT NULL,
-
-  UNIQUE (external_id)
+  finish_type FINISH_TYPE NOT NULL
 );
 
 -- +goose Down

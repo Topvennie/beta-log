@@ -15,7 +15,7 @@ type ClimbDay struct {
 
 	// Non db fields
 	Climbs []Climb
-	Gym    *ClimbGym
+	Gym    ClimbGym
 }
 
 func ClimbDayModel(c sqlc.ClimbDay) *ClimbDay {

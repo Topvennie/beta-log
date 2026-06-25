@@ -22,6 +22,13 @@ LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE g.external_id = $1;
 
+-- name: ClimbDayGetAllPopulatedByExternal :many
+SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
+FROM climb_days d
+LEFT  JOIN climbs c ON c.climb_day_id = d.id
+LEFT JOIN climb_gyms g ON d.gym_id = g.id
+WHERE g.external_id = ANY($1::int[]);
+
 -- name: ClimbDayCreate :one
 INSERT INTO climb_days (user_id, external_id, gym_id, day)
 VALUES ($1, $2, $3, $4)

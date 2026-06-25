@@ -19,10 +19,3 @@ func ClimbGymModel(c sqlc.ClimbGym) *ClimbGym {
 		IconPath:   c.IconPath,
 	}
 }
-
-func ClimbGymPopulatedModel(c sqlc.ClimbGym) *ClimbGym {
-	if c.ID == 0 {
-		return nil
-	}
-	return ClimbGymModel(c)
-}

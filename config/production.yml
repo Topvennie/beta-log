@@ -22,3 +22,6 @@ db:
   port: 5432
   user: ""
   password: ""
+
+climb:
+  interval_s: 3600
