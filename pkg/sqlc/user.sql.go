@@ -30,7 +30,7 @@ func (q *Queries) UserCreate(ctx context.Context, arg UserCreateParams) (int32, 
 const userGet = `-- name: UserGet :one
 SELECT id, uid, name
 FROM users
-WHERE id = $1 LIMIT 1
+WHERE id = $1
 `
 
 func (q *Queries) UserGet(ctx context.Context, id int32) (User, error) {
@@ -40,10 +40,35 @@ func (q *Queries) UserGet(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
+const userGetAll = `-- name: UserGetAll :many
+SELECT id, uid, name
+FROM users
+`
+
+func (q *Queries) UserGetAll(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, userGetAll)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(&i.ID, &i.Uid, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const userGetByUID = `-- name: UserGetByUID :one
 SELECT id, uid, name
 FROM users
-WHERE uid = $1 LIMIT 1
+WHERE uid = $1
 `
 
 func (q *Queries) UserGetByUID(ctx context.Context, uid string) (User, error) {

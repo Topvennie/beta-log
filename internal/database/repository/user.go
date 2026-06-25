@@ -8,6 +8,7 @@ import (
 
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/pkg/sqlc"
+	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
 type User struct {
@@ -42,6 +43,18 @@ func (u *User) GetByUID(ctx context.Context, uid string) (*model.User, error) {
 	}
 
 	return model.UserModel(user), nil
+}
+
+func (u *User) GetAll(ctx context.Context) ([]*model.User, error) {
+	users, err := u.repo.queries(ctx).UserGetAll(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get all users %w", err)
+	}
+
+	return utils.SliceMap(users, model.UserModel), nil
 }
 
 func (u *User) Create(ctx context.Context, user *model.User) error {
