@@ -1,0 +1,75 @@
+package dto
+
+import (
+	"time"
+
+	"github.com/Topvennie/beta-log/internal/database/model"
+	"github.com/Topvennie/beta-log/internal/task"
+)
+
+type TaskHistory struct {
+	ID       int              `json:"id"`
+	Name     string           `json:"name"`
+	Result   model.TaskResult `json:"result"`
+	RunAt    time.Time        `json:"run_at"`
+	Message  string           `json:"message"`
+	Error    string           `json:"error,omitempty"`
+	Duration time.Duration    `json:"duration"`
+}
+
+func TaskHistoryDTO(task *model.Task) TaskHistory {
+	taskError := ""
+	if task.Error != nil {
+		taskError = task.Error.Error()
+	}
+
+	return TaskHistory{
+		ID:       task.ID,
+		Name:     task.Name,
+		Result:   task.Result,
+		RunAt:    task.RunAt,
+		Message:  task.Message,
+		Error:    taskError,
+		Duration: task.Duration,
+	}
+}
+
+type Task struct {
+	TaskUID     string           `json:"uid"`
+	Name        string           `json:"name"`
+	Status      task.Status      `json:"status"`
+	NextRun     time.Time        `json:"next_run,omitzero"`
+	LastStatus  model.TaskResult `json:"last_status,omitempty"`
+	LastRun     *time.Time       `json:"last_run,omitzero"`
+	LastMessage string           `json:"last_message,omitempty"`
+	LastError   string           `json:"last_error,omitempty"`
+	Interval    *time.Duration   `json:"interval,omitzero"`
+	Recurring   bool             `json:"recurring"`
+}
+
+func TaskDTO(task task.Stat) Task {
+	return Task{
+		TaskUID:   task.TaskUID,
+		Name:      task.Name,
+		Status:    task.Status,
+		NextRun:   task.NextRun,
+		LastRun:   &task.LastRun,
+		Interval:  &task.Interval,
+		Recurring: task.Recurring,
+	}
+}
+
+type TaskFilter struct {
+	UserID    int
+	TaskUID   string
+	Result    *model.TaskResult
+	Recurring *bool
+	Limit     int
+	Offset    int
+}
+
+func (t *TaskFilter) ToModel() *model.TaskFilter {
+	taskFilter := model.TaskFilter(*t)
+
+	return &taskFilter
+}

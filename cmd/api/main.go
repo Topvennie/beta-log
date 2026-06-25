@@ -5,6 +5,7 @@ import (
 
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server"
+	"github.com/Topvennie/beta-log/internal/task"
 	"github.com/Topvennie/beta-log/pkg/config"
 	"github.com/Topvennie/beta-log/pkg/db"
 	"github.com/Topvennie/beta-log/pkg/logger"
@@ -49,6 +50,8 @@ func main() {
 	if err != nil {
 		zap.S().Fatalf("Failed to create the server %v", err)
 	}
+
+	task.Init(*repo)
 
 	zap.S().Infof("Server is running on %s", s.Addr)
 	if err := s.Listen(s.Addr); err != nil {
