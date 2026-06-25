@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
@@ -22,6 +24,9 @@ func (r *Repository) NewSessionExercise() *SessionExercise {
 func (s *SessionExercise) GetBySession(ctx context.Context, sessionID int) ([]*model.SessionExercise, error) {
 	sessionExercises, err := s.repo.queries(ctx).SessionExerciseGetBySession(ctx, int32(sessionID))
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("get all session exercises for session %d | %w", sessionID, err)
 	}
 

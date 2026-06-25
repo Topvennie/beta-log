@@ -50,6 +50,9 @@ func (e *Exercise) Get(ctx context.Context, id int) (*model.Exercise, error) {
 func (e *Exercise) GetByUserID(ctx context.Context, userID int) ([]*model.Exercise, error) {
 	rows, err := e.repo.queries(ctx).ExerciseGetAll(ctx, int32(userID))
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("get all exercises with variants for user %d | %w", userID, err)
 	}
 
@@ -78,6 +81,9 @@ func (e *Exercise) GetByUserID(ctx context.Context, userID int) ([]*model.Exerci
 func (e *Exercise) GetByIDs(ctx context.Context, ids []int) ([]*model.Exercise, error) {
 	rows, err := e.repo.queries(ctx).ExerciseGetByIDs(ctx, utils.SliceMap(ids, func(id int) int32 { return int32(id) }))
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("get exercises by ids %v | %w", ids, err)
 	}
 

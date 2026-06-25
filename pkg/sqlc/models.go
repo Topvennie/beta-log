@@ -5,8 +5,124 @@
 package sqlc
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type ClimbType string
+
+const (
+	ClimbTypeBoulder ClimbType = "boulder"
+	ClimbTypeLead    ClimbType = "lead"
+)
+
+func (e *ClimbType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ClimbType(s)
+	case string:
+		*e = ClimbType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ClimbType: %T", src)
+	}
+	return nil
+}
+
+type NullClimbType struct {
+	ClimbType ClimbType
+	Valid     bool // Valid is true if ClimbType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullClimbType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ClimbType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ClimbType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullClimbType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ClimbType), nil
+}
+
+type FinishType string
+
+const (
+	FinishTypeFlash  FinishType = "flash"
+	FinishTypeTop    FinishType = "top"
+	FinishTypeRepeat FinishType = "repeat"
+)
+
+func (e *FinishType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FinishType(s)
+	case string:
+		*e = FinishType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FinishType: %T", src)
+	}
+	return nil
+}
+
+type NullFinishType struct {
+	FinishType FinishType
+	Valid      bool // Valid is true if FinishType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFinishType) Scan(value interface{}) error {
+	if value == nil {
+		ns.FinishType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FinishType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFinishType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FinishType), nil
+}
+
+type Climb struct {
+	ID         int32
+	UserID     int32
+	ExternalID string
+	ClimbDayID int32
+	Grade      int32
+	Color      string
+	HoldColor  string
+	ClimbType  ClimbType
+	FinishType FinishType
+}
+
+type ClimbDay struct {
+	ID         int32
+	UserID     int32
+	ExternalID string
+	GymID      int32
+	Day        pgtype.Timestamptz
+}
+
+type ClimbGym struct {
+	ID         int32
+	UserID     int32
+	ExternalID string
+	Name       string
+	IconPath   string
+}
 
 type Exercise struct {
 	ID        int32
