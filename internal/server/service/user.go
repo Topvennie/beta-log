@@ -1,6 +1,9 @@
 package service
 
 import (
+	"context"
+
+	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/gofiber/fiber/v3"
@@ -9,7 +12,8 @@ import (
 type User struct {
 	service Service
 
-	user repository.User
+	setting repository.Setting
+	user    repository.User
 }
 
 func (s *Service) NewUser() *User {
@@ -45,7 +49,18 @@ func (u *User) GetByUID(ctx fiber.Ctx, uid string) (dto.User, error) {
 
 func (u *User) Create(ctx fiber.Ctx, userSave dto.User) (dto.User, error) {
 	user := userSave.ToModel()
-	if err := u.user.Create(ctx, &user); err != nil {
+
+	if err := u.service.withRollback(ctx, func(ctx context.Context) error {
+		if err := u.user.Create(ctx, &user); err != nil {
+			return err
+		}
+
+		if err := u.setting.Create(ctx, &model.Setting{UserID: user.ID}); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return dto.User{}, err
 	}
 

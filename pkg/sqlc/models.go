@@ -211,6 +211,14 @@ type SessionExercisesView struct {
 	DurationS  pgtype.Int4
 }
 
+type Setting struct {
+	ID                         int32
+	UserID                     int32
+	ClimbToploggerUserID       pgtype.Text
+	ClimbToploggerAuthToken    pgtype.Text
+	ClimbToploggerRefreshToken pgtype.Text
+}
+
 type Task struct {
 	Uid       string
 	Name      string
