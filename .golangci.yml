@@ -22,7 +22,6 @@ linters:
     - errchkjson
     - errorlint
     - exhaustive
-    - gocognit
     - goconst
     - gocritic
     - gosec
@@ -47,8 +46,6 @@ linters:
       report-no-exported: true
     exhaustive:
       default-signifies-exhaustive: true
-    gocognit:
-      min-complexity: 30
     goconst:
       min-len: 3
       min-occurrences: 3

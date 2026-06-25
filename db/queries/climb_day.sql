@@ -30,11 +30,11 @@ LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE g.external_id = ANY($1::int[]);
 
 -- name: ClimbDayCreate :one
-INSERT INTO climb_days (user_id, external_id, gym_id, day)
+INSERT INTO climb_days (user_id, external_id, gym_id, date)
 VALUES ($1, $2, $3, $4)
 RETURNING id;
 
 -- name: ClimbDayUpdate :exec
 UPDATE climb_days
-SET gym_id = $2, day = $3
+SET gym_id = $2, date = $3
 WHERE id = $1;

@@ -129,7 +129,7 @@ func (c *ClimbDay) Create(ctx context.Context, day *model.ClimbDay) error {
 		UserID:     int32(day.UserID),
 		ExternalID: day.ExternalID,
 		GymID:      int32(day.GymID),
-		Day:        pgtype.Timestamptz{Time: day.Day, Valid: true},
+		Date:       pgtype.Timestamptz{Time: day.Date, Valid: true},
 	})
 	if err != nil {
 		return fmt.Errorf("create climb day %+v | %w", *day, err)
@@ -144,7 +144,7 @@ func (c *ClimbDay) Update(ctx context.Context, day model.ClimbDay) error {
 	err := c.repo.queries(ctx).ClimbDayUpdate(ctx, sqlc.ClimbDayUpdateParams{
 		ID:    int32(day.ID),
 		GymID: int32(day.GymID),
-		Day:   pgtype.Timestamptz{Time: day.Day, Valid: true},
+		Date:  pgtype.Timestamptz{Time: day.Date, Valid: true},
 	})
 	if err != nil {
 		return fmt.Errorf("update climb day %+v | %w", day, err)

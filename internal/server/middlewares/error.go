@@ -11,7 +11,6 @@ import (
 
 const errMsg = "Internal Server Error"
 
-// nolint:gocognit // Keeping middlewares in one function
 func ErrorHandler(repo repository.Repository) fiber.ErrorHandler {
 	repoUser := repo.NewUser()
 

@@ -1,6 +1,10 @@
 package model
 
-import "github.com/Topvennie/beta-log/pkg/sqlc"
+import (
+	"time"
+
+	"github.com/Topvennie/beta-log/pkg/sqlc"
+)
 
 type Setting struct {
 	ID                         int
@@ -8,6 +12,7 @@ type Setting struct {
 	ClimbToploggerUserID       string
 	ClimbToploggerAuthToken    string
 	ClimbToploggerRefreshToken string
+	ClimbTopLoggerExpiration   time.Time
 }
 
 func SettingModel(s sqlc.Setting) *Setting {
@@ -17,5 +22,6 @@ func SettingModel(s sqlc.Setting) *Setting {
 		ClimbToploggerUserID:       fromString(s.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    fromString(s.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: fromString(s.ClimbToploggerRefreshToken),
+		ClimbTopLoggerExpiration:   fromTime(s.ClimbToploggerExpiration),
 	}
 }

@@ -4,7 +4,7 @@ CREATE TABLE climb_days (
   user_id  INT NOT NULL REFERENCES users (id),
   external_id TEXT NOT NULL,
   gym_id INT NOT NULL REFERENCES climb_gyms (id),
-  day timestamptz NOT NULL,
+  date timestamptz NOT NULL,
 
   UNIQUE (external_id)
 );

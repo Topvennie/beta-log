@@ -108,7 +108,6 @@ func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Se
 	return dto.SessionDTO(newSession), nil
 }
 
-// nolint:gocognit // It's fine
 func (s *Session) Update(ctx fiber.Ctx, sessionUpdate dto.SessionUpdate) (dto.Session, error) {
 	userID, err := getID(ctx)
 	if err != nil {

@@ -47,10 +47,10 @@ func (s *Setting) Update(ctx context.Context, setting model.Setting) error {
 		ClimbToploggerUserID:       toString(setting.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    toString(setting.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: toString(setting.ClimbToploggerRefreshToken),
+		ClimbToploggerExpiration:   toTime(setting.ClimbTopLoggerExpiration),
 	}); err != nil {
 		return fmt.Errorf("update setting %+v | %w", setting, err)
 	}
 
 	return nil
 }
-

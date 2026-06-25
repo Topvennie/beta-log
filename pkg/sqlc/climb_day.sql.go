@@ -12,7 +12,7 @@ import (
 )
 
 const climbDayCreate = `-- name: ClimbDayCreate :one
-INSERT INTO climb_days (user_id, external_id, gym_id, day)
+INSERT INTO climb_days (user_id, external_id, gym_id, date)
 VALUES ($1, $2, $3, $4)
 RETURNING id
 `
@@ -21,7 +21,7 @@ type ClimbDayCreateParams struct {
 	UserID     int32
 	ExternalID string
 	GymID      int32
-	Day        pgtype.Timestamptz
+	Date       pgtype.Timestamptz
 }
 
 func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) (int32, error) {
@@ -29,7 +29,7 @@ func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) 
 		arg.UserID,
 		arg.ExternalID,
 		arg.GymID,
-		arg.Day,
+		arg.Date,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -37,7 +37,7 @@ func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) 
 }
 
 const climbDayGet = `-- name: ClimbDayGet :one
-SELECT id, user_id, external_id, gym_id, day
+SELECT id, user_id, external_id, gym_id, date
 FROM climb_days
 WHERE id = $1
 `
@@ -50,13 +50,13 @@ func (q *Queries) ClimbDayGet(ctx context.Context, id int32) (ClimbDay, error) {
 		&i.UserID,
 		&i.ExternalID,
 		&i.GymID,
-		&i.Day,
+		&i.Date,
 	)
 	return i, err
 }
 
 const climbDayGetAllPopulatedByExternal = `-- name: ClimbDayGetAllPopulatedByExternal :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.day, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -83,7 +83,7 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternal(ctx context.Context, dollar_
 			&i.ClimbDay.UserID,
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
-			&i.ClimbDay.Day,
+			&i.ClimbDay.Date,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -110,7 +110,7 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternal(ctx context.Context, dollar_
 }
 
 const climbDayGetByExternal = `-- name: ClimbDayGetByExternal :one
-SELECT id, user_id, external_id, gym_id, day
+SELECT id, user_id, external_id, gym_id, date
 FROM climb_days
 WHERE external_id = $1
 `
@@ -123,13 +123,13 @@ func (q *Queries) ClimbDayGetByExternal(ctx context.Context, externalID string) 
 		&i.UserID,
 		&i.ExternalID,
 		&i.GymID,
-		&i.Day,
+		&i.Date,
 	)
 	return i, err
 }
 
 const climbDayGetPopulated = `-- name: ClimbDayGetPopulated :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.day, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -156,7 +156,7 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 			&i.ClimbDay.UserID,
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
-			&i.ClimbDay.Day,
+			&i.ClimbDay.Date,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -183,7 +183,7 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 }
 
 const climbDayGetPopulatedByExternal = `-- name: ClimbDayGetPopulatedByExternal :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.day, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -210,7 +210,7 @@ func (q *Queries) ClimbDayGetPopulatedByExternal(ctx context.Context, externalID
 			&i.ClimbDay.UserID,
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
-			&i.ClimbDay.Day,
+			&i.ClimbDay.Date,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -238,17 +238,17 @@ func (q *Queries) ClimbDayGetPopulatedByExternal(ctx context.Context, externalID
 
 const climbDayUpdate = `-- name: ClimbDayUpdate :exec
 UPDATE climb_days
-SET gym_id = $2, day = $3
+SET gym_id = $2, date = $3
 WHERE id = $1
 `
 
 type ClimbDayUpdateParams struct {
 	ID    int32
 	GymID int32
-	Day   pgtype.Timestamptz
+	Date  pgtype.Timestamptz
 }
 
 func (q *Queries) ClimbDayUpdate(ctx context.Context, arg ClimbDayUpdateParams) error {
-	_, err := q.db.Exec(ctx, climbDayUpdate, arg.ID, arg.GymID, arg.Day)
+	_, err := q.db.Exec(ctx, climbDayUpdate, arg.ID, arg.GymID, arg.Date)
 	return err
 }

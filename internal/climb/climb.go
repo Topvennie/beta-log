@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Topvennie/beta-log/internal/climb/toplogger"
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/task"
@@ -16,7 +17,6 @@ import (
 const taskUpdateUID = "task-climb-update"
 
 type Fetcher interface {
-	Name() string
 	Fetch(context.Context, model.User) ([]model.ClimbDay, error)
 }
 
@@ -33,7 +33,7 @@ type Manager struct {
 func New(repo repository.Repository) *Manager {
 	return &Manager{
 		interval: config.GetDefaultDurationS("climb.interval_s", 3600),
-		fetchers: []Fetcher{},
+		fetchers: []Fetcher{toplogger.New(repo)},
 		climb:    *repo.NewClimb(),
 		climbDay: *repo.NewClimbDay(),
 		climbGym: *repo.NewClimbGym(),
@@ -71,13 +71,17 @@ func (m *Manager) updateAll(ctx context.Context, user model.User) (string, error
 	totalNewClimbs := 0
 
 	for _, fetcher := range m.fetchers {
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+
 		newClimbs, err := m.update(ctx, user, fetcher)
 		if err != nil {
 			errs = append(errs, err)
+			cancel()
 			continue
 		}
 
 		totalNewClimbs += newClimbs
+		cancel()
 	}
 
 	var msg string
@@ -122,6 +126,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 			if err := m.climbDay.Create(ctx, &day); err != nil {
 				return 0, err
 			}
+			dbDay = &day
 		} else {
 			day.ID = dbDay.ID
 		}
@@ -134,8 +139,21 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 		for _, climb := range day.Climbs {
 			climb.ClimbDayID = day.ID
 
-			if idx := slices.IndexFunc(dbClimbs, func(c model.Climb) bool { return c.ExternalID == climb.ExternalID && c.ClimbDayID == climb.ClimbDayID }); idx != -1 {
+			if idx := slices.IndexFunc(dbClimbs, func(c model.Climb) bool {
+				return c.ExternalID == climb.ExternalID && c.ClimbDayID == climb.ClimbDayID && c.FinishType == climb.FinishType
+			}); idx != -1 {
 				// Climb found
+				dbClimb := dbClimbs[idx]
+
+				// Did the grade change?
+				// Happens dynamically
+				if dbClimb.Grade != climb.Grade {
+					dbClimb.Grade = climb.Grade
+					if err := m.climb.Update(ctx, dbClimb); err != nil {
+						return 0, err
+					}
+				}
+
 				// Remove it from the slice to support finishing the same climb multiple times in the same day (adding multiple entries)
 				dbClimbs[idx] = dbClimbs[len(dbClimbs)-1]
 				dbClimbs = dbClimbs[:len(dbClimbs)-1]

@@ -25,7 +25,7 @@ func (q *Queries) SettingCreate(ctx context.Context, userID int32) (int32, error
 }
 
 const settingGetByUser = `-- name: SettingGetByUser :one
-SELECT id, user_id, climb_toplogger_user_id, climb_toplogger_auth_token, climb_toplogger_refresh_token
+SELECT id, user_id, climb_toplogger_user_id, climb_toplogger_auth_token, climb_toplogger_refresh_token, climb_toplogger_expiration
 FROM settings
 WHERE user_id = $1
 `
@@ -39,13 +39,14 @@ func (q *Queries) SettingGetByUser(ctx context.Context, userID int32) (Setting, 
 		&i.ClimbToploggerUserID,
 		&i.ClimbToploggerAuthToken,
 		&i.ClimbToploggerRefreshToken,
+		&i.ClimbToploggerExpiration,
 	)
 	return i, err
 }
 
 const settingUpdate = `-- name: SettingUpdate :exec
 UPDATE settings
-SET climb_toplogger_user_id = $2, climb_toplogger_auth_token = $3, climb_toplogger_refresh_token = $4
+SET climb_toplogger_user_id = $2, climb_toplogger_auth_token = $3, climb_toplogger_refresh_token = $4, climb_toplogger_expiration = $5
 WHERE id = $1
 `
 
@@ -54,6 +55,7 @@ type SettingUpdateParams struct {
 	ClimbToploggerUserID       pgtype.Text
 	ClimbToploggerAuthToken    pgtype.Text
 	ClimbToploggerRefreshToken pgtype.Text
+	ClimbToploggerExpiration   pgtype.Timestamptz
 }
 
 func (q *Queries) SettingUpdate(ctx context.Context, arg SettingUpdateParams) error {
@@ -62,6 +64,7 @@ func (q *Queries) SettingUpdate(ctx context.Context, arg SettingUpdateParams) er
 		arg.ClimbToploggerUserID,
 		arg.ClimbToploggerAuthToken,
 		arg.ClimbToploggerRefreshToken,
+		arg.ClimbToploggerExpiration,
 	)
 	return err
 }

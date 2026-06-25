@@ -155,7 +155,7 @@ type ClimbDay struct {
 	UserID     int32
 	ExternalID string
 	GymID      int32
-	Day        pgtype.Timestamptz
+	Date       pgtype.Timestamptz
 }
 
 type ClimbGym struct {
@@ -217,6 +217,7 @@ type Setting struct {
 	ClimbToploggerUserID       pgtype.Text
 	ClimbToploggerAuthToken    pgtype.Text
 	ClimbToploggerRefreshToken pgtype.Text
+	ClimbToploggerExpiration   pgtype.Timestamptz
 }
 
 type Task struct {
