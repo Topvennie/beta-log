@@ -28,6 +28,9 @@ FROM base-frontend AS frontend-build
 
 WORKDIR /frontend/ui
 
+ARG APP_VERSION
+ENV VITE_APP_VERSION=$APP_VERSION
+
 ENV CI=true
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
