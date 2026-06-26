@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/Topvennie/beta-log/internal/climb"
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server"
 	"github.com/Topvennie/beta-log/internal/task"
@@ -46,13 +48,17 @@ func main() {
 	}
 
 	repo := repository.New(db)
-	s, err := server.New(*repo, db)
-	if err != nil {
-		zap.S().Fatalf("Failed to create the server %v", err)
-	}
 
 	if err := task.Init(*repo); err != nil {
 		zap.S().Fatalf("Failed to init task %v", err)
+	}
+	if err := climb.New(*repo).Start(context.Background()); err != nil {
+		zap.S().Fatalf("Failed to start climb %v", err)
+	}
+
+	s, err := server.New(*repo, db)
+	if err != nil {
+		zap.S().Fatalf("Failed to create the server %v", err)
 	}
 
 	zap.S().Infof("Server is running on %s", s.Addr)

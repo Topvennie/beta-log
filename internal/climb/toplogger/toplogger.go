@@ -2,6 +2,8 @@ package toplogger
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -17,6 +19,8 @@ const (
 	queryDay     = `[{"operationName":"climbDaysSessionsList","variables":{"pagination":{"page":%d,"perPage":10},"userId":"%s"},"query":"query climbDaysSessionsList($userId: ID!, $bouldersTotalTriesMin: Int, $routesTotalTriesMin: Int, $statsAtDateMin: DateTime, $statsAtDateMax: DateTime, $pagination: PaginationInputClimbDays) {\n  climbDaysPaginated(\n    userId: $userId\n    totalTriesMin: 1\n    bouldersTotalTriesMin: $bouldersTotalTriesMin\n    routesTotalTriesMin: $routesTotalTriesMin\n    statsAtDateMin: $statsAtDateMin\n    statsAtDateMax: $statsAtDateMax\n    pagination: $pagination\n    updateDayStatsIfOld: true\n  ) {\n    pagination {\n      ...pagination\n      __typename\n    }\n    data {\n      id\n      ...climbDayForSessionsList\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment climbDayForUseSessionSummaryTitle on ClimbDay {\n  id\n  title\n  routesTotalTries\n  bouldersTotalTries\n  routesDayGradeMax\n  bouldersDayGradeMax\n  __typename\n}\n\nfragment climbDayForSessionSummaryTitle on ClimbDay {\n  id\n  description\n  statsAtDate\n  bouldersDayGrade\n  routesDayGrade\n  gym {\n    id\n    name\n    nameSlug\n    iconPath\n    __typename\n  }\n  user {\n    id\n    fullName\n    avatarUploadPath\n    __typename\n  }\n  ...climbDayForUseSessionSummaryTitle\n  __typename\n}\n\nfragment gymForGradingSystem on Gym {\n  id\n  gradingSystemRoutes\n  gradingSystemBoulders\n  gradingSystemRoutesCustom\n  gradingSystemBouldersCustom\n  __typename\n}\n\nfragment climbDayForSessionSummaryMetrics on ClimbDay {\n  id\n  bouldersTotalTries\n  bouldersDayGrade\n  bouldersDayGradeFlPct\n  bouldersDayGradeRepeatPct\n  routesTotalTries\n  routesDayGrade\n  routesDayGradeOsPct\n  routesDayGradeRepeatPct\n  routesTotalHeight\n  gym {\n    ...gymForGradingSystem\n    __typename\n  }\n  __typename\n}\n\nfragment gymForClimbTagColor on Gym {\n  id\n  climbGroups {\n    id\n    climbGroupBy\n    color\n    __typename\n  }\n  __typename\n}\n\nfragment gymForSimpleMapClimb on Gym {\n  id\n  ...gymForGradingSystem\n  ...gymForClimbTagColor\n  __typename\n}\n\nfragment climbForClimbTagColor on Climb {\n  id\n  climbGroupClimbs {\n    id\n    climbGroupId\n    __typename\n  }\n  __typename\n}\n\nfragment climbForSimpleMapClimb on Climb {\n  id\n  positionX\n  positionY\n  grade\n  label\n  climbType\n  holdColor {\n    id\n    color\n    colorSecondary\n    __typename\n  }\n  ...climbForClimbTagColor\n  __typename\n}\n\nfragment climbDayForSessionMap on ClimbDay {\n  id\n  gym {\n    id\n    floorplanPath\n    ...gymForSimpleMapClimb\n    __typename\n  }\n  climbUserDaysRoutes: climbUserDays(climbType: \"route\", limit: 5) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  climbUserDaysBoulders: climbUserDays(climbType: \"boulder\", limit: 10) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionSummary on ClimbDay {\n  id\n  statsAtDate\n  bouldersTotalTries\n  bouldersDayGradeMax\n  routesTotalTries\n  routesDayGradeMax\n  ...climbDayForSessionSummaryTitle\n  ...climbDayForSessionSummaryMetrics\n  ...climbDayForSessionMap\n  __typename\n}\n\nfragment climbDayForSessionRoute on ClimbDay {\n  id\n  userId\n  __typename\n}\n\nfragment climbDayForFeedback on ClimbDay {\n  id\n  userId\n  likesCount\n  commentsCount\n  likeMe {\n    id\n    __typename\n  }\n  likesForAvatarStack: comments(type: \"LIKE\", limit: 3) {\n    id\n    user {\n      id\n      avatarUploadPath\n      __typename\n    }\n    __typename\n  }\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForLikeBtn on ClimbDay {\n  id\n  userId\n  likeMe {\n    id\n    __typename\n  }\n  ...climbDayForFeedback\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForSession on ClimbDay {\n  id\n  ...climbDayForSessionSummary\n  ...climbDayForSessionRoute\n  ...climbDayForFeedback\n  ...climbDayForLikeBtn\n  __typename\n}\n\nfragment pagination on Pagination {\n  total\n  page\n  perPage\n  orderBy {\n    key\n    order\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionsList on ClimbDay {\n  id\n  ...climbDayForSession\n  __typename\n}"}]`
 	queryRefetch = `[{"operationName":"authSigninRefreshToken","variables":{"refreshToken":"%s"},"query":"mutation authSigninRefreshToken($refreshToken: JWT!) {\n  tokens: authSigninRefreshToken(refreshToken: $refreshToken) {\n    ...authTokens\n    __typename\n  }\n}\n\nfragment authTokens on AuthTokens {\n  access {\n    token\n    expiresAt\n    __typename\n  }\n  refresh {\n    token\n    expiresAt\n    __typename\n  }\n  __typename\n}"}]`
 )
+
+var errUnauthorized = errors.New("unauthorized")
 
 type Client struct {
 	day     repository.ClimbDay
@@ -41,24 +45,20 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	if setting.ClimbTopLoggerExpiration.Before(time.Now()) {
 		// Refresh token expired
 		// Remove the tokens from the settings
-		setting.ClimbToploggerAuthToken = ""
-		setting.ClimbToploggerRefreshToken = ""
-		setting.ClimbTopLoggerExpiration = time.Time{}
-
-		return nil, c.setting.Update(ctx, *setting)
+		return nil, c.resetSetting(ctx, *setting)
 	}
 
 	// Refresh tokens
 	tokens, err := c.refresh(ctx, *setting)
 	if err != nil {
+		if errors.Is(err, errUnauthorized) {
+			return nil, c.resetSetting(ctx, *setting)
+		}
+
 		return nil, err
 	}
 	if tokens.Access.Token == "" || tokens.Refresh.Token == "" || tokens.Refresh.ExpiresAt.IsZero() {
-		setting.ClimbToploggerAuthToken = ""
-		setting.ClimbToploggerRefreshToken = ""
-		setting.ClimbTopLoggerExpiration = time.Time{}
-
-		return nil, c.setting.Update(ctx, *setting)
+		return nil, c.resetSetting(ctx, *setting)
 	}
 
 	setting.ClimbToploggerAuthToken = tokens.Access.Token
@@ -76,6 +76,12 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	for {
 		climbDayPaginated, err := c.fetchPage(ctx, *setting, page)
 		if err != nil {
+			if errors.Is(err, errUnauthorized) {
+				if err := c.resetSetting(ctx, *setting); err != nil {
+					return nil, err
+				}
+			}
+
 			return nil, err
 		}
 
@@ -161,22 +167,33 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 func (c *Client) fetchPage(ctx context.Context, setting model.Setting, page int) (climbDayPaginated, error) {
 	query := fmt.Sprintf(queryDay, page, setting.ClimbToploggerUserID)
 
-	type response struct {
+	type climbResponse struct {
 		Data struct {
 			ClimbDayPaginated climbDayPaginated `json:"climbDaysPaginated"`
 		} `json:"data"`
 	}
-	var result []response
+	var climbResult []climbResponse
 
-	if err := c.request(ctx, setting, http.MethodPost, "graphql", strings.NewReader(query), &result); err != nil {
+	respBody, err := c.request(ctx, setting.ClimbToploggerAuthToken, http.MethodPost, "graphql", strings.NewReader(query))
+	if err != nil {
 		return climbDayPaginated{}, err
 	}
 
-	if len(result) == 0 {
+	if err := json.Unmarshal(respBody, &climbResult); err != nil {
+		return climbDayPaginated{}, fmt.Errorf("unmarshal response body %w", err)
+	}
+
+	if len(climbResult) == 0 || len(climbResult[0].Data.ClimbDayPaginated.Data) == 0 {
+		// Maybe it was an error
+		if err := getError(respBody); err != nil {
+			return climbDayPaginated{}, err
+		}
+
+		// Nevermind no error, it just doesn't contain any data
 		return climbDayPaginated{}, nil
 	}
 
-	return result[0].Data.ClimbDayPaginated, nil
+	return climbResult[0].Data.ClimbDayPaginated, nil
 }
 
 func (c *Client) refresh(ctx context.Context, setting model.Setting) (token, error) {
@@ -189,13 +206,23 @@ func (c *Client) refresh(ctx context.Context, setting model.Setting) (token, err
 	}
 	var result []response
 
-	// Little bit of fuckery to make it work
-	setting.ClimbToploggerAuthToken = setting.ClimbToploggerRefreshToken
-	if err := c.request(ctx, setting, http.MethodPost, "graphql", strings.NewReader(query), &result); err != nil {
+	respBody, err := c.request(ctx, setting.ClimbToploggerRefreshToken, http.MethodPost, "graphql", strings.NewReader(query))
+	if err != nil {
 		return token{}, err
 	}
 
-	if len(result) == 0 {
+	if err := json.Unmarshal(respBody, &result); err != nil {
+		return token{}, fmt.Errorf("unmarshal response body %w", err)
+	}
+
+	if len(result) == 0 || result[0].Data.Tokens.Access.Token == "" {
+		// No response
+		// Maybe it is an error
+		if err := getError(respBody); err != nil {
+			return token{}, err
+		}
+
+		// Nevermind no error
 		return token{}, nil
 	}
 

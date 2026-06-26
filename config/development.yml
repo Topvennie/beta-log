@@ -24,4 +24,4 @@ db:
   password: "postgres"
 
 climb:
-  interval_s: 300
+  interval_s: 3600

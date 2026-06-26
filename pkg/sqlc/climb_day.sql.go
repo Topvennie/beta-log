@@ -60,7 +60,7 @@ SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.exte
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE g.external_id = ANY($1::int[])
+WHERE d.external_id = ANY($1::int[])
 `
 
 type ClimbDayGetAllPopulatedByExternalRow struct {
@@ -187,7 +187,7 @@ SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.exte
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE g.external_id = $1
+WHERE d.external_id = $1
 `
 
 type ClimbDayGetPopulatedByExternalRow struct {

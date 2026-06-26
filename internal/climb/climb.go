@@ -133,7 +133,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 
 		// Add all missing climbs
 		// Make a copy that we can safely mutate
-		dbClimbs := make([]model.Climb, 0, len(dbDay.Climbs))
+		dbClimbs := make([]model.Climb, len(dbDay.Climbs))
 		copy(dbClimbs, dbDay.Climbs)
 
 		for _, climb := range day.Climbs {

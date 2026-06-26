@@ -63,15 +63,33 @@ type climbDayPaginated struct {
 
 type accessToken struct {
 	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type refreshToken struct {
 	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type token struct {
 	Access  accessToken  `json:"access"`
 	Refresh refreshToken `json:"refresh"`
+}
+
+// Error
+
+type originalError struct {
+	Message    string `json:"message"`
+	Error      string `json:"error"`
+	StatusCode int    `json:"statusCode"`
+}
+
+type extension struct {
+	Code          string        `json:"code"`
+	OriginalError originalError `json:"originalError"`
+}
+
+type cError struct {
+	Message   string    `json:"message"`
+	Extension extension `json:"extensions"`
 }
