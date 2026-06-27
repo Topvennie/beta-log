@@ -2,11 +2,11 @@ import { LinkButton } from "@/components/atoms/LinkButton";
 import { Breadcrumb as BreadcrumbType } from "@/lib/contexts/breadcrumbContext";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useBreadcrumbs } from "@/lib/hooks/useBreadcrumb";
-import { AppShell, Avatar, Burger, Group, ScrollArea, Stack } from "@mantine/core";
-import { useDisclosure } from '@mantine/hooks';
-import { LinkProps } from "@tanstack/react-router";
+import { AppShell, Avatar, Burger, Group, Menu, ScrollArea, Stack } from "@mantine/core";
+import { useDisclosure, useHover } from '@mantine/hooks';
+import { LinkProps, useNavigate } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
-import { FaDumbbell } from "react-icons/fa6";
+import { FaArrowRightFromBracket, FaChevronRight, FaDumbbell, FaGear } from "react-icons/fa6";
 import { LuLayoutDashboard, LuLayoutList } from "react-icons/lu";
 
 type Props = PropsWithChildren
@@ -70,10 +70,13 @@ const NavLink = ({ route: { title, icon, link } }: { route: Route }) => {
 }
 
 export const NavLayout = ({ children }: Props) => {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { state: breadcrumbs } = useBreadcrumbs();
 
   const [opened, { toggle }] = useDisclosure();
+  const { hovered, ref } = useHover()
+
+  const navigate = useNavigate()
 
   return (
     <AppShell
@@ -105,10 +108,24 @@ export const NavLayout = ({ children }: Props) => {
           </Stack>
         </AppShell.Section>
         <AppShell.Section p="md" className="border-t border-gray-200">
-          <Group>
-            <Avatar radius="sm">{user.name?.[0] ?? ""}</Avatar>
-            {user.name}
-          </Group>
+          <Menu position="right-end" trigger="click-hover">
+            <Menu.Target>
+              <Group ref={ref} className="cursor-pointer">
+                <Avatar radius="sm">{user.name?.[0] ?? ""}</Avatar>
+                {user.name}
+                <FaChevronRight className={`ml-auto text-neutral-400 duration-300 ${hovered ? "translate-x-1" : ""}`} />
+              </Group>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => navigate({ to: "/settings" })} leftSection={<FaGear />}>
+                Settings
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item color="red" onClick={logout} leftSection={<FaArrowRightFromBracket />}>
+                Logout
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
         </AppShell.Section>
       </AppShell.Navbar>
 
