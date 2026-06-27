@@ -7,15 +7,12 @@ import (
 )
 
 type Setting struct {
-	service Service
-
 	setting repository.Setting
 }
 
-func (s *Service) NewSetting() *Setting {
+func NewSetting() *Setting {
 	return &Setting{
-		service: *s,
-		setting: *s.repo.NewSetting(),
+		setting: *repository.NewSetting(),
 	}
 }
 

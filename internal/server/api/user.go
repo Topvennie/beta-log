@@ -7,13 +7,13 @@ import (
 
 type user struct {
 	router fiber.Router
-	user   service.User
+	user   *service.User
 }
 
-func newUser(router fiber.Router, service service.Service) *user {
+func newUser(router fiber.Router) *user {
 	api := &user{
 		router: router.Group("/user"),
-		user:   *service.NewUser(),
+		user:   service.NewUser(),
 	}
 
 	api.routes()
@@ -22,16 +22,11 @@ func newUser(router fiber.Router, service service.Service) *user {
 }
 
 func (u *user) routes() {
-	u.router.Get("/me", u.getMeHandler)
+	u.router.Get("/me", u.getMe)
 }
 
-func (u *user) getMeHandler(c fiber.Ctx) error {
-	id, ok := c.Locals("id").(int)
-	if !ok {
-		return fiber.ErrUnauthorized
-	}
-
-	user, err := u.user.GetByID(c, id)
+func (u *user) getMe(c fiber.Ctx) error {
+	user, err := u.user.GetMe(c)
 	if err != nil {
 		return err
 	}

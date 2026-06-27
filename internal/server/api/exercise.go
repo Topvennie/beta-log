@@ -8,34 +8,29 @@ import (
 
 type exercise struct {
 	router   fiber.Router
-	exercise service.Exercise
+	exercise *service.Exercise
 }
 
-func newExercise(router fiber.Router, service service.Service) *exercise {
+func newExercise(router fiber.Router) *exercise {
 	api := &exercise{
 		router:   router.Group("/exercise"),
-		exercise: *service.NewExercise(),
+		exercise: service.NewExercise(),
 	}
 
-	api.createRoutes()
+	api.routes()
 
 	return api
 }
 
-func (e *exercise) createRoutes() {
+func (e *exercise) routes() {
 	e.router.Get("/", e.getAll)
-	e.router.Put("/", e.create)
-	e.router.Post("/:id", e.update)
+	e.router.Post("/", e.create)
+	e.router.Put("/:id", e.update)
 	e.router.Delete("/:id", e.delete)
 }
 
 func (e *exercise) getAll(c fiber.Ctx) error {
-	id, ok := c.Locals("id").(int)
-	if !ok {
-		return fiber.ErrUnauthorized
-	}
-
-	exercises, err := e.exercise.GetAll(c, id)
+	exercises, err := e.exercise.GetAll(c)
 	if err != nil {
 		return err
 	}

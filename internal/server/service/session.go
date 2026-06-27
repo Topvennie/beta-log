@@ -12,25 +12,27 @@ import (
 )
 
 type Session struct {
-	service Service
-
 	exercise        repository.Exercise
 	session         repository.Session
 	sessionExercise repository.SessionExercise
 	variant         repository.Variant
 }
 
-func (s *Service) NewSession() *Session {
+func NewSession() *Session {
 	return &Session{
-		service:         *s,
-		exercise:        *s.repo.NewExercise(),
-		session:         *s.repo.NewSession(),
-		sessionExercise: *s.repo.NewSessionExercise(),
-		variant:         *s.repo.NewVariant(),
+		exercise:        *repository.NewExercise(),
+		session:         *repository.NewSession(),
+		sessionExercise: *repository.NewSessionExercise(),
+		variant:         *repository.NewVariant(),
 	}
 }
 
-func (s *Session) GetAll(ctx fiber.Ctx, userID int) ([]dto.Session, error) {
+func (s *Session) GetAll(ctx fiber.Ctx) ([]dto.Session, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	sessions, err := s.session.GetAllByUser(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -81,7 +83,7 @@ func (s *Session) Create(ctx fiber.Ctx, sessionCreate dto.SessionCreate) (dto.Se
 		}
 	}
 
-	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
+	if err := withRollback(ctx, func(ctx context.Context) error {
 		if err := s.session.Create(ctx, &session); err != nil {
 			return err
 		}
@@ -154,7 +156,7 @@ func (s *Session) Update(ctx fiber.Ctx, sessionUpdate dto.SessionUpdate) (dto.Se
 		}
 	}
 
-	if err := s.service.withRollback(ctx, func(ctx context.Context) error {
+	if err := withRollback(ctx, func(ctx context.Context) error {
 		if err := s.session.Update(ctx, session); err != nil {
 			return err
 		}
@@ -202,7 +204,7 @@ func (s *Session) Delete(ctx fiber.Ctx, id int) error {
 		return fiber.ErrNotFound
 	}
 
-	return s.service.withRollback(ctx, func(ctx context.Context) error {
+	return withRollback(ctx, func(ctx context.Context) error {
 		exercises, err := s.sessionExercise.GetBySession(ctx, id)
 		if err != nil {
 			return err

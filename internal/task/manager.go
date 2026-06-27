@@ -41,7 +41,7 @@ type manager struct {
 	isDev bool
 }
 
-func newManager(repo repository.Repository) (*manager, error) {
+func newManager() (*manager, error) {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new scheduler %w", err)
@@ -51,8 +51,8 @@ func newManager(repo repository.Repository) (*manager, error) {
 
 	manager := &manager{
 		scheduler: scheduler,
-		repoTask:  *repo.NewTask(),
-		repoUser:  *repo.NewUser(),
+		repoTask:  *repository.NewTask(),
+		repoUser:  *repository.NewUser(),
 		jobs:      make(map[string]job),
 		isDev:     config.IsDev(),
 	}

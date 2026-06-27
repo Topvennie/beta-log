@@ -10,16 +10,14 @@ import (
 	"github.com/Topvennie/beta-log/pkg/sqlc"
 )
 
-type Setting struct {
-	repo Repository
-}
+type Setting struct{}
 
-func (r *Repository) NewSetting() *Setting {
-	return &Setting{repo: *r}
+func NewSetting() *Setting {
+	return &Setting{}
 }
 
 func (s *Setting) GetByUser(ctx context.Context, userID int) (*model.Setting, error) {
-	setting, err := s.repo.queries(ctx).SettingGetByUser(ctx, int32(userID))
+	setting, err := queries(ctx).SettingGetByUser(ctx, int32(userID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -31,7 +29,7 @@ func (s *Setting) GetByUser(ctx context.Context, userID int) (*model.Setting, er
 }
 
 func (s *Setting) Create(ctx context.Context, setting *model.Setting) error {
-	id, err := s.repo.queries(ctx).SettingCreate(ctx, int32(setting.UserID))
+	id, err := queries(ctx).SettingCreate(ctx, int32(setting.UserID))
 	if err != nil {
 		return fmt.Errorf("create setting %+v | %w", *setting, err)
 	}
@@ -42,7 +40,7 @@ func (s *Setting) Create(ctx context.Context, setting *model.Setting) error {
 }
 
 func (s *Setting) Update(ctx context.Context, setting model.Setting) error {
-	if err := s.repo.queries(ctx).SettingUpdate(ctx, sqlc.SettingUpdateParams{
+	if err := queries(ctx).SettingUpdate(ctx, sqlc.SettingUpdateParams{
 		ID:                         int32(setting.ID),
 		ClimbToploggerUserID:       toString(setting.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    toString(setting.ClimbToploggerAuthToken),

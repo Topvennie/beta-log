@@ -12,23 +12,25 @@ import (
 )
 
 type Exercise struct {
-	service Service
-
 	exercise repository.Exercise
 	session  repository.Session
 	variant  repository.Variant
 }
 
-func (s *Service) NewExercise() *Exercise {
+func NewExercise() *Exercise {
 	return &Exercise{
-		service:  *s,
-		exercise: *s.repo.NewExercise(),
-		session:  *s.repo.NewSession(),
-		variant:  *s.repo.NewVariant(),
+		exercise: *repository.NewExercise(),
+		session:  *repository.NewSession(),
+		variant:  *repository.NewVariant(),
 	}
 }
 
-func (e *Exercise) GetAll(ctx fiber.Ctx, userID int) ([]dto.Exercise, error) {
+func (e *Exercise) GetAll(ctx fiber.Ctx) ([]dto.Exercise, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	exercises, err := e.exercise.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -46,7 +48,7 @@ func (e *Exercise) Create(ctx fiber.Ctx, exerciseCreate dto.ExerciseCreate) (dto
 	exercise := exerciseCreate.ToModel()
 	exercise.UserID = userID
 
-	if err := e.service.withRollback(ctx, func(ctx context.Context) error {
+	if err := withRollback(ctx, func(ctx context.Context) error {
 		if err := e.exercise.Create(ctx, &exercise); err != nil {
 			return err
 		}
@@ -110,7 +112,7 @@ func (e *Exercise) Update(ctx fiber.Ctx, exerciseUpdate dto.ExerciseUpdate) (dto
 		return dto.Exercise{}, fiber.NewError(fiber.StatusBadRequest, "deleted variant is assigned to a session")
 	}
 
-	if err := e.service.withRollback(ctx, func(context.Context) error {
+	if err := withRollback(ctx, func(context.Context) error {
 		if err := e.exercise.Update(ctx, exercise); err != nil {
 			return err
 		}
@@ -179,7 +181,7 @@ func (e *Exercise) Delete(ctx fiber.Ctx, id int) error {
 		return fiber.NewError(fiber.StatusBadRequest, "exercise is connected to session "+session.Name)
 	}
 
-	if err := e.service.withRollback(ctx, func(ctx context.Context) error {
+	if err := withRollback(ctx, func(ctx context.Context) error {
 		if err := e.variant.DeleteByExerciseID(ctx, exercise.ID); err != nil {
 			return err
 		}

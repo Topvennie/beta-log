@@ -11,16 +11,14 @@ import (
 	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
-type ClimbGym struct {
-	repo Repository
-}
+type ClimbGym struct{}
 
-func (r *Repository) NewClimbGym() *ClimbGym {
-	return &ClimbGym{repo: *r}
+func NewClimbGym() *ClimbGym {
+	return &ClimbGym{}
 }
 
 func (c *ClimbGym) Get(ctx context.Context, id int) (*model.ClimbGym, error) {
-	gym, err := c.repo.queries(ctx).ClimbGymGet(ctx, int32(id))
+	gym, err := queries(ctx).ClimbGymGet(ctx, int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -32,7 +30,7 @@ func (c *ClimbGym) Get(ctx context.Context, id int) (*model.ClimbGym, error) {
 }
 
 func (c *ClimbGym) GetByExternalID(ctx context.Context, externalID string) (*model.ClimbGym, error) {
-	gym, err := c.repo.queries(ctx).ClimbGymGetByExternal(ctx, externalID)
+	gym, err := queries(ctx).ClimbGymGetByExternal(ctx, externalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -44,7 +42,7 @@ func (c *ClimbGym) GetByExternalID(ctx context.Context, externalID string) (*mod
 }
 
 func (c *ClimbGym) GetByExternalIDs(ctx context.Context, externalIDs []int) ([]*model.ClimbGym, error) {
-	gyms, err := c.repo.queries(ctx).ClimbGymGetByExternalIds(ctx, utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }))
+	gyms, err := queries(ctx).ClimbGymGetByExternalIds(ctx, utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -56,7 +54,7 @@ func (c *ClimbGym) GetByExternalIDs(ctx context.Context, externalIDs []int) ([]*
 }
 
 func (c *ClimbGym) Create(ctx context.Context, gym *model.ClimbGym) error {
-	id, err := c.repo.queries(ctx).ClimbGymCreate(ctx, sqlc.ClimbGymCreateParams{
+	id, err := queries(ctx).ClimbGymCreate(ctx, sqlc.ClimbGymCreateParams{
 		UserID:     int32(gym.UserID),
 		ExternalID: gym.ExternalID,
 		Name:       gym.Name,
@@ -72,7 +70,7 @@ func (c *ClimbGym) Create(ctx context.Context, gym *model.ClimbGym) error {
 }
 
 func (c *ClimbGym) Update(ctx context.Context, gym model.ClimbGym) error {
-	if err := c.repo.queries(ctx).ClimbGymUpdate(ctx, sqlc.ClimbGymUpdateParams{
+	if err := queries(ctx).ClimbGymUpdate(ctx, sqlc.ClimbGymUpdateParams{
 		ID:       int32(gym.ID),
 		Name:     gym.Name,
 		IconPath: gym.IconPath,

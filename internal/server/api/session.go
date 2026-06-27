@@ -6,36 +6,31 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type sessionAPI struct {
+type session struct {
 	router  fiber.Router
-	session service.Session
+	session *service.Session
 }
 
-func newSession(router fiber.Router, service service.Service) *sessionAPI {
-	api := &sessionAPI{
+func newSession(router fiber.Router) *session {
+	api := &session{
 		router:  router.Group("/session"),
-		session: *service.NewSession(),
+		session: service.NewSession(),
 	}
 
-	api.createRoutes()
+	api.routes()
 
 	return api
 }
 
-func (s *sessionAPI) createRoutes() {
+func (s *session) routes() {
 	s.router.Get("/", s.getAll)
-	s.router.Put("/", s.create)
-	s.router.Post("/:id", s.update)
+	s.router.Post("/", s.create)
+	s.router.Put("/:id", s.update)
 	s.router.Delete("/:id", s.delete)
 }
 
-func (s *sessionAPI) getAll(c fiber.Ctx) error {
-	id, ok := c.Locals("id").(int)
-	if !ok {
-		return fiber.ErrUnauthorized
-	}
-
-	sessions, err := s.session.GetAll(c, id)
+func (s *session) getAll(c fiber.Ctx) error {
+	sessions, err := s.session.GetAll(c)
 	if err != nil {
 		return err
 	}
@@ -43,7 +38,7 @@ func (s *sessionAPI) getAll(c fiber.Ctx) error {
 	return c.JSON(sessions)
 }
 
-func (s *sessionAPI) create(c fiber.Ctx) error {
+func (s *session) create(c fiber.Ctx) error {
 	var session dto.SessionCreate
 	if err := c.Bind().Body(&session); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
@@ -60,7 +55,7 @@ func (s *sessionAPI) create(c fiber.Ctx) error {
 	return c.JSON(newSession)
 }
 
-func (s *sessionAPI) update(c fiber.Ctx) error {
+func (s *session) update(c fiber.Ctx) error {
 	var session dto.SessionUpdate
 	if err := c.Bind().Body(&session); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
@@ -82,7 +77,7 @@ func (s *sessionAPI) update(c fiber.Ctx) error {
 	return c.JSON(newSession)
 }
 
-func (s *sessionAPI) delete(c fiber.Ctx) error {
+func (s *session) delete(c fiber.Ctx) error {
 	id := fiber.Params[int](c, "id")
 	if id < 1 {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid id")

@@ -1,28 +1,29 @@
 export namespace API {
-  interface Base extends JSON {
+  export interface User {
     id: number;
-  }
-
-  export interface User extends Base {
     uid: string;
     name: string;
   }
 
-  export interface Exercise extends Base {
+  export interface Exercise {
+    id: number;
     name: string;
     variants?: Variant[];
   }
 
-  export interface Variant extends Base {
+  export interface Variant {
+    id: number;
     variant: string;
   }
 
-  export interface Session extends Base {
+  export interface Session {
+    id: number;
     name: string;
     exercises: SessionExercise[];
   }
 
-  export interface SessionExercise extends Base {
+  export interface SessionExercise {
+    id: number;
     exercise: Omit<Exercise, "variants">;
     variant?: Variant;
     position: number;

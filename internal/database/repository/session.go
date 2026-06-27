@@ -11,18 +11,14 @@ import (
 	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
-type Session struct {
-	repo Repository
-}
+type Session struct{}
 
-func (r *Repository) NewSession() *Session {
-	return &Session{
-		repo: *r,
-	}
+func NewSession() *Session {
+	return &Session{}
 }
 
 func (s *Session) Get(ctx context.Context, id int) (*model.Session, error) {
-	rows, err := s.repo.queries(ctx).SessionGet(ctx, int32(id))
+	rows, err := queries(ctx).SessionGet(ctx, int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -54,7 +50,7 @@ func (s *Session) Get(ctx context.Context, id int) (*model.Session, error) {
 }
 
 func (s *Session) GetAllByUser(ctx context.Context, userID int) ([]*model.Session, error) {
-	rows, err := s.repo.queries(ctx).SessionGetAll(ctx, int32(userID))
+	rows, err := queries(ctx).SessionGetAll(ctx, int32(userID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -91,7 +87,7 @@ func (s *Session) GetAllByUser(ctx context.Context, userID int) ([]*model.Sessio
 }
 
 func (s *Session) GetByExercise(ctx context.Context, exerciseID int) (*model.Session, error) {
-	rows, err := s.repo.queries(ctx).SessionGetByExercise(ctx, toInt(exerciseID))
+	rows, err := queries(ctx).SessionGetByExercise(ctx, toInt(exerciseID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -123,7 +119,7 @@ func (s *Session) GetByExercise(ctx context.Context, exerciseID int) (*model.Ses
 }
 
 func (s *Session) GetByVariants(ctx context.Context, variantIDs []int) ([]*model.Session, error) {
-	rows, err := s.repo.queries(ctx).SessionGetByVariants(ctx, utils.SliceMap(variantIDs, func(id int) int32 { return int32(id) }))
+	rows, err := queries(ctx).SessionGetByVariants(ctx, utils.SliceMap(variantIDs, func(id int) int32 { return int32(id) }))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -160,7 +156,7 @@ func (s *Session) GetByVariants(ctx context.Context, variantIDs []int) ([]*model
 }
 
 func (s *Session) Create(ctx context.Context, session *model.Session) error {
-	id, err := s.repo.queries(ctx).SessionCreate(ctx, sqlc.SessionCreateParams{
+	id, err := queries(ctx).SessionCreate(ctx, sqlc.SessionCreateParams{
 		UserID: int32(session.UserID),
 		Name:   session.Name,
 	})
@@ -174,11 +170,10 @@ func (s *Session) Create(ctx context.Context, session *model.Session) error {
 }
 
 func (s *Session) Update(ctx context.Context, session model.Session) error {
-	err := s.repo.queries(ctx).SessionUpdate(ctx, sqlc.SessionUpdateParams{
+	if err := queries(ctx).SessionUpdate(ctx, sqlc.SessionUpdateParams{
 		ID:   int32(session.ID),
 		Name: session.Name,
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("update session %+v | %w", session, err)
 	}
 
@@ -186,8 +181,7 @@ func (s *Session) Update(ctx context.Context, session model.Session) error {
 }
 
 func (s *Session) Delete(ctx context.Context, id int) error {
-	err := s.repo.queries(ctx).SessionDelete(ctx, int32(id))
-	if err != nil {
+	if err := queries(ctx).SessionDelete(ctx, int32(id)); err != nil {
 		return fmt.Errorf("delete session with id %d | %w", id, err)
 	}
 

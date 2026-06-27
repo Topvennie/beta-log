@@ -12,9 +12,7 @@ import (
 	"github.com/Topvennie/beta-log/internal/server/api"
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	middlewares "github.com/Topvennie/beta-log/internal/server/middlewares"
-	"github.com/Topvennie/beta-log/internal/server/service"
 	"github.com/Topvennie/beta-log/pkg/config"
-	"github.com/Topvennie/beta-log/pkg/db"
 	zapfiber "github.com/gofiber/contrib/v3/zap"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
@@ -30,16 +28,15 @@ type Server struct {
 	Addr string
 }
 
-func New(repo repository.Repository, db db.DB) (*Server, error) {
-	pool := db.Pool()
-	service := service.New(repo)
+func New() (*Server, error) {
+	pool := repository.Pool()
 
 	// Construct app
 	app := fiber.New(fiber.Config{
 		BodyLimit:         20 * 1024 * 1024,
 		ReadBufferSize:    8096,
 		StreamRequestBody: true,
-		ErrorHandler:      middlewares.ErrorHandler(repo),
+		ErrorHandler:      middlewares.ErrorHandler(),
 	})
 
 	app.Use(recover.New())
@@ -82,7 +79,7 @@ func New(repo repository.Repository, db db.DB) (*Server, error) {
 	}
 
 	// API
-	if err := api.New(app.Group("/api").Use(handler), *service); err != nil {
+	if err := api.New(app.Group("/api").Use(handler)); err != nil {
 		return nil, fmt.Errorf("initialize api %w", err)
 	}
 

@@ -47,16 +47,16 @@ func main() {
 		zap.S().Fatalf("Unable to connect to database %v", err)
 	}
 
-	repo := repository.New(db)
+	repository.Init(db)
 
-	if err := task.Init(*repo); err != nil {
+	if err := task.Init(); err != nil {
 		zap.S().Fatalf("Failed to init task %v", err)
 	}
-	if err := climb.New(*repo).Start(context.Background()); err != nil {
+	if err := climb.New().Start(context.Background()); err != nil {
 		zap.S().Fatalf("Failed to start climb %v", err)
 	}
 
-	s, err := server.New(*repo, db)
+	s, err := server.New()
 	if err != nil {
 		zap.S().Fatalf("Failed to create the server %v", err)
 	}
