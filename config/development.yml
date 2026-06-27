@@ -14,7 +14,7 @@ auth:
   redirect_url: "http://localhost:3000/"
 
 logger:
-  file: "test.txt"
+  file: ""
   level: "debug"
 
 db:
