@@ -1,5 +1,5 @@
 app:
-  name: "blueprint"
+  name: "beta-log"
 
 server:
   host: "0.0.0.0"
@@ -14,7 +14,7 @@ auth:
   redirect_url: "http://localhost:3000/"
 
 logger:
-  file: ""
+  file: "test.txt"
   level: "debug"
 
 db:
@@ -22,6 +22,7 @@ db:
   port: 5432
   user: "postgres"
   password: "postgres"
+  database: "postgres"
 
 climb:
   interval_s: 3600
