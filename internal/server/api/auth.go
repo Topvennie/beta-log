@@ -9,7 +9,7 @@ import (
 	"github.com/Topvennie/beta-log/internal/server/service"
 	"github.com/Topvennie/beta-log/pkg/config"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/session"
+	fiberSession "github.com/gofiber/fiber/v3/middleware/session"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/openidConnect"
 	"github.com/shareed2k/goth_fiber/v2"
@@ -18,12 +18,12 @@ import (
 
 type auth struct {
 	router fiber.Router
-	user   service.User
+	user   *service.User
 
 	redirectURL string
 }
 
-func newAuth(router fiber.Router, service service.Service) (*auth, error) {
+func newAuth(router fiber.Router) (*auth, error) {
 	openidConnect, err := openidConnect.New(
 		config.GetString("auth.oidc.client_id"),
 		config.GetString("auth.oidc.client_secret"),
@@ -40,7 +40,7 @@ func newAuth(router fiber.Router, service service.Service) (*auth, error) {
 
 	api := &auth{
 		router:      router.Group("/auth"),
-		user:        *service.NewUser(),
+		user:        service.NewUser(),
 		redirectURL: config.GetDefaultString("auth.redirect_url", "/"),
 	}
 
@@ -51,11 +51,11 @@ func newAuth(router fiber.Router, service service.Service) (*auth, error) {
 
 func (r *auth) routes() {
 	r.router.Get("/login/:provider", goth_fiber.BeginAuthHandler)
-	r.router.Get("/callback/:provider", r.loginCallbackHandler)
-	r.router.Post("/logout", r.logoutHandler)
+	r.router.Get("/callback/:provider", r.loginCallback)
+	r.router.Post("/logout", r.logout)
 }
 
-func (r *auth) loginCallbackHandler(c fiber.Ctx) error {
+func (r *auth) loginCallback(c fiber.Ctx) error {
 	user, err := goth_fiber.CompleteUserAuth(c, goth_fiber.CompleteUserAuthOptions{ShouldLogout: false})
 	if err != nil {
 		return fmt.Errorf("complete user auth %w", err)
@@ -77,7 +77,7 @@ func (r *auth) loginCallbackHandler(c fiber.Ctx) error {
 		}
 	}
 
-	sess := session.FromContext(c)
+	sess := fiberSession.FromContext(c)
 	if sess == nil {
 		return errors.New("tried to authenticate user without active session")
 	}
@@ -88,8 +88,8 @@ func (r *auth) loginCallbackHandler(c fiber.Ctx) error {
 	return c.Redirect().To(r.redirectURL)
 }
 
-func (r *auth) logoutHandler(c fiber.Ctx) error {
-	sess := session.FromContext(c)
+func (r *auth) logout(c fiber.Ctx) error {
+	sess := fiberSession.FromContext(c)
 	if sess == nil {
 		return errors.New("no session found")
 	}

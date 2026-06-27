@@ -11,18 +11,14 @@ import (
 	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
-type User struct {
-	repo Repository
-}
+type User struct{}
 
-func (r *Repository) NewUser() *User {
-	return &User{
-		repo: *r,
-	}
+func NewUser() *User {
+	return &User{}
 }
 
 func (u *User) GetByID(ctx context.Context, id int) (*model.User, error) {
-	user, err := u.repo.queries(ctx).UserGet(ctx, int32(id))
+	user, err := queries(ctx).UserGet(ctx, int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -34,7 +30,7 @@ func (u *User) GetByID(ctx context.Context, id int) (*model.User, error) {
 }
 
 func (u *User) GetByUID(ctx context.Context, uid string) (*model.User, error) {
-	user, err := u.repo.queries(ctx).UserGetByUID(ctx, uid)
+	user, err := queries(ctx).UserGetByUID(ctx, uid)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -46,7 +42,7 @@ func (u *User) GetByUID(ctx context.Context, uid string) (*model.User, error) {
 }
 
 func (u *User) GetAll(ctx context.Context) ([]*model.User, error) {
-	users, err := u.repo.queries(ctx).UserGetAll(ctx)
+	users, err := queries(ctx).UserGetAll(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -58,7 +54,7 @@ func (u *User) GetAll(ctx context.Context) ([]*model.User, error) {
 }
 
 func (u *User) Create(ctx context.Context, user *model.User) error {
-	id, err := u.repo.queries(ctx).UserCreate(ctx, sqlc.UserCreateParams{
+	id, err := queries(ctx).UserCreate(ctx, sqlc.UserCreateParams{
 		Uid:  user.UID,
 		Name: user.Name,
 	})

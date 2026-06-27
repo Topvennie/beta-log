@@ -11,19 +11,15 @@ import (
 	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
-type Task struct {
-	repo Repository
-}
+type Task struct{}
 
-func (r *Repository) NewTask() *Task {
-	return &Task{
-		repo: *r,
-	}
+func NewTask() *Task {
+	return &Task{}
 }
 
 // GetByUID returns the task given an uid without any runs
 func (t *Task) GetByUID(ctx context.Context, taskUID string) (*model.Task, error) {
-	task, err := t.repo.queries(ctx).TaskGetByUID(ctx, taskUID)
+	task, err := queries(ctx).TaskGetByUID(ctx, taskUID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -35,7 +31,7 @@ func (t *Task) GetByUID(ctx context.Context, taskUID string) (*model.Task, error
 }
 
 func (t *Task) GetByRunID(ctx context.Context, runID int) (*model.Task, error) {
-	task, err := t.repo.queries(ctx).TaskRunGet(ctx, int32(runID))
+	task, err := queries(ctx).TaskRunGet(ctx, int32(runID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -71,7 +67,7 @@ func (t *Task) GetRunFiltered(ctx context.Context, filter model.TaskFilter) ([]*
 		Offset:          int32(filter.Offset),
 	}
 
-	tasks, err := t.repo.queries(ctx).TaskGetFiltered(ctx, params)
+	tasks, err := queries(ctx).TaskGetFiltered(ctx, params)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -85,7 +81,7 @@ func (t *Task) GetRunFiltered(ctx context.Context, filter model.TaskFilter) ([]*
 }
 
 func (t *Task) GetRunLastAllByUser(ctx context.Context, userID int) ([]*model.Task, error) {
-	tasks, err := t.repo.queries(ctx).TaskGetLastAllByUser(ctx, int32(userID))
+	tasks, err := queries(ctx).TaskGetLastAllByUser(ctx, int32(userID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -97,7 +93,7 @@ func (t *Task) GetRunLastAllByUser(ctx context.Context, userID int) ([]*model.Ta
 }
 
 func (t *Task) Create(ctx context.Context, task model.Task) error {
-	if err := t.repo.queries(ctx).TaskCreate(ctx, sqlc.TaskCreateParams{
+	if err := queries(ctx).TaskCreate(ctx, sqlc.TaskCreateParams{
 		Uid:       task.UID,
 		Name:      task.Name,
 		Active:    task.Active,
@@ -115,7 +111,7 @@ func (t *Task) CreateRun(ctx context.Context, task *model.Task) error {
 		errStr = task.Error.Error()
 	}
 
-	id, err := t.repo.queries(ctx).TaskRunCreate(ctx, sqlc.TaskRunCreateParams{
+	id, err := queries(ctx).TaskRunCreate(ctx, sqlc.TaskRunCreateParams{
 		TaskUid:  task.UID,
 		UserID:   int32(task.UserID),
 		RunAt:    toTime(task.RunAt),
@@ -134,7 +130,7 @@ func (t *Task) CreateRun(ctx context.Context, task *model.Task) error {
 }
 
 func (t *Task) Update(ctx context.Context, task model.Task) error {
-	if err := t.repo.queries(ctx).TaskUpdate(ctx, sqlc.TaskUpdateParams{
+	if err := queries(ctx).TaskUpdate(ctx, sqlc.TaskUpdateParams{
 		Uid:       task.UID,
 		Name:      toString(task.Name),
 		Active:    toBool(&task.Active),
@@ -147,7 +143,7 @@ func (t *Task) Update(ctx context.Context, task model.Task) error {
 }
 
 func (t *Task) SetInactiveAll(ctx context.Context) error {
-	if err := t.repo.queries(ctx).TaskSetInactiveAll(ctx); err != nil {
+	if err := queries(ctx).TaskSetInactiveAll(ctx); err != nil {
 		return fmt.Errorf("set recurring tasks to inactive %w", err)
 	}
 

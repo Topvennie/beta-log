@@ -9,23 +9,23 @@ import (
 type setting struct {
 	router fiber.Router
 
-	setting service.Setting
+	setting *service.Setting
 }
 
-func newSetting(router fiber.Router, service service.Service) *setting {
+func newSetting(router fiber.Router) *setting {
 	api := &setting{
 		router:  router.Group("/setting"),
-		setting: *service.NewSetting(),
+		setting: service.NewSetting(),
 	}
 
-	api.createRoutes()
+	api.routes()
 
 	return api
 }
 
-func (s *setting) createRoutes() {
+func (s *setting) routes() {
 	s.router.Get("/", s.get)
-	s.router.Post("/", s.update)
+	s.router.Put("/:id", s.update)
 }
 
 func (s *setting) get(c fiber.Ctx) error {
@@ -44,6 +44,11 @@ func (s *setting) update(c fiber.Ctx) error {
 	}
 	if err := dto.Validate.Struct(setting); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	id := fiber.Params[int](c, "id")
+	if id != setting.ID {
+		return fiber.NewError(fiber.StatusBadRequest, "params id doesn't match body id")
 	}
 
 	newSetting, err := s.setting.Update(c, setting)

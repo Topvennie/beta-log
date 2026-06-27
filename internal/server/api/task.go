@@ -12,21 +12,21 @@ import (
 type task struct {
 	router fiber.Router
 
-	task service.Task
+	task *service.Task
 }
 
-func newTask(router fiber.Router, service service.Service) *task {
+func newTask(router fiber.Router) *task {
 	api := &task{
 		router: router.Group("/task"),
-		task:   *service.NewTask(),
+		task:   service.NewTask(),
 	}
 
-	api.createRoutes()
+	api.routes()
 
 	return api
 }
 
-func (r *task) createRoutes() {
+func (r *task) routes() {
 	r.router.Get("/", r.getTasks)
 	r.router.Get("/history", r.getHistory)
 	r.router.Post("/start/:uid", r.start)

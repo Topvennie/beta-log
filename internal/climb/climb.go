@@ -30,13 +30,13 @@ type Manager struct {
 	climbGym repository.ClimbGym
 }
 
-func New(repo repository.Repository) *Manager {
+func New() *Manager {
 	return &Manager{
 		interval: config.GetDefaultDurationS("climb.interval_s", 3600),
-		fetchers: []Fetcher{toplogger.New(repo)},
-		climb:    *repo.NewClimb(),
-		climbDay: *repo.NewClimbDay(),
-		climbGym: *repo.NewClimbGym(),
+		fetchers: []Fetcher{toplogger.New()},
+		climb:    *repository.NewClimb(),
+		climbDay: *repository.NewClimbDay(),
+		climbGym: *repository.NewClimbGym(),
 	}
 }
 

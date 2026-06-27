@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
-	"github.com/Topvennie/beta-log/internal/database/repository"
 	"go.uber.org/zap"
 )
 
@@ -18,8 +17,8 @@ var (
 )
 
 // Init intializes the global task manager instance
-func Init(repo repository.Repository) error {
-	manager, err := newManager(repo)
+func Init() error {
+	manager, err := newManager()
 	if err != nil {
 		return err
 	}

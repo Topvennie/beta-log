@@ -11,17 +11,14 @@ import (
 )
 
 type Task struct {
-	service Service
-
 	task repository.Task
 	user repository.User
 }
 
-func (s *Service) NewTask() *Task {
+func NewTask() *Task {
 	return &Task{
-		service: *s,
-		task:    *s.repo.NewTask(),
-		user:    *s.repo.NewUser(),
+		task: *repository.NewTask(),
+		user: *repository.NewUser(),
 	}
 }
 

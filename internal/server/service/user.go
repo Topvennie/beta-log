@@ -1,3 +1,4 @@
+// Package service is the business logic connects the api with the internal mechanisms
 package service
 
 import (
@@ -10,20 +11,22 @@ import (
 )
 
 type User struct {
-	service Service
-
 	setting repository.Setting
 	user    repository.User
 }
 
-func (s *Service) NewUser() *User {
+func NewUser() *User {
 	return &User{
-		service: *s,
-		user:    *s.repo.NewUser(),
+		user: *repository.NewUser(),
 	}
 }
 
-func (u *User) GetByID(ctx fiber.Ctx, id int) (dto.User, error) {
+func (u *User) GetMe(ctx fiber.Ctx) (dto.User, error) {
+	id, err := getID(ctx)
+	if err != nil {
+		return dto.User{}, err
+	}
+
 	user, err := u.user.GetByID(ctx, id)
 	if err != nil {
 		return dto.User{}, err
@@ -32,7 +35,7 @@ func (u *User) GetByID(ctx fiber.Ctx, id int) (dto.User, error) {
 		return dto.User{}, fiber.ErrNotFound
 	}
 
-	return dto.UserDTO(*user), nil
+	return dto.UserDTO(user), nil
 }
 
 func (u *User) GetByUID(ctx fiber.Ctx, uid string) (dto.User, error) {
@@ -44,13 +47,13 @@ func (u *User) GetByUID(ctx fiber.Ctx, uid string) (dto.User, error) {
 		return dto.User{}, fiber.ErrNotFound
 	}
 
-	return dto.UserDTO(*user), nil
+	return dto.UserDTO(user), nil
 }
 
 func (u *User) Create(ctx fiber.Ctx, userSave dto.User) (dto.User, error) {
 	user := userSave.ToModel()
 
-	if err := u.service.withRollback(ctx, func(ctx context.Context) error {
+	if err := withRollback(ctx, func(ctx context.Context) error {
 		if err := u.user.Create(ctx, &user); err != nil {
 			return err
 		}
@@ -64,5 +67,5 @@ func (u *User) Create(ctx fiber.Ctx, userSave dto.User) (dto.User, error) {
 		return dto.User{}, err
 	}
 
-	return dto.UserDTO(user), nil
+	return dto.UserDTO(&user), nil
 }

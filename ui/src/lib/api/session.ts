@@ -16,7 +16,7 @@ export const useSessionCreate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (session: SessionCreate) => await apiPut(ENDPOINT, session, convertSession, NO_FILES, true),
+    mutationFn: async (session: SessionCreate) => await apiPost(ENDPOINT, session, convertSession, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] })
     },
@@ -27,7 +27,7 @@ export const useSessionUpdate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (session: SessionUpdate) => apiPost(`${ENDPOINT}/${session.id}`, session, convertSession, NO_FILES, true),
+    mutationFn: (session: SessionUpdate) => apiPut(`${ENDPOINT}/${session.id}`, session, convertSession, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session"] })
     },

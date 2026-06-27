@@ -27,10 +27,10 @@ type Client struct {
 	setting repository.Setting
 }
 
-func New(repo repository.Repository) *Client {
+func New() *Client {
 	return &Client{
-		day:     *repo.NewClimbDay(),
-		setting: *repo.NewSetting(),
+		day:     *repository.NewClimbDay(),
+		setting: *repository.NewSetting(),
 	}
 }
 

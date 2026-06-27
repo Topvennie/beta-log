@@ -16,7 +16,7 @@ export const useExerciseCreate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (exercise: ExerciseCreate) => apiPut(ENDPOINT, exercise, convertExercise, NO_FILES, true),
+    mutationFn: (exercise: ExerciseCreate) => apiPost(ENDPOINT, exercise, convertExercise, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exercise"] })
       queryClient.invalidateQueries({ queryKey: ["session"] })
@@ -28,7 +28,7 @@ export const useExerciseUpdate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (exercise: ExerciseUpdate) => apiPost(`${ENDPOINT}/${exercise.id}`, exercise, convertExercise, NO_FILES, true),
+    mutationFn: (exercise: ExerciseUpdate) => apiPut(`${ENDPOINT}/${exercise.id}`, exercise, convertExercise, NO_FILES, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exercise"] })
       queryClient.invalidateQueries({ queryKey: ["session"] })

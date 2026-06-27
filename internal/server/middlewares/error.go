@@ -11,8 +11,8 @@ import (
 
 const errMsg = "Internal Server Error"
 
-func ErrorHandler(repo repository.Repository) fiber.ErrorHandler {
-	repoUser := repo.NewUser()
+func ErrorHandler() fiber.ErrorHandler {
+	repoUser := repository.NewUser()
 
 	return func(c fiber.Ctx, err error) error {
 		code := fiber.StatusInternalServerError

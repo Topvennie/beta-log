@@ -8,8 +8,8 @@ type User struct {
 	Name string `json:"name"`
 }
 
-func UserDTO(user model.User) User {
-	return User(user)
+func UserDTO(user *model.User) User {
+	return User(*user)
 }
 
 func (u *User) ToModel() model.User {
