@@ -51,4 +51,4 @@ ENV APP_ENV=production
 
 # Declare entrypoints and activation commands.
 EXPOSE 3000
-ENTRYPOINT ["./server"]
+ENTRYPOINT ["/bin/sh", "-c", "./migrate && ./server"]
