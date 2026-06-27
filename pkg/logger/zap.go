@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/Topvennie/beta-log/pkg/config"
 	"go.uber.org/zap"
@@ -19,18 +20,31 @@ type Config struct {
 
 func New(logCfg Config) (*zap.Logger, error) {
 	if logCfg.File != "" {
-		// nolint:gosec // I want to set my own permissions
-		err := os.Mkdir("logs", 0o755)
-		if err != nil && !os.IsExist(err) {
-			return nil, fmt.Errorf("create logs directory %w", err)
+		if _, err := os.Stat(logCfg.File); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return nil, fmt.Errorf("checking if log file exists %+v | %w", logCfg, err)
+			}
+
+			dir := filepath.Dir(logCfg.File)
+			if dir != "" {
+				// nolint:gosec // Let me set my own permissions
+				if err := os.MkdirAll(dir, 0o0755); err != nil {
+					return nil, fmt.Errorf("creating log directory %+v | %w", logCfg, err)
+				}
+			}
+
+			// nolint:gosec // Let me set my own permissions
+			if err := os.WriteFile(logCfg.File, nil, 0o0644); err != nil {
+				return nil, fmt.Errorf("creating log file %+v | %w", logCfg, err)
+			}
 		}
 	}
 
 	outputPaths := []string{}
 	errorOutputPaths := []string{}
 	if logCfg.File != "" {
-		outputPaths = append(outputPaths, fmt.Sprintf("logs/%s.log", logCfg.File))
-		errorOutputPaths = append(errorOutputPaths, fmt.Sprintf("logs/%s.log", logCfg.File))
+		outputPaths = append(outputPaths, logCfg.File)
+		errorOutputPaths = append(errorOutputPaths, logCfg.File)
 	}
 	if logCfg.Console {
 		outputPaths = append(outputPaths, "stdout")
