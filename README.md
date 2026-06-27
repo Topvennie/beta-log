@@ -51,4 +51,14 @@ You will probably need to change a couple to use your own services.
 
 ### Environment Variables
 
-TODO
+#### Authentication
+
+Create OIDC credentials in your identity provider.
+For example if you're using [Authentik](https://goauthentik.io/) you can find the instructions [here](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/create-oauth2-provider/).
+
+The callback URL is `<custom_domain>/api/auth/callback/openid-connect`.
+
+#### Data
+
+- `DB_DIR` - Location of your database content.
+- `LOG_DIR` - Location of the log directory.
