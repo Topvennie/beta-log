@@ -27,7 +27,7 @@ func NewPSQL() (DB, error) {
 
 	pgConfig.ConnConfig.Host = config.GetDefaultString("db.host", "localhost")
 	pgConfig.ConnConfig.Port = config.GetDefaultUint16("db.port", 5432)
-	pgConfig.ConnConfig.Database = config.GetDefaultString("db.database", "beta-log")
+	pgConfig.ConnConfig.Database = config.GetDefaultString("db.database", "postgres")
 	pgConfig.ConnConfig.User = config.GetDefaultString("db.user", "postgres")
 	pgConfig.ConnConfig.Password = config.GetDefaultString("db.password", "postgres")
 

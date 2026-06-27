@@ -1,5 +1,5 @@
 app:
-  name: "blueprint"
+  name: "beta-log"
 
 server:
   host: "0.0.0.0"
@@ -18,10 +18,11 @@ logger:
   level: "warn"
 
 db:
-  host: ""
+  host: "db"
   port: 5432
-  user: ""
-  password: ""
+  user: "postgres"
+  password: "postgres"
+  database: "postgres"
 
 climb:
   interval_s: 3600
