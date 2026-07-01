@@ -38,4 +38,27 @@ export namespace API {
     climb_toplogger_auth_token?: string;
     climb_toplogger_refresh_token?: string;
   }
+
+  export interface Task {
+    uid: string;
+    name: string;
+    status: string;
+    next_run?: string;
+    last_status?: string;
+    last_run?: string;
+    last_message?: string;
+    last_error?: string;
+    interval?: number;
+    recurring: boolean;
+  }
+
+  export interface TaskHistory {
+    id: number;
+    name: string;
+    result: string;
+    run_at: string;
+    message?: string;
+    error?: string;
+    duration: number;
+  }
 }
