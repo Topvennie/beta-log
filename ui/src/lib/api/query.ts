@@ -40,12 +40,12 @@ const URLS: Record<string, string> = {
   AUTH: "/api/auth"
 };
 
-const url = (auth?: boolean) => auth ? URLS.AUTH : URLS.PUBLIC
+const url = (auth: boolean) => auth ? URLS.AUTH : URLS.PUBLIC
 
 export async function apiGet<T, U = unknown>(
   endpoint: string,
   convertData?: (data: U) => T,
-  auth?: boolean,
+  auth: boolean = true,
 ) {
   return _fetch<T, U>(
     `${url(auth)}/${endpoint}`,
@@ -59,7 +59,7 @@ export async function apiPost<T, U = unknown>(
   data: JSONBody = {},
   convertData?: (data: U) => T,
   files?: FileData[],
-  auth?: boolean,
+  auth: boolean = true,
 ) {
   const { headers, body } = _buildFormData(data, files)
 
@@ -79,7 +79,7 @@ export async function apiPut<T, U = unknown>(
   data: JSONBody = {},
   convertData?: (data: U) => T,
   files?: FileData[],
-  auth?: boolean,
+  auth: boolean = true,
 ) {
   const { headers, body } = _buildFormData(data, files)
 
@@ -117,7 +117,7 @@ export async function apiPatch<T, U = unknown>(
 export async function apiDelete<T, U = unknown>(
   endpoint: string,
   convertData?: (data: U) => T,
-  auth?: boolean,
+  auth: boolean = true,
 ) {
   return _fetch<T, U>(
     `${url(auth)}/${endpoint}`,
