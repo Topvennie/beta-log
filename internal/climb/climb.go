@@ -14,7 +14,7 @@ import (
 	"github.com/Topvennie/beta-log/pkg/config"
 )
 
-const taskUpdateUID = "task-climb-update"
+const TaskUpdateUID = "task-climb-update"
 
 type Fetcher interface {
 	Fetch(context.Context, model.User) ([]model.ClimbDay, error)
@@ -42,7 +42,7 @@ func New() *Manager {
 
 func (m *Manager) Start(ctx context.Context) error {
 	if err := task.Manager.Add(ctx, task.NewTask(
-		taskUpdateUID,
+		TaskUpdateUID,
 		"Climbs Update",
 		m.interval,
 		false,

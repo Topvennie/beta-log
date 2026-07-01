@@ -44,13 +44,13 @@ func (q *Queries) SettingGetByUser(ctx context.Context, userID int32) (Setting, 
 	return i, err
 }
 
-const settingUpdate = `-- name: SettingUpdate :exec
+const settingToploggerUpdate = `-- name: SettingToploggerUpdate :exec
 UPDATE settings
 SET climb_toplogger_user_id = $2, climb_toplogger_auth_token = $3, climb_toplogger_refresh_token = $4, climb_toplogger_expiration = $5
 WHERE id = $1
 `
 
-type SettingUpdateParams struct {
+type SettingToploggerUpdateParams struct {
 	ID                         int32
 	ClimbToploggerUserID       pgtype.Text
 	ClimbToploggerAuthToken    pgtype.Text
@@ -58,8 +58,8 @@ type SettingUpdateParams struct {
 	ClimbToploggerExpiration   pgtype.Timestamptz
 }
 
-func (q *Queries) SettingUpdate(ctx context.Context, arg SettingUpdateParams) error {
-	_, err := q.db.Exec(ctx, settingUpdate,
+func (q *Queries) SettingToploggerUpdate(ctx context.Context, arg SettingToploggerUpdateParams) error {
+	_, err := q.db.Exec(ctx, settingToploggerUpdate,
 		arg.ID,
 		arg.ClimbToploggerUserID,
 		arg.ClimbToploggerAuthToken,

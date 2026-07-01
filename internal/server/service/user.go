@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
@@ -32,7 +33,7 @@ func (u *User) GetMe(ctx fiber.Ctx) (dto.User, error) {
 		return dto.User{}, err
 	}
 	if user == nil {
-		return dto.User{}, fiber.ErrNotFound
+		return dto.User{}, fmt.Errorf("user %d not found", id)
 	}
 
 	return dto.UserDTO(user), nil

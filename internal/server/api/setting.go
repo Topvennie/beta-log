@@ -25,7 +25,7 @@ func newSetting(router fiber.Router) *setting {
 
 func (s *setting) routes() {
 	s.router.Get("/", s.get)
-	s.router.Put("/:id", s.update)
+	s.router.Put("/toplogger", s.toploggerUpdate)
 }
 
 func (s *setting) get(c fiber.Ctx) error {
@@ -37,8 +37,8 @@ func (s *setting) get(c fiber.Ctx) error {
 	return c.JSON(setting)
 }
 
-func (s *setting) update(c fiber.Ctx) error {
-	var setting dto.SettingUpdate
+func (s *setting) toploggerUpdate(c fiber.Ctx) error {
+	var setting dto.SettingToploggerUpdate
 	if err := c.Bind().Body(&setting); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -46,12 +46,7 @@ func (s *setting) update(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	id := fiber.Params[int](c, "id")
-	if id != setting.ID {
-		return fiber.NewError(fiber.StatusBadRequest, "params id doesn't match body id")
-	}
-
-	newSetting, err := s.setting.Update(c, setting)
+	newSetting, err := s.setting.ToploggerUpdate(c, setting)
 	if err != nil {
 		return err
 	}

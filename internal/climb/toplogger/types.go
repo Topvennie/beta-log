@@ -71,7 +71,7 @@ type refreshToken struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-type token struct {
+type Token struct {
 	Access  accessToken  `json:"access"`
 	Refresh refreshToken `json:"refresh"`
 }
