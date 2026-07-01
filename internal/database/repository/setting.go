@@ -39,8 +39,8 @@ func (s *Setting) Create(ctx context.Context, setting *model.Setting) error {
 	return nil
 }
 
-func (s *Setting) Update(ctx context.Context, setting model.Setting) error {
-	if err := queries(ctx).SettingUpdate(ctx, sqlc.SettingUpdateParams{
+func (s *Setting) ToploggerUpdate(ctx context.Context, setting model.Setting) error {
+	if err := queries(ctx).SettingToploggerUpdate(ctx, sqlc.SettingToploggerUpdateParams{
 		ID:                         int32(setting.ID),
 		ClimbToploggerUserID:       toString(setting.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    toString(setting.ClimbToploggerAuthToken),

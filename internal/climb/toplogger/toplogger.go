@@ -20,7 +20,11 @@ const (
 	queryRefetch = `[{"operationName":"authSigninRefreshToken","variables":{"refreshToken":"%s"},"query":"mutation authSigninRefreshToken($refreshToken: JWT!) {\n  tokens: authSigninRefreshToken(refreshToken: $refreshToken) {\n    ...authTokens\n    __typename\n  }\n}\n\nfragment authTokens on AuthTokens {\n  access {\n    token\n    expiresAt\n    __typename\n  }\n  refresh {\n    token\n    expiresAt\n    __typename\n  }\n  __typename\n}"}]`
 )
 
-var errUnauthorized = errors.New("unauthorized")
+var (
+	ErrUnauthorized    = errors.New("unauthorized")
+	ErrExpired         = errors.New("tokens expired")
+	ErrNoTokenResponse = errors.New("no new tokens received")
+)
 
 type Client struct {
 	day     repository.ClimbDay
@@ -45,27 +49,29 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	if setting.ClimbTopLoggerExpiration.Before(time.Now()) {
 		// Refresh token expired
 		// Remove the tokens from the settings
-		return nil, c.resetSetting(ctx, *setting)
+		if err := c.resetSetting(ctx, *setting); err != nil {
+			return nil, err
+		}
+		return nil, ErrExpired
 	}
 
 	// Refresh tokens
-	tokens, err := c.refresh(ctx, *setting)
+	tokens, err := c.Refresh(ctx, *setting)
 	if err != nil {
-		if errors.Is(err, errUnauthorized) {
-			return nil, c.resetSetting(ctx, *setting)
+		if errors.Is(err, ErrUnauthorized) || errors.Is(err, ErrNoTokenResponse) {
+			if errReset := c.resetSetting(ctx, *setting); errReset != nil {
+				return nil, errReset
+			}
+			return nil, err
 		}
-
 		return nil, err
-	}
-	if tokens.Access.Token == "" || tokens.Refresh.Token == "" || tokens.Refresh.ExpiresAt.IsZero() {
-		return nil, c.resetSetting(ctx, *setting)
 	}
 
 	setting.ClimbToploggerAuthToken = tokens.Access.Token
 	setting.ClimbToploggerRefreshToken = tokens.Refresh.Token
 	setting.ClimbTopLoggerExpiration = tokens.Refresh.ExpiresAt
 
-	if err := c.setting.Update(ctx, *setting); err != nil {
+	if err := c.setting.ToploggerUpdate(ctx, *setting); err != nil {
 		return nil, err
 	}
 
@@ -76,10 +82,11 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	for {
 		climbDayPaginated, err := c.fetchPage(ctx, *setting, page)
 		if err != nil {
-			if errors.Is(err, errUnauthorized) {
+			if errors.Is(err, ErrUnauthorized) {
 				if err := c.resetSetting(ctx, *setting); err != nil {
 					return nil, err
 				}
+				return nil, ErrUnauthorized
 			}
 
 			return nil, err
@@ -174,9 +181,12 @@ func (c *Client) fetchPage(ctx context.Context, setting model.Setting, page int)
 	}
 	var climbResult []climbResponse
 
-	respBody, err := c.request(ctx, setting.ClimbToploggerAuthToken, http.MethodPost, "graphql", strings.NewReader(query))
+	respBody, code, err := c.request(ctx, setting.ClimbToploggerAuthToken, http.MethodPost, "graphql", strings.NewReader(query))
 	if err != nil {
 		return climbDayPaginated{}, err
+	}
+	if code != 200 {
+		return climbDayPaginated{}, fmt.Errorf("wrong status code %d", code)
 	}
 
 	if err := json.Unmarshal(respBody, &climbResult); err != nil {
@@ -196,34 +206,40 @@ func (c *Client) fetchPage(ctx context.Context, setting model.Setting, page int)
 	return climbResult[0].Data.ClimbDayPaginated, nil
 }
 
-func (c *Client) refresh(ctx context.Context, setting model.Setting) (token, error) {
+func (c *Client) Refresh(ctx context.Context, setting model.Setting) (Token, error) {
 	query := fmt.Sprintf(queryRefetch, setting.ClimbToploggerRefreshToken)
 
 	type response struct {
 		Data struct {
-			Tokens token `json:"tokens"`
+			Tokens Token `json:"tokens"`
 		} `json:"data"`
 	}
 	var result []response
 
-	respBody, err := c.request(ctx, setting.ClimbToploggerRefreshToken, http.MethodPost, "graphql", strings.NewReader(query))
+	respBody, code, err := c.request(ctx, setting.ClimbToploggerRefreshToken, http.MethodPost, "graphql", strings.NewReader(query))
 	if err != nil {
-		return token{}, err
+		return Token{}, err
+	}
+	if code != 200 {
+		if code == 400 {
+			return Token{}, ErrUnauthorized
+		}
+		return Token{}, fmt.Errorf("wrong status code %d", code)
 	}
 
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return token{}, fmt.Errorf("unmarshal response body %w", err)
+		return Token{}, fmt.Errorf("unmarshal response body %w", err)
 	}
 
-	if len(result) == 0 || result[0].Data.Tokens.Access.Token == "" {
+	if len(result) == 0 || result[0].Data.Tokens.Access.Token == "" || result[0].Data.Tokens.Refresh.Token == "" || result[0].Data.Tokens.Refresh.ExpiresAt.IsZero() {
 		// No response
 		// Maybe it is an error
 		if err := getError(respBody); err != nil {
-			return token{}, err
+			return Token{}, err
 		}
 
 		// Nevermind no error
-		return token{}, nil
+		return Token{}, ErrNoTokenResponse
 	}
 
 	return result[0].Data.Tokens, nil

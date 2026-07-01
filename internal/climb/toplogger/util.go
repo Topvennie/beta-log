@@ -16,10 +16,10 @@ func parseDate(date string) (time.Time, error) {
 	return time.Parse("2006-01-02", date)
 }
 
-func (c *Client) request(ctx context.Context, token, method, url string, body io.Reader) ([]byte, error) {
+func (c *Client) request(ctx context.Context, token, method, url string, body io.Reader) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", baseURL, url), body)
 	if err != nil {
-		return nil, fmt.Errorf("new http request %w", err)
+		return nil, 0, fmt.Errorf("new http request %w", err)
 	}
 
 	req.Header.Add("Authorization", "Bearer "+token)
@@ -27,22 +27,18 @@ func (c *Client) request(ctx context.Context, token, method, url string, body io
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("do http request %w", err)
+		return nil, 0, fmt.Errorf("do http request %w", err)
 	}
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("wrong status code %s", resp.Status)
-	}
-
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("read body %w", err)
+		return nil, 0, fmt.Errorf("read body %w", err)
 	}
 
-	return respBody, nil
+	return respBody, resp.StatusCode, nil
 }
 
 func (c *Client) resetSetting(ctx context.Context, setting model.Setting) error {
@@ -50,7 +46,7 @@ func (c *Client) resetSetting(ctx context.Context, setting model.Setting) error 
 	setting.ClimbToploggerRefreshToken = ""
 	setting.ClimbTopLoggerExpiration = time.Time{}
 
-	return c.setting.Update(ctx, setting)
+	return c.setting.ToploggerUpdate(ctx, setting)
 }
 
 func getError(data []byte) error {
@@ -70,7 +66,9 @@ func getError(data []byte) error {
 
 	switch result[0].Errors[0].Extension.OriginalError.StatusCode {
 	case 401:
-		return errUnauthorized
+		return ErrUnauthorized
+	case 403:
+		return ErrUnauthorized
 	default:
 		return errors.New(result[0].Errors[0].Message)
 	}

@@ -54,6 +54,7 @@ linters:
         - hugeParam
         - importShadow
         - rangeValCopy
+        - unnamedResult
       enabled-tags:
         - diagnostic
         - style

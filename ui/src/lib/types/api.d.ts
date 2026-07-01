@@ -32,4 +32,10 @@ export namespace API {
     weight?: number;
     duration_s?: number;
   }
+
+  export interface Setting {
+    climb_toplogger_user_id?: string;
+    climb_toplogger_auth_token?: string;
+    climb_toplogger_refresh_token?: string;
+  }
 }
