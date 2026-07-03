@@ -17,6 +17,12 @@ const (
 	ClimbFinishRepeat ClimbFinish = "repeat"
 )
 
+type ClimbSource string
+
+const (
+	ClimbSourceToplogger ClimbSource = "toplogger"
+)
+
 type Climb struct {
 	ID         int
 	UserID     int
@@ -27,6 +33,7 @@ type Climb struct {
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType ClimbFinish
+	Source     ClimbSource
 }
 
 func ClimbModel(c sqlc.Climb) *Climb {
@@ -40,6 +47,7 @@ func ClimbModel(c sqlc.Climb) *Climb {
 		HoldColor:  c.HoldColor,
 		ClimbType:  ClimbType(c.ClimbType),
 		FinishType: ClimbFinish(c.FinishType),
+		Source:     ClimbSource(c.Source),
 	}
 }
 

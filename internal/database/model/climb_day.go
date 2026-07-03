@@ -12,6 +12,7 @@ type ClimbDay struct {
 	ExternalID string
 	GymID      int
 	Date       time.Time
+	Source     ClimbSource
 
 	// Non db fields
 	Climbs []Climb
@@ -25,5 +26,6 @@ func ClimbDayModel(c sqlc.ClimbDay) *ClimbDay {
 		ExternalID: c.ExternalID,
 		GymID:      int(c.GymID),
 		Date:       c.Date.Time,
+		Source:     ClimbSource(c.Source),
 	}
 }

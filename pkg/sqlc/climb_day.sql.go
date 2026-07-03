@@ -12,8 +12,8 @@ import (
 )
 
 const climbDayCreate = `-- name: ClimbDayCreate :one
-INSERT INTO climb_days (user_id, external_id, gym_id, date)
-VALUES ($1, $2, $3, $4)
+INSERT INTO climb_days (user_id, external_id, gym_id, date, source)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
@@ -22,6 +22,7 @@ type ClimbDayCreateParams struct {
 	ExternalID string
 	GymID      int32
 	Date       pgtype.Timestamptz
+	Source     ClimbSource
 }
 
 func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) (int32, error) {
@@ -30,6 +31,7 @@ func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) 
 		arg.ExternalID,
 		arg.GymID,
 		arg.Date,
+		arg.Source,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -37,7 +39,7 @@ func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) 
 }
 
 const climbDayGet = `-- name: ClimbDayGet :one
-SELECT id, user_id, external_id, gym_id, date
+SELECT id, user_id, external_id, gym_id, date, source
 FROM climb_days
 WHERE id = $1
 `
@@ -51,39 +53,46 @@ func (q *Queries) ClimbDayGet(ctx context.Context, id int32) (ClimbDay, error) {
 		&i.ExternalID,
 		&i.GymID,
 		&i.Date,
+		&i.Source,
 	)
 	return i, err
 }
 
-const climbDayGetAllPopulatedByExternal = `-- name: ClimbDayGetAllPopulatedByExternal :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+const climbDayGetAllPopulatedByExternalSource = `-- name: ClimbDayGetAllPopulatedByExternalSource :many
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.external_id = ANY($1::int[])
+WHERE d.external_id = ANY($1::int[]) AND d.source = $2
 `
 
-type ClimbDayGetAllPopulatedByExternalRow struct {
+type ClimbDayGetAllPopulatedByExternalSourceParams struct {
+	Column1 []int32
+	Source  ClimbSource
+}
+
+type ClimbDayGetAllPopulatedByExternalSourceRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
 	ClimbGym ClimbGym
 }
 
-func (q *Queries) ClimbDayGetAllPopulatedByExternal(ctx context.Context, dollar_1 []int32) ([]ClimbDayGetAllPopulatedByExternalRow, error) {
-	rows, err := q.db.Query(ctx, climbDayGetAllPopulatedByExternal, dollar_1)
+func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, arg ClimbDayGetAllPopulatedByExternalSourceParams) ([]ClimbDayGetAllPopulatedByExternalSourceRow, error) {
+	rows, err := q.db.Query(ctx, climbDayGetAllPopulatedByExternalSource, arg.Column1, arg.Source)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ClimbDayGetAllPopulatedByExternalRow
+	var items []ClimbDayGetAllPopulatedByExternalSourceRow
 	for rows.Next() {
-		var i ClimbDayGetAllPopulatedByExternalRow
+		var i ClimbDayGetAllPopulatedByExternalSourceRow
 		if err := rows.Scan(
 			&i.ClimbDay.ID,
 			&i.ClimbDay.UserID,
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
 			&i.ClimbDay.Date,
+			&i.ClimbDay.Source,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -93,11 +102,13 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternal(ctx context.Context, dollar_
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
+			&i.Climb.Source,
 			&i.ClimbGym.ID,
 			&i.ClimbGym.UserID,
 			&i.ClimbGym.ExternalID,
 			&i.ClimbGym.Name,
 			&i.ClimbGym.IconPath,
+			&i.ClimbGym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -109,14 +120,19 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternal(ctx context.Context, dollar_
 	return items, nil
 }
 
-const climbDayGetByExternal = `-- name: ClimbDayGetByExternal :one
-SELECT id, user_id, external_id, gym_id, date
+const climbDayGetByExternalSource = `-- name: ClimbDayGetByExternalSource :one
+SELECT id, user_id, external_id, gym_id, date, source
 FROM climb_days
-WHERE external_id = $1
+WHERE external_id = $1 AND source = $2
 `
 
-func (q *Queries) ClimbDayGetByExternal(ctx context.Context, externalID string) (ClimbDay, error) {
-	row := q.db.QueryRow(ctx, climbDayGetByExternal, externalID)
+type ClimbDayGetByExternalSourceParams struct {
+	ExternalID string
+	Source     ClimbSource
+}
+
+func (q *Queries) ClimbDayGetByExternalSource(ctx context.Context, arg ClimbDayGetByExternalSourceParams) (ClimbDay, error) {
+	row := q.db.QueryRow(ctx, climbDayGetByExternalSource, arg.ExternalID, arg.Source)
 	var i ClimbDay
 	err := row.Scan(
 		&i.ID,
@@ -124,12 +140,13 @@ func (q *Queries) ClimbDayGetByExternal(ctx context.Context, externalID string) 
 		&i.ExternalID,
 		&i.GymID,
 		&i.Date,
+		&i.Source,
 	)
 	return i, err
 }
 
 const climbDayGetPopulated = `-- name: ClimbDayGetPopulated :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -157,6 +174,7 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
 			&i.ClimbDay.Date,
+			&i.ClimbDay.Source,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -166,11 +184,13 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
+			&i.Climb.Source,
 			&i.ClimbGym.ID,
 			&i.ClimbGym.UserID,
 			&i.ClimbGym.ExternalID,
 			&i.ClimbGym.Name,
 			&i.ClimbGym.IconPath,
+			&i.ClimbGym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -182,35 +202,41 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 	return items, nil
 }
 
-const climbDayGetPopulatedByExternal = `-- name: ClimbDayGetPopulatedByExternal :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, g.id, g.user_id, g.external_id, g.name, g.icon_path
+const climbDayGetPopulatedByExternalSource = `-- name: ClimbDayGetPopulatedByExternalSource :many
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.external_id = $1
+WHERE d.external_id = $1 AND d.source = $2
 `
 
-type ClimbDayGetPopulatedByExternalRow struct {
+type ClimbDayGetPopulatedByExternalSourceParams struct {
+	ExternalID string
+	Source     ClimbSource
+}
+
+type ClimbDayGetPopulatedByExternalSourceRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
 	ClimbGym ClimbGym
 }
 
-func (q *Queries) ClimbDayGetPopulatedByExternal(ctx context.Context, externalID string) ([]ClimbDayGetPopulatedByExternalRow, error) {
-	rows, err := q.db.Query(ctx, climbDayGetPopulatedByExternal, externalID)
+func (q *Queries) ClimbDayGetPopulatedByExternalSource(ctx context.Context, arg ClimbDayGetPopulatedByExternalSourceParams) ([]ClimbDayGetPopulatedByExternalSourceRow, error) {
+	rows, err := q.db.Query(ctx, climbDayGetPopulatedByExternalSource, arg.ExternalID, arg.Source)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ClimbDayGetPopulatedByExternalRow
+	var items []ClimbDayGetPopulatedByExternalSourceRow
 	for rows.Next() {
-		var i ClimbDayGetPopulatedByExternalRow
+		var i ClimbDayGetPopulatedByExternalSourceRow
 		if err := rows.Scan(
 			&i.ClimbDay.ID,
 			&i.ClimbDay.UserID,
 			&i.ClimbDay.ExternalID,
 			&i.ClimbDay.GymID,
 			&i.ClimbDay.Date,
+			&i.ClimbDay.Source,
 			&i.Climb.ID,
 			&i.Climb.UserID,
 			&i.Climb.ExternalID,
@@ -220,11 +246,13 @@ func (q *Queries) ClimbDayGetPopulatedByExternal(ctx context.Context, externalID
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
+			&i.Climb.Source,
 			&i.ClimbGym.ID,
 			&i.ClimbGym.UserID,
 			&i.ClimbGym.ExternalID,
 			&i.ClimbGym.Name,
 			&i.ClimbGym.IconPath,
+			&i.ClimbGym.Source,
 		); err != nil {
 			return nil, err
 		}

@@ -14,8 +14,8 @@ FROM climbs
 WHERE climb_day_id = $1;
 
 -- name: ClimbCreate :one
-INSERT INTO climbs (user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO climbs (user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id;
 
 -- name: ClimbUpdate :exec

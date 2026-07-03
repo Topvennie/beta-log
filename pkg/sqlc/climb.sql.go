@@ -10,8 +10,8 @@ import (
 )
 
 const climbCreate = `-- name: ClimbCreate :one
-INSERT INTO climbs (user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO climbs (user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id
 `
 
@@ -24,6 +24,7 @@ type ClimbCreateParams struct {
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
+	Source     ClimbSource
 }
 
 func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32, error) {
@@ -36,6 +37,7 @@ func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32
 		arg.HoldColor,
 		arg.ClimbType,
 		arg.FinishType,
+		arg.Source,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -43,7 +45,7 @@ func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32
 }
 
 const climbGet = `-- name: ClimbGet :one
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type
+SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE id = $1
 `
@@ -61,12 +63,13 @@ func (q *Queries) ClimbGet(ctx context.Context, id int32) (Climb, error) {
 		&i.HoldColor,
 		&i.ClimbType,
 		&i.FinishType,
+		&i.Source,
 	)
 	return i, err
 }
 
 const climbGetAllByClimbDay = `-- name: ClimbGetAllByClimbDay :many
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type
+SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE climb_day_id = $1
 `
@@ -90,6 +93,7 @@ func (q *Queries) ClimbGetAllByClimbDay(ctx context.Context, climbDayID int32) (
 			&i.HoldColor,
 			&i.ClimbType,
 			&i.FinishType,
+			&i.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -102,7 +106,7 @@ func (q *Queries) ClimbGetAllByClimbDay(ctx context.Context, climbDayID int32) (
 }
 
 const climbGetByExternal = `-- name: ClimbGetByExternal :one
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type
+SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE external_id = $1
 `
@@ -120,6 +124,7 @@ func (q *Queries) ClimbGetByExternal(ctx context.Context, externalID string) (Cl
 		&i.HoldColor,
 		&i.ClimbType,
 		&i.FinishType,
+		&i.Source,
 	)
 	return i, err
 }
