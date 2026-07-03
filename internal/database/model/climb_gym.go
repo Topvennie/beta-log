@@ -8,6 +8,7 @@ type ClimbGym struct {
 	ExternalID string
 	Name       string
 	IconPath   string
+	Source     ClimbSource
 }
 
 func ClimbGymModel(c sqlc.ClimbGym) *ClimbGym {
@@ -17,5 +18,6 @@ func ClimbGymModel(c sqlc.ClimbGym) *ClimbGym {
 		ExternalID: c.ExternalID,
 		Name:       c.Name,
 		IconPath:   c.IconPath,
+		Source:     ClimbSource(c.Source),
 	}
 }

@@ -103,7 +103,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 
 	for _, day := range days {
 		// Create gym if  necessary
-		dbGym, err := m.climbGym.GetByExternalID(ctx, day.Gym.ExternalID)
+		dbGym, err := m.climbGym.GetByExternalSource(ctx, day.Gym.Source, day.Gym.ExternalID)
 		if err != nil {
 			return 0, err
 		}
@@ -118,7 +118,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 		}
 
 		// Create day if necessary
-		dbDay, err := m.climbDay.GetPopulatedByExternal(ctx, day.ExternalID)
+		dbDay, err := m.climbDay.GetPopulatedByExternalSource(ctx, day.Source, day.ExternalID)
 		if err != nil {
 			return 0, err
 		}
@@ -140,7 +140,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 			climb.ClimbDayID = day.ID
 
 			if idx := slices.IndexFunc(dbClimbs, func(c model.Climb) bool {
-				return c.ExternalID == climb.ExternalID && c.ClimbDayID == climb.ClimbDayID && c.FinishType == climb.FinishType
+				return c.ExternalID == climb.ExternalID && c.ClimbDayID == climb.ClimbDayID && c.FinishType == climb.FinishType && c.Source == climb.Source
 			}); idx != -1 {
 				// Climb found
 				dbClimb := dbClimbs[idx]

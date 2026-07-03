@@ -3,19 +3,19 @@ SELECT *
 FROM climb_gyms
 WHERE id = $1;
 
--- name: ClimbGymGetByExternal :one
+-- name: ClimbGymGetByExternalSource :one
 SELECT *
 FROM climb_gyms
-WHERE external_id = $1;
+WHERE external_id = $1 AND source = $2;
 
--- name: ClimbGymGetByExternalIds :many
+-- name: ClimbGymGetAllByExternalSource :many
 SELECT *
 FROM climb_gyms
-WHERE external_id = ANY($1::int[]);
+WHERE external_id = ANY($1::int[]) AND source = $2;
 
 -- name: ClimbGymCreate :one
-INSERT INTO climb_gyms (user_id, external_id, name, icon_path)
-VALUES ($1, $2, $3, $4)
+INSERT INTO climb_gyms (user_id, external_id, name, icon_path, source)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
 -- name: ClimbGymUpdate :exec

@@ -11,6 +11,47 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ClimbSource string
+
+const (
+	ClimbSourceToplogger ClimbSource = "toplogger"
+)
+
+func (e *ClimbSource) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ClimbSource(s)
+	case string:
+		*e = ClimbSource(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ClimbSource: %T", src)
+	}
+	return nil
+}
+
+type NullClimbSource struct {
+	ClimbSource ClimbSource
+	Valid       bool // Valid is true if ClimbSource is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullClimbSource) Scan(value interface{}) error {
+	if value == nil {
+		ns.ClimbSource, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ClimbSource.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullClimbSource) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ClimbSource), nil
+}
+
 type ClimbType string
 
 const (
@@ -148,6 +189,7 @@ type Climb struct {
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
+	Source     ClimbSource
 }
 
 type ClimbDay struct {
@@ -156,6 +198,7 @@ type ClimbDay struct {
 	ExternalID string
 	GymID      int32
 	Date       pgtype.Timestamptz
+	Source     ClimbSource
 }
 
 type ClimbGym struct {
@@ -164,6 +207,7 @@ type ClimbGym struct {
 	ExternalID string
 	Name       string
 	IconPath   string
+	Source     ClimbSource
 }
 
 type Exercise struct {

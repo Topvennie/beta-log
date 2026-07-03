@@ -119,6 +119,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 				ExternalID: day.Gym.ID,
 				Name:       day.Gym.Name,
 				IconPath:   fmt.Sprintf("%s/%s", uploadURL, day.Gym.IconPath),
+				Source:     model.ClimbSourceToplogger,
 			}
 			gymMap[day.Gym.ID] = gym
 
@@ -156,6 +157,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 				HoldColor:  climb.Climb.HoldColor.Color,
 				ClimbType:  model.ClimbType(climb.Climb.ClimbType),
 				FinishType: finishType,
+				Source:     model.ClimbSourceToplogger,
 			})
 		}
 
@@ -165,6 +167,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 			Date:       date,
 			Gym:        gym,
 			Climbs:     climbs,
+			Source:     model.ClimbSourceToplogger,
 		})
 	}
 

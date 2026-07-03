@@ -30,13 +30,16 @@ func (c *ClimbDay) Get(ctx context.Context, id int) (*model.ClimbDay, error) {
 	return model.ClimbDayModel(day), nil
 }
 
-func (c *ClimbDay) GetByExternalID(ctx context.Context, externalID string) (*model.ClimbDay, error) {
-	day, err := queries(ctx).ClimbDayGetByExternal(ctx, externalID)
+func (c *ClimbDay) GetByExternalSource(ctx context.Context, source model.ClimbSource, externalID string) (*model.ClimbDay, error) {
+	day, err := queries(ctx).ClimbDayGetByExternalSource(ctx, sqlc.ClimbDayGetByExternalSourceParams{
+		ExternalID: externalID,
+		Source:     sqlc.ClimbSource(source),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get climb day by external id %s | %w", externalID, err)
+		return nil, fmt.Errorf("get climb day by external id %s and source %s | %w", externalID, source, err)
 	}
 
 	return model.ClimbDayModel(day), nil
@@ -66,13 +69,16 @@ func (c *ClimbDay) GetPopulated(ctx context.Context, id int) (*model.ClimbDay, e
 	return day, nil
 }
 
-func (c *ClimbDay) GetPopulatedByExternal(ctx context.Context, externalID string) (*model.ClimbDay, error) {
-	rows, err := queries(ctx).ClimbDayGetPopulatedByExternal(ctx, externalID)
+func (c *ClimbDay) GetPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalID string) (*model.ClimbDay, error) {
+	rows, err := queries(ctx).ClimbDayGetPopulatedByExternalSource(ctx, sqlc.ClimbDayGetPopulatedByExternalSourceParams{
+		ExternalID: externalID,
+		Source:     sqlc.ClimbSource(source),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get climb day populated by external id %s | %w", externalID, err)
+		return nil, fmt.Errorf("get climb day populated by external id %s and source %s | %w", externalID, source, err)
 	}
 
 	if len(rows) == 0 {
@@ -90,13 +96,16 @@ func (c *ClimbDay) GetPopulatedByExternal(ctx context.Context, externalID string
 	return day, nil
 }
 
-func (c *ClimbDay) GetAllPopulatedByExternal(ctx context.Context, externalIDs []int) ([]*model.ClimbDay, error) {
-	rows, err := queries(ctx).ClimbDayGetAllPopulatedByExternal(ctx, utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }))
+func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalIDs []int) ([]*model.ClimbDay, error) {
+	rows, err := queries(ctx).ClimbDayGetAllPopulatedByExternalSource(ctx, sqlc.ClimbDayGetAllPopulatedByExternalSourceParams{
+		Column1: utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }),
+		Source:  sqlc.ClimbSource(source),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get all climb days populated by external ids %v | %w", externalIDs, err)
+		return nil, fmt.Errorf("get all climb days populated by external ids %v and source %s | %w", externalIDs, source, err)
 	}
 
 	if len(rows) == 0 {
@@ -128,6 +137,7 @@ func (c *ClimbDay) Create(ctx context.Context, day *model.ClimbDay) error {
 		ExternalID: day.ExternalID,
 		GymID:      int32(day.GymID),
 		Date:       pgtype.Timestamptz{Time: day.Date, Valid: true},
+		Source:     sqlc.ClimbSource(day.Source),
 	})
 	if err != nil {
 		return fmt.Errorf("create climb day %+v | %w", *day, err)

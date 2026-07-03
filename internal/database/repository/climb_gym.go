@@ -29,25 +29,31 @@ func (c *ClimbGym) Get(ctx context.Context, id int) (*model.ClimbGym, error) {
 	return model.ClimbGymModel(gym), nil
 }
 
-func (c *ClimbGym) GetByExternalID(ctx context.Context, externalID string) (*model.ClimbGym, error) {
-	gym, err := queries(ctx).ClimbGymGetByExternal(ctx, externalID)
+func (c *ClimbGym) GetByExternalSource(ctx context.Context, source model.ClimbSource, externalID string) (*model.ClimbGym, error) {
+	gym, err := queries(ctx).ClimbGymGetByExternalSource(ctx, sqlc.ClimbGymGetByExternalSourceParams{
+		ExternalID: externalID,
+		Source:     sqlc.ClimbSource(source),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get climb gym by external id %s | %w", externalID, err)
+		return nil, fmt.Errorf("get climb gym by external id %s and source %s | %w", externalID, source, err)
 	}
 
 	return model.ClimbGymModel(gym), nil
 }
 
-func (c *ClimbGym) GetByExternalIDs(ctx context.Context, externalIDs []int) ([]*model.ClimbGym, error) {
-	gyms, err := queries(ctx).ClimbGymGetByExternalIds(ctx, utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }))
+func (c *ClimbGym) GetByExternalSourceIDs(ctx context.Context, source model.ClimbSource, externalIDs []int) ([]*model.ClimbGym, error) {
+	gyms, err := queries(ctx).ClimbGymGetAllByExternalSource(ctx, sqlc.ClimbGymGetAllByExternalSourceParams{
+		Column1: utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }),
+		Source:  sqlc.ClimbSource(source),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("get climb gyms by external ids %v | %w", externalIDs, err)
+		return nil, fmt.Errorf("get climb gyms by external ids %v and source %s | %w", externalIDs, source, err)
 	}
 
 	return utils.SliceMap(gyms, model.ClimbGymModel), nil
@@ -59,6 +65,7 @@ func (c *ClimbGym) Create(ctx context.Context, gym *model.ClimbGym) error {
 		ExternalID: gym.ExternalID,
 		Name:       gym.Name,
 		IconPath:   gym.IconPath,
+		Source:     sqlc.ClimbSource(gym.Source),
 	})
 	if err != nil {
 		return fmt.Errorf("create climb gym %+v | %w", *gym, err)

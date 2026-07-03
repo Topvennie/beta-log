@@ -3,10 +3,10 @@ SELECT *
 FROM climb_days
 WHERE id = $1;
 
--- name: ClimbDayGetByExternal :one
+-- name: ClimbDayGetByExternalSource :one
 SELECT *
 FROM climb_days
-WHERE external_id = $1;
+WHERE external_id = $1 AND source = $2;
 
 -- name: ClimbDayGetPopulated :many
 SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
@@ -15,23 +15,23 @@ LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE d.id = $1;
 
--- name: ClimbDayGetPopulatedByExternal :many
+-- name: ClimbDayGetPopulatedByExternalSource :many
 SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.external_id = $1;
+WHERE d.external_id = $1 AND d.source = $2;
 
--- name: ClimbDayGetAllPopulatedByExternal :many
+-- name: ClimbDayGetAllPopulatedByExternalSource :many
 SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.external_id = ANY($1::int[]);
+WHERE d.external_id = ANY($1::int[]) AND d.source = $2;
 
 -- name: ClimbDayCreate :one
-INSERT INTO climb_days (user_id, external_id, gym_id, date)
-VALUES ($1, $2, $3, $4)
+INSERT INTO climb_days (user_id, external_id, gym_id, date, source)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
 -- name: ClimbDayUpdate :exec

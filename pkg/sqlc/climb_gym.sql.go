@@ -10,8 +10,8 @@ import (
 )
 
 const climbGymCreate = `-- name: ClimbGymCreate :one
-INSERT INTO climb_gyms (user_id, external_id, name, icon_path)
-VALUES ($1, $2, $3, $4)
+INSERT INTO climb_gyms (user_id, external_id, name, icon_path, source)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
@@ -20,6 +20,7 @@ type ClimbGymCreateParams struct {
 	ExternalID string
 	Name       string
 	IconPath   string
+	Source     ClimbSource
 }
 
 func (q *Queries) ClimbGymCreate(ctx context.Context, arg ClimbGymCreateParams) (int32, error) {
@@ -28,6 +29,7 @@ func (q *Queries) ClimbGymCreate(ctx context.Context, arg ClimbGymCreateParams) 
 		arg.ExternalID,
 		arg.Name,
 		arg.IconPath,
+		arg.Source,
 	)
 	var id int32
 	err := row.Scan(&id)
@@ -35,7 +37,7 @@ func (q *Queries) ClimbGymCreate(ctx context.Context, arg ClimbGymCreateParams) 
 }
 
 const climbGymGet = `-- name: ClimbGymGet :one
-SELECT id, user_id, external_id, name, icon_path
+SELECT id, user_id, external_id, name, icon_path, source
 FROM climb_gyms
 WHERE id = $1
 `
@@ -49,37 +51,24 @@ func (q *Queries) ClimbGymGet(ctx context.Context, id int32) (ClimbGym, error) {
 		&i.ExternalID,
 		&i.Name,
 		&i.IconPath,
+		&i.Source,
 	)
 	return i, err
 }
 
-const climbGymGetByExternal = `-- name: ClimbGymGetByExternal :one
-SELECT id, user_id, external_id, name, icon_path
+const climbGymGetAllByExternalSource = `-- name: ClimbGymGetAllByExternalSource :many
+SELECT id, user_id, external_id, name, icon_path, source
 FROM climb_gyms
-WHERE external_id = $1
+WHERE external_id = ANY($1::int[]) AND source = $2
 `
 
-func (q *Queries) ClimbGymGetByExternal(ctx context.Context, externalID string) (ClimbGym, error) {
-	row := q.db.QueryRow(ctx, climbGymGetByExternal, externalID)
-	var i ClimbGym
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.ExternalID,
-		&i.Name,
-		&i.IconPath,
-	)
-	return i, err
+type ClimbGymGetAllByExternalSourceParams struct {
+	Column1 []int32
+	Source  ClimbSource
 }
 
-const climbGymGetByExternalIds = `-- name: ClimbGymGetByExternalIds :many
-SELECT id, user_id, external_id, name, icon_path
-FROM climb_gyms
-WHERE external_id = ANY($1::int[])
-`
-
-func (q *Queries) ClimbGymGetByExternalIds(ctx context.Context, dollar_1 []int32) ([]ClimbGym, error) {
-	rows, err := q.db.Query(ctx, climbGymGetByExternalIds, dollar_1)
+func (q *Queries) ClimbGymGetAllByExternalSource(ctx context.Context, arg ClimbGymGetAllByExternalSourceParams) ([]ClimbGym, error) {
+	rows, err := q.db.Query(ctx, climbGymGetAllByExternalSource, arg.Column1, arg.Source)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +82,7 @@ func (q *Queries) ClimbGymGetByExternalIds(ctx context.Context, dollar_1 []int32
 			&i.ExternalID,
 			&i.Name,
 			&i.IconPath,
+			&i.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -102,6 +92,31 @@ func (q *Queries) ClimbGymGetByExternalIds(ctx context.Context, dollar_1 []int32
 		return nil, err
 	}
 	return items, nil
+}
+
+const climbGymGetByExternalSource = `-- name: ClimbGymGetByExternalSource :one
+SELECT id, user_id, external_id, name, icon_path, source
+FROM climb_gyms
+WHERE external_id = $1 AND source = $2
+`
+
+type ClimbGymGetByExternalSourceParams struct {
+	ExternalID string
+	Source     ClimbSource
+}
+
+func (q *Queries) ClimbGymGetByExternalSource(ctx context.Context, arg ClimbGymGetByExternalSourceParams) (ClimbGym, error) {
+	row := q.db.QueryRow(ctx, climbGymGetByExternalSource, arg.ExternalID, arg.Source)
+	var i ClimbGym
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ExternalID,
+		&i.Name,
+		&i.IconPath,
+		&i.Source,
+	)
+	return i, err
 }
 
 const climbGymUpdate = `-- name: ClimbGymUpdate :exec
