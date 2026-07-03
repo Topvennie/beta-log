@@ -1,4 +1,4 @@
-import { Card, createTheme, Grid, Group, Modal, Notification, rem, SegmentedControl, Select, SimpleGrid, Stack, Title } from "@mantine/core";
+import { Badge, Card, createTheme, Grid, Group, Modal, Notification, rem, SegmentedControl, Select, SimpleGrid, Stack, Title } from "@mantine/core";
 import { createElement } from "react";
 import { LuSearch } from "react-icons/lu";
 
@@ -87,6 +87,10 @@ const theme = createTheme({
       },
     }),
     SegmentedControl: SegmentedControl.extend({
+      defaultProps: {
+        radius: "sm",
+        color: "blue",
+      }
     }),
     Notification: Notification.extend({
       defaultProps: {
@@ -113,6 +117,11 @@ const theme = createTheme({
         spacing: "xs",
       }
     }),
+    Badge: Badge.extend({
+      defaultProps: {
+        radius: "sm",
+      }
+    })
   }
 
 });

@@ -1,11 +1,12 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Task, TaskHistoryFilter } from "../types/task";
+import { Task, TaskHistoryFilter, TaskStatus } from "../types/task";
 import { convertTaskHistories, convertTasks } from "../types/task";
 import { apiGet, apiPost } from "./query";
 
 const ENDPOINT = "task";
 const PAGE_LIMIT = 100;
-const REFETCH_SEC_5 = 5 * 1000;
+const REFETCH_RUNNING_MS = 5 * 1000;
+const REFETCH_IDLE_MS = 60 * 1000;
 
 export function useTaskGetAll() {
   const queryClient = useQueryClient();
@@ -13,11 +14,18 @@ export function useTaskGetAll() {
   return useQuery({
     queryKey: ["task"],
     queryFn: async () => (await apiGet(ENDPOINT, convertTasks)).data,
-    refetchInterval: REFETCH_SEC_5,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      return data?.some((task: Task) => task.status === TaskStatus.Running)
+        ? REFETCH_RUNNING_MS
+        : REFETCH_IDLE_MS;
+    },
     structuralSharing(oldData, newData) {
-      if (JSON.stringify(oldData) !== JSON.stringify(newData)) {
-        void queryClient.invalidateQueries({ queryKey: ["task_history"] });
+      if (oldData && JSON.stringify(oldData) === JSON.stringify(newData)) {
+        return oldData;
       }
+
+      queryClient.invalidateQueries({ queryKey: ["task_history"] });
 
       return newData;
     },

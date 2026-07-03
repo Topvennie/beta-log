@@ -7,7 +7,7 @@ import { useDisclosure, useHover } from '@mantine/hooks';
 import { LinkProps, useNavigate } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
 import { FaArrowRightFromBracket, FaChevronRight, FaDumbbell, FaGear } from "react-icons/fa6";
-import { LuLayoutDashboard, LuLayoutList } from "react-icons/lu";
+import { LuClock, LuLayoutDashboard, LuLayoutList } from "react-icons/lu";
 
 type Props = PropsWithChildren
 
@@ -34,6 +34,11 @@ const routes: Route[] = [
     title: "Exercises",
     icon: <FaDumbbell />,
     link: { to: "/exercises" },
+  },
+  {
+    title: "Tasks",
+    icon: <LuClock />,
+    link: { to: "/tasks" },
   },
 ]
 
