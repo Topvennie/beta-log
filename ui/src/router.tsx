@@ -9,6 +9,7 @@ import { Exercises } from "./pages/auth/Exercises";
 import { Dashboard } from "./pages/auth/Dashboard";
 import { Sessions } from "./pages/auth/Sessions";
 import { Settings } from "./pages/auth/Settings";
+import { Tasks } from "./pages/auth/Tasks";
 
 type Context = {
   queryClient: QueryClient,
@@ -42,6 +43,12 @@ const sessions = createRoute({
   component: Sessions,
 })
 
+const tasks = createRoute({
+  getParentRoute: () => index,
+  path: "/tasks",
+  component: Tasks,
+})
+
 const settings = createRoute({
   getParentRoute: () => index,
   path: "/settings",
@@ -53,6 +60,7 @@ const routeTree = root.addChildren([
     dashboard,
     exercises,
     sessions,
+    tasks,
     settings,
   ]),
 ])

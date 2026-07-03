@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function camelToSnake(obj: unknown): unknown {
@@ -32,4 +33,14 @@ function stringCamelToSnake(str: string) {
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function formatDate(date: Date) {
+  return format(date, "eee dd MMMM, HH:mm");
+}
+
+export function capitalize(text: string) {
+  if (text.length <= 1) return text.toUpperCase()
+
+  return text[0].toUpperCase() + text.slice(1)
 }
