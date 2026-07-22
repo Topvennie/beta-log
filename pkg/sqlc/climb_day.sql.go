@@ -120,6 +120,127 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, a
 	return items, nil
 }
 
+const climbDayGetAllPopulatedByUser = `-- name: ClimbDayGetAllPopulatedByUser :many
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+FROM climb_days d
+LEFT  JOIN climbs c ON c.climb_day_id = d.id
+LEFT JOIN climb_gyms g ON d.gym_id = g.id
+WHERE d.user_id = $1
+`
+
+type ClimbDayGetAllPopulatedByUserRow struct {
+	ClimbDay ClimbDay
+	Climb    Climb
+	ClimbGym ClimbGym
+}
+
+func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int32) ([]ClimbDayGetAllPopulatedByUserRow, error) {
+	rows, err := q.db.Query(ctx, climbDayGetAllPopulatedByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ClimbDayGetAllPopulatedByUserRow
+	for rows.Next() {
+		var i ClimbDayGetAllPopulatedByUserRow
+		if err := rows.Scan(
+			&i.ClimbDay.ID,
+			&i.ClimbDay.UserID,
+			&i.ClimbDay.ExternalID,
+			&i.ClimbDay.GymID,
+			&i.ClimbDay.Date,
+			&i.ClimbDay.Source,
+			&i.Climb.ID,
+			&i.Climb.UserID,
+			&i.Climb.ExternalID,
+			&i.Climb.ClimbDayID,
+			&i.Climb.Grade,
+			&i.Climb.Color,
+			&i.Climb.HoldColor,
+			&i.Climb.ClimbType,
+			&i.Climb.FinishType,
+			&i.Climb.Source,
+			&i.ClimbGym.ID,
+			&i.ClimbGym.UserID,
+			&i.ClimbGym.ExternalID,
+			&i.ClimbGym.Name,
+			&i.ClimbGym.IconPath,
+			&i.ClimbGym.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const climbDayGetAllPopulatedFiltered = `-- name: ClimbDayGetAllPopulatedFiltered :many
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+FROM climb_days d
+LEFT  JOIN climbs c ON c.climb_day_id = d.id
+LEFT JOIN climb_gyms g ON d.gym_id = g.id
+WHERE d.user_id = $1
+LIMIT $2 OFFSET $3
+`
+
+type ClimbDayGetAllPopulatedFilteredParams struct {
+	UserID int32
+	Limit  int32
+	Offset int32
+}
+
+type ClimbDayGetAllPopulatedFilteredRow struct {
+	ClimbDay ClimbDay
+	Climb    Climb
+	ClimbGym ClimbGym
+}
+
+func (q *Queries) ClimbDayGetAllPopulatedFiltered(ctx context.Context, arg ClimbDayGetAllPopulatedFilteredParams) ([]ClimbDayGetAllPopulatedFilteredRow, error) {
+	rows, err := q.db.Query(ctx, climbDayGetAllPopulatedFiltered, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ClimbDayGetAllPopulatedFilteredRow
+	for rows.Next() {
+		var i ClimbDayGetAllPopulatedFilteredRow
+		if err := rows.Scan(
+			&i.ClimbDay.ID,
+			&i.ClimbDay.UserID,
+			&i.ClimbDay.ExternalID,
+			&i.ClimbDay.GymID,
+			&i.ClimbDay.Date,
+			&i.ClimbDay.Source,
+			&i.Climb.ID,
+			&i.Climb.UserID,
+			&i.Climb.ExternalID,
+			&i.Climb.ClimbDayID,
+			&i.Climb.Grade,
+			&i.Climb.Color,
+			&i.Climb.HoldColor,
+			&i.Climb.ClimbType,
+			&i.Climb.FinishType,
+			&i.Climb.Source,
+			&i.ClimbGym.ID,
+			&i.ClimbGym.UserID,
+			&i.ClimbGym.ExternalID,
+			&i.ClimbGym.Name,
+			&i.ClimbGym.IconPath,
+			&i.ClimbGym.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const climbDayGetByExternalSource = `-- name: ClimbDayGetByExternalSource :one
 SELECT id, user_id, external_id, gym_id, date, source
 FROM climb_days
