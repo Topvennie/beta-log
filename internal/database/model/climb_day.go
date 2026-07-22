@@ -29,3 +29,9 @@ func ClimbDayModel(c sqlc.ClimbDay) *ClimbDay {
 		Source:     ClimbSource(c.Source),
 	}
 }
+
+type ClimbDayFilter struct {
+	UserID int
+	Limit  int
+	Offset int
+}

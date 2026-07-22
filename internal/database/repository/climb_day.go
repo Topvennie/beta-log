@@ -96,6 +96,39 @@ func (c *ClimbDay) GetPopulatedByExternalSource(ctx context.Context, source mode
 	return day, nil
 }
 
+func (c *ClimbDay) GetAllPopulatedFiltered(ctx context.Context, filter model.ClimbDayFilter) ([]*model.ClimbDay, error) {
+	rows, err := queries(ctx).ClimbDayGetAllPopulatedFiltered(ctx, sqlc.ClimbDayGetAllPopulatedFilteredParams{
+		UserID: int32(filter.UserID),
+		Limit:  int32(filter.Limit),
+		Offset: int32(filter.Offset),
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get climb day all populated filtered %+v | %w", filter, err)
+	}
+
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	dayMap := make(map[int]*model.ClimbDay)
+
+	for _, row := range rows {
+		day, ok := dayMap[int(row.ClimbDay.ID)]
+		if !ok {
+			day = model.ClimbDayModel(row.ClimbDay)
+			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+		}
+
+		day.Climbs = append(day.Climbs, *model.ClimbPopulatedModel(row.Climb))
+		dayMap[day.ID] = day
+	}
+
+	return utils.MapValues(dayMap), nil
+}
+
 func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalIDs []int) ([]*model.ClimbDay, error) {
 	rows, err := queries(ctx).ClimbDayGetAllPopulatedByExternalSource(ctx, sqlc.ClimbDayGetAllPopulatedByExternalSourceParams{
 		Column1: utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }),
@@ -125,6 +158,35 @@ func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source m
 			day.Climbs = append(day.Climbs, *climb)
 		}
 
+		dayMap[day.ID] = day
+	}
+
+	return utils.MapValues(dayMap), nil
+}
+
+func (c *ClimbDay) GetAllPopulatedByUser(ctx context.Context, userID int) ([]*model.ClimbDay, error) {
+	rows, err := queries(ctx).ClimbDayGetAllPopulatedByUser(ctx, int32(userID))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get climb day all populated by user %d | %w", userID, err)
+	}
+
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	dayMap := make(map[int]*model.ClimbDay)
+
+	for _, row := range rows {
+		day, ok := dayMap[int(row.ClimbDay.ID)]
+		if !ok {
+			day = model.ClimbDayModel(row.ClimbDay)
+			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+		}
+
+		day.Climbs = append(day.Climbs, *model.ClimbPopulatedModel(row.Climb))
 		dayMap[day.ID] = day
 	}
 

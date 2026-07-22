@@ -6,8 +6,8 @@ import { AppShell, Avatar, Burger, Group, Menu, ScrollArea, Stack } from "@manti
 import { useDisclosure, useHover } from '@mantine/hooks';
 import { LinkProps, useNavigate } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
-import { FaArrowRightFromBracket, FaChevronRight, FaDumbbell, FaGear } from "react-icons/fa6";
-import { LuClock, LuLayoutDashboard, LuLayoutList } from "react-icons/lu";
+import { FaDumbbell, FaMountain, FaChevronRight, FaGear, FaArrowRightFromBracket } from "react-icons/fa6";
+import { LuLayoutDashboard, LuLayoutList, LuClock } from "react-icons/lu";
 
 type Props = PropsWithChildren
 
@@ -39,6 +39,11 @@ const routes: Route[] = [
     title: "Tasks",
     icon: <LuClock />,
     link: { to: "/tasks" },
+  },
+  {
+    title: "Climbs",
+    icon: <FaMountain />,
+    link: { to: "/climbs" },
   },
 ]
 
