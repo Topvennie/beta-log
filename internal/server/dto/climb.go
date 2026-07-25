@@ -80,17 +80,17 @@ type ClimbStatsGraphGrade struct {
 }
 
 type ClimbStats struct {
-	Total            int                       `json:"total"`
-	TotalUnique      int                       `json:"total_unique"`
-	Flash            int                       `json:"flash"`
-	Top              int                       `json:"top"`
-	Repeat           int                       `json:"repeat"`
-	Best             int                       `json:"best"`
-	BestAmount       int                       `json:"best_amount"`
-	BestFlash        int                       `json:"best_flash"`
-	BestFlashAmount  int                       `json:"best_flash_amount"`
-	Sessions         int                       `json:"sessions"`
-	ClimbsPerSession float64                   `json:"climbs_per_session"`
-	GraphProgress    []ClimbStatsGraphProgress `json:"graph_progress"`
-	GraphPerGrade    []ClimbStatsGraphGrade    `json:"graph_per_grade"`
+	Total                  int                       `json:"total"`
+	TotalUnique            int                       `json:"total_unique"`
+	Flash                  int                       `json:"flash"`
+	Top                    int                       `json:"top"`
+	Repeat                 int                       `json:"repeat"`
+	Best                   int                       `json:"best"`
+	BestAmount             int                       `json:"best_amount"`
+	BestFlash              int                       `json:"best_flash"`
+	BestFlashAmount        int                       `json:"best_flash_amount"`
+	Sessions               int                       `json:"sessions"`
+	MedianClimbsPerSession float64                   `json:"median_climbs_per_session"`
+	GraphProgress          []ClimbStatsGraphProgress `json:"graph_progress"`
+	GraphPerGrade          []ClimbStatsGraphGrade    `json:"graph_per_grade"`
 }
