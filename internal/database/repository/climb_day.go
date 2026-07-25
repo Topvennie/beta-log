@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/pkg/sqlc"
@@ -126,7 +127,10 @@ func (c *ClimbDay) GetAllPopulatedFiltered(ctx context.Context, filter model.Cli
 		dayMap[day.ID] = day
 	}
 
-	return utils.MapValues(dayMap), nil
+	days := utils.MapValues(dayMap)
+	slices.SortFunc(days, func(a, b *model.ClimbDay) int { return a.Date.Compare(b.Date) })
+
+	return days, nil
 }
 
 func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalIDs []int) ([]*model.ClimbDay, error) {
@@ -161,7 +165,10 @@ func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source m
 		dayMap[day.ID] = day
 	}
 
-	return utils.MapValues(dayMap), nil
+	days := utils.MapValues(dayMap)
+	slices.SortFunc(days, func(a, b *model.ClimbDay) int { return a.Date.Compare(b.Date) })
+
+	return days, nil
 }
 
 func (c *ClimbDay) GetAllPopulatedByUser(ctx context.Context, userID int) ([]*model.ClimbDay, error) {
@@ -190,7 +197,10 @@ func (c *ClimbDay) GetAllPopulatedByUser(ctx context.Context, userID int) ([]*mo
 		dayMap[day.ID] = day
 	}
 
-	return utils.MapValues(dayMap), nil
+	days := utils.MapValues(dayMap)
+	slices.SortFunc(days, func(a, b *model.ClimbDay) int { return a.Date.Compare(b.Date) })
+
+	return days, nil
 }
 
 func (c *ClimbDay) Create(ctx context.Context, day *model.ClimbDay) error {
