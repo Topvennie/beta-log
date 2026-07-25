@@ -90,7 +90,7 @@ type ClimbStats struct {
 	BestFlash              int                       `json:"best_flash"`
 	BestFlashAmount        int                       `json:"best_flash_amount"`
 	Sessions               int                       `json:"sessions"`
-	MedianClimbsPerSession float64                   `json:"median_climbs_per_session"`
+	MedianClimbsPerSession int                       `json:"median_climbs_per_session"`
 	GraphProgress          []ClimbStatsGraphProgress `json:"graph_progress"`
 	GraphPerGrade          []ClimbStatsGraphGrade    `json:"graph_per_grade"`
 }

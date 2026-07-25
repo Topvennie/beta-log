@@ -1,7 +1,6 @@
 package service
 
 import (
-	"math"
 	"slices"
 	"time"
 
@@ -49,7 +48,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 
 	days, err := c.day.GetAllPopulatedByUser(ctx, userID)
 	if err != nil {
-		return dto.ClimbStats{}, nil
+		return dto.ClimbStats{}, err
 	}
 
 	// Get all stats
@@ -88,34 +87,35 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 				stats.Flash++
 				stats.TotalUnique++
 				graphGrade.Flash++
-
-				if climb.Grade >= stats.Best {
-					if climb.Grade > stats.Best {
-						stats.Best = climb.Grade
-						stats.BestAmount = 0
-					}
-					stats.BestAmount++
-				}
-				if climb.Grade >= stats.BestFlash {
-					if climb.Grade > stats.BestFlash {
-						stats.BestFlash = climb.Grade
-						stats.BestFlashAmount = 1
-					}
-					stats.BestFlashAmount++
-				}
-
 			case model.ClimbFinishTop:
 				stats.Top++
 				stats.TotalUnique++
 				graphGrade.Top++
-
-				if climb.Grade > stats.Best {
-					stats.Best = climb.Grade
-				}
-
 			case model.ClimbFinishRepeat:
-				graphGrade.Repeat++
 				stats.Repeat++
+				graphGrade.Repeat++
+			}
+
+			// Best grade is advanced only by tops and flashes
+			// Repeats don't move your best.
+			// BestAmount counts every send (top + flash + repeat) at the current best grade.
+			if (climb.FinishType == model.ClimbFinishFlash || climb.FinishType == model.ClimbFinishTop) && climb.Grade > stats.Best {
+				stats.Best = climb.Grade
+				stats.BestAmount = 0
+			}
+			if stats.Best > 0 && climb.Grade == stats.Best {
+				stats.BestAmount++
+			}
+
+			// Best flash is flashes only.
+			if climb.FinishType == model.ClimbFinishFlash {
+				if climb.Grade > stats.BestFlash {
+					stats.BestFlash = climb.Grade
+					stats.BestFlashAmount = 0
+				}
+				if stats.BestFlash > 0 && climb.Grade == stats.BestFlash {
+					stats.BestFlashAmount++
+				}
 			}
 
 			if climb.Grade > dayBest {
@@ -135,12 +135,11 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 	}
 
 	slices.Sort(perSessionClimbs)
-	if len(perSessionClimbs) > 0 {
-		n := len(perSessionClimbs)
+	if n := len(perSessionClimbs); n > 0 {
 		if n%2 == 1 {
-			stats.MedianClimbsPerSession = float64(perSessionClimbs[n/2])
+			stats.MedianClimbsPerSession = perSessionClimbs[n/2]
 		} else {
-			stats.MedianClimbsPerSession = math.Round(float64(perSessionClimbs[n/2-1]+perSessionClimbs[n/2]) / 2)
+			stats.MedianClimbsPerSession = (perSessionClimbs[n/2-1] + perSessionClimbs[n/2] + 1) / 2
 		}
 	}
 	stats.GraphPerGrade = utils.MapValues(graphGrades)
