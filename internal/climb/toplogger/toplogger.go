@@ -176,32 +176,19 @@ func (c *Client) getDays(ctx context.Context, setting model.Setting) ([]climbDay
 }
 
 func (c *Client) getDayClimbs(ctx context.Context, setting model.Setting, day climbDay) ([]climbLog, error) {
-	var climbLogs []climbLog
-
-	page := 1
-	for {
-		climbLogPaginated, err := c.fetchDayLogPage(ctx, setting, day, page)
-		if err != nil {
-			if errors.Is(err, ErrUnauthorized) {
-				if err := c.resetSetting(ctx, setting); err != nil {
-					return nil, err
-				}
-				return nil, ErrUnauthorized
+	climbLogPaginated, err := c.fetchDayLogPage(ctx, setting, day)
+	if err != nil {
+		if errors.Is(err, ErrUnauthorized) {
+			if err := c.resetSetting(ctx, setting); err != nil {
+				return nil, err
 			}
-
-			return nil, err
+			return nil, ErrUnauthorized
 		}
 
-		climbLogs = append(climbLogs, climbLogPaginated.Data...)
-
-		if climbLogPaginated.Pagination.Page*climbLogPaginated.Pagination.PerPage >= climbLogPaginated.Pagination.Total {
-			break
-		}
-
-		page++
+		return nil, err
 	}
 
-	return climbLogs, nil
+	return climbLogPaginated.Data, nil
 }
 
 func (c *Client) fetchDayListPage(ctx context.Context, setting model.Setting, page int) (climbDayPaginated, error) {
@@ -239,7 +226,7 @@ func (c *Client) fetchDayListPage(ctx context.Context, setting model.Setting, pa
 	return climbResult[0].Data.ClimbDayPaginated, nil
 }
 
-func (c *Client) fetchDayLogPage(ctx context.Context, setting model.Setting, day climbDay, page int) (climbLogPaginated, error) {
+func (c *Client) fetchDayLogPage(ctx context.Context, setting model.Setting, day climbDay) (climbLogPaginated, error) {
 	query := fmt.Sprintf(queryDayLog, day.Gym.ID, setting.ClimbToploggerUserID, day.StatsAtDate)
 
 	type climbResponse struct {
