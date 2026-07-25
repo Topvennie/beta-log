@@ -2,6 +2,7 @@ import { LinkButton } from "@/components/atoms/LinkButton";
 import { Breadcrumb as BreadcrumbType } from "@/lib/contexts/breadcrumbContext";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useBreadcrumbs } from "@/lib/hooks/useBreadcrumb";
+import { useHeaderContents } from "@/lib/hooks/useHeaderContent";
 import { AppShell, Avatar, Burger, Group, Menu, ScrollArea, Stack } from "@mantine/core";
 import { useDisclosure, useHover } from '@mantine/hooks';
 import { LinkProps, useNavigate } from "@tanstack/react-router";
@@ -47,13 +48,12 @@ const routes: Route[] = [
   },
 ]
 
-const Breadcrumb = ({ breadcrumb: { title, link } }: { breadcrumb: BreadcrumbType }) => {
+const Breadcrumb = ({ breadcrumb: { title, link }, last }: { breadcrumb: BreadcrumbType, last: boolean }) => {
   return (
     <LinkButton
-      variant="transparent"
-      color="black"
-      p={0}
-      className="hover:underline underline-offset-2"
+      variant="subtle"
+      color={last ? "black" : "gray.4"}
+      size="compact-md"
       {...link}
     >
       <p className="font-semibold">{title}</p>
@@ -82,6 +82,7 @@ const NavLink = ({ route: { title, icon, link } }: { route: Route }) => {
 export const NavLayout = ({ children }: Props) => {
   const { user, logout } = useAuth()
   const { state: breadcrumbs } = useBreadcrumbs();
+  const { content: headerContent } = useHeaderContents();
 
   const [opened, { toggle }] = useDisclosure();
   const { hovered, ref } = useHover()
@@ -97,13 +98,16 @@ export const NavLayout = ({ children }: Props) => {
       <AppShell.Header>
         <Group h="100%" px="xl">
           <Burger opened={opened} onClick={toggle} hiddenFrom={breakpoint} size="sm" />
-          <Group>
-            {breadcrumbs.map((breadcrumb, idx) => (
-              <Fragment key={breadcrumb.title}>
-                <Breadcrumb breadcrumb={breadcrumb} />
-                {idx < breadcrumbs.length - 1 && <p>/</p>}
-              </Fragment>
-            ))}
+          <Group w="100%" justify="space-between">
+            <Group>
+              {breadcrumbs.map((breadcrumb, idx) => (
+                <Fragment key={breadcrumb.title}>
+                  <Breadcrumb breadcrumb={breadcrumb} last={idx === breadcrumbs.length - 1} />
+                  {idx < breadcrumbs.length - 1 && <p className="text-neutral-400">{`>`}</p>}
+                </Fragment>
+              ))}
+            </Group>
+            {headerContent}
           </Group>
         </Group>
       </AppShell.Header>
