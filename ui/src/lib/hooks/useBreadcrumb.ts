@@ -1,5 +1,5 @@
 import type { Breadcrumb } from "../contexts/breadcrumbContext";
-import { use, useEffect } from "react";
+import { use, useLayoutEffect } from "react";
 import { BreadcrumbContext } from "../contexts/breadcrumbContext";
 
 export function useBreadcrumbs() {
@@ -14,7 +14,7 @@ export function useBreadcrumbs() {
 export function useBreadcrumb(crumb: Breadcrumb) {
   const { dispatch } = useBreadcrumbs();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dispatch({ type: "ADD", payload: crumb });
 
     return () => {
