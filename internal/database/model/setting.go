@@ -12,7 +12,7 @@ type Setting struct {
 	ClimbToploggerUserID       string
 	ClimbToploggerAuthToken    string
 	ClimbToploggerRefreshToken string
-	ClimbTopLoggerExpiration   time.Time
+	ClimbToploggerExpiration   time.Time
 }
 
 func SettingModel(s sqlc.Setting) *Setting {
@@ -22,6 +22,6 @@ func SettingModel(s sqlc.Setting) *Setting {
 		ClimbToploggerUserID:       fromString(s.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    fromString(s.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: fromString(s.ClimbToploggerRefreshToken),
-		ClimbTopLoggerExpiration:   fromTime(s.ClimbToploggerExpiration),
+		ClimbToploggerExpiration:   fromTime(s.ClimbToploggerExpiration),
 	}
 }

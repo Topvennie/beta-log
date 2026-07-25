@@ -66,7 +66,7 @@ func (s *Setting) ToploggerUpdate(ctx fiber.Ctx, settingSave dto.SettingToplogge
 	setting.ClimbToploggerUserID = settingSave.ClimbToploggerUserID
 	setting.ClimbToploggerAuthToken = settingSave.ClimbToploggerAuthToken
 	setting.ClimbToploggerRefreshToken = settingSave.ClimbToploggerRefreshToken
-	setting.ClimbTopLoggerExpiration = time.Time{} // Use this as placeholder
+	setting.ClimbToploggerExpiration = time.Time{} // Use this as placeholder
 
 	if setting.ClimbToploggerUserID != "" {
 		// The user provded data
@@ -83,7 +83,7 @@ func (s *Setting) ToploggerUpdate(ctx fiber.Ctx, settingSave dto.SettingToplogge
 		// Save the new tokens
 		setting.ClimbToploggerAuthToken = tokens.Access.Token
 		setting.ClimbToploggerRefreshToken = tokens.Refresh.Token
-		setting.ClimbTopLoggerExpiration = tokens.Refresh.ExpiresAt
+		setting.ClimbToploggerExpiration = tokens.Refresh.ExpiresAt
 	}
 
 	if err := s.setting.ToploggerUpdate(ctx, *setting); err != nil {
