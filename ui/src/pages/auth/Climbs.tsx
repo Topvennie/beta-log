@@ -33,7 +33,7 @@ export const Climbing = () => {
         <ClimbStat
           title="Sessions"
           stat={stats?.sessions}
-          description={`Avg. ${stats?.climbsPerSession} Climbs / Session`}
+          description={`Med. ${stats?.medianClimbsPerSession} Climbs / Session`}
         />
         <div className="col-span-3 row-span-2">
           <ClimbStat

@@ -59,6 +59,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 	}
 
 	graphGrades := make(map[int]dto.ClimbStatsGraphGrade)
+	perSessionClimbs := make([]int, 0, len(days))
 
 	for _, day := range days {
 		if !start.IsZero() && day.Date.Before(start) {
@@ -70,6 +71,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 
 		stats.Sessions++
 		stats.Total += len(day.Climbs)
+		perSessionClimbs = append(perSessionClimbs, len(day.Climbs))
 
 		dayBest := 0
 
@@ -132,7 +134,15 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.Cli
 		}
 	}
 
-	stats.ClimbsPerSession = math.Round(float64(stats.Total) / float64(stats.Sessions))
+	slices.Sort(perSessionClimbs)
+	if len(perSessionClimbs) > 0 {
+		n := len(perSessionClimbs)
+		if n%2 == 1 {
+			stats.MedianClimbsPerSession = float64(perSessionClimbs[n/2])
+		} else {
+			stats.MedianClimbsPerSession = math.Round(float64(perSessionClimbs[n/2-1]+perSessionClimbs[n/2]) / 2)
+		}
+	}
 	stats.GraphPerGrade = utils.MapValues(graphGrades)
 	slices.SortFunc(stats.GraphPerGrade, func(a, b dto.ClimbStatsGraphGrade) int { return a.Grade - b.Grade })
 

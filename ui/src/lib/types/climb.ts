@@ -49,7 +49,7 @@ export interface ClimbStats {
   bestFlash: number;
   bestFlashAmount: number;
   sessions: number;
-  climbsPerSession: number;
+  medianClimbsPerSession: number;
   graphProgress: ClimbStatsGraphProgress[];
   graphPerGrade: ClimbStatsGraphGrade[];
 }
@@ -92,7 +92,7 @@ export const convertClimbStats = (s: API.ClimbStats): ClimbStats => ({
   bestFlash: s.best_flash,
   bestFlashAmount: s.best_flash_amount,
   sessions: s.sessions,
-  climbsPerSession: s.climbs_per_session,
+  medianClimbsPerSession: s.median_climbs_per_session,
   graphProgress: s.graph_progress,
   graphPerGrade: s.graph_per_grade,
 });
