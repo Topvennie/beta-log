@@ -20,7 +20,6 @@ func climbDTO(c *model.Climb) climb {
 	return climb{
 		ID:         c.ID,
 		Grade:      c.Grade,
-		Color:      c.Color,
 		HoldColor:  c.HoldColor,
 		ClimbType:  c.ClimbType,
 		FinishType: c.FinishType,

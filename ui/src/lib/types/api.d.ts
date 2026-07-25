@@ -65,7 +65,6 @@ export namespace API {
   export interface Climb {
     id: number;
     grade: number;
-    color: string;
     hold_color: string;
     climb_type: string;
     finish_type: string;

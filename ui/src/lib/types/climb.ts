@@ -7,7 +7,6 @@ export type ClimbFinish = "flash" | "top" | "repeat";
 export interface Climb {
   id: number;
   grade: number;
-  color: string;
   holdColor: string;
   climbType: ClimbType;
   finishType: ClimbFinish;
@@ -60,7 +59,6 @@ export interface ClimbStats {
 export const convertClimb = (c: API.Climb): Climb => ({
   id: c.id,
   grade: c.grade,
-  color: c.color,
   holdColor: c.hold_color,
   climbType: c.climb_type as ClimbType,
   finishType: c.finish_type as ClimbFinish,

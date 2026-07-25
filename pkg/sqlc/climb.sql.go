@@ -10,8 +10,8 @@ import (
 )
 
 const climbCreate = `-- name: ClimbCreate :one
-INSERT INTO climbs (user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO climbs (user_id, external_id, climb_day_id, grade, hold_color, climb_type, finish_type, source)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
@@ -20,7 +20,6 @@ type ClimbCreateParams struct {
 	ExternalID string
 	ClimbDayID int32
 	Grade      int32
-	Color      string
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
@@ -33,7 +32,6 @@ func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32
 		arg.ExternalID,
 		arg.ClimbDayID,
 		arg.Grade,
-		arg.Color,
 		arg.HoldColor,
 		arg.ClimbType,
 		arg.FinishType,
@@ -45,7 +43,7 @@ func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32
 }
 
 const climbGet = `-- name: ClimbGet :one
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
+SELECT id, user_id, external_id, climb_day_id, grade, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE id = $1
 `
@@ -59,7 +57,6 @@ func (q *Queries) ClimbGet(ctx context.Context, id int32) (Climb, error) {
 		&i.ExternalID,
 		&i.ClimbDayID,
 		&i.Grade,
-		&i.Color,
 		&i.HoldColor,
 		&i.ClimbType,
 		&i.FinishType,
@@ -69,7 +66,7 @@ func (q *Queries) ClimbGet(ctx context.Context, id int32) (Climb, error) {
 }
 
 const climbGetAllByClimbDay = `-- name: ClimbGetAllByClimbDay :many
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
+SELECT id, user_id, external_id, climb_day_id, grade, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE climb_day_id = $1
 `
@@ -89,7 +86,6 @@ func (q *Queries) ClimbGetAllByClimbDay(ctx context.Context, climbDayID int32) (
 			&i.ExternalID,
 			&i.ClimbDayID,
 			&i.Grade,
-			&i.Color,
 			&i.HoldColor,
 			&i.ClimbType,
 			&i.FinishType,
@@ -106,7 +102,7 @@ func (q *Queries) ClimbGetAllByClimbDay(ctx context.Context, climbDayID int32) (
 }
 
 const climbGetByExternal = `-- name: ClimbGetByExternal :one
-SELECT id, user_id, external_id, climb_day_id, grade, color, hold_color, climb_type, finish_type, source
+SELECT id, user_id, external_id, climb_day_id, grade, hold_color, climb_type, finish_type, source
 FROM climbs
 WHERE external_id = $1
 `
@@ -120,7 +116,6 @@ func (q *Queries) ClimbGetByExternal(ctx context.Context, externalID string) (Cl
 		&i.ExternalID,
 		&i.ClimbDayID,
 		&i.Grade,
-		&i.Color,
 		&i.HoldColor,
 		&i.ClimbType,
 		&i.FinishType,
@@ -131,14 +126,13 @@ func (q *Queries) ClimbGetByExternal(ctx context.Context, externalID string) (Cl
 
 const climbUpdate = `-- name: ClimbUpdate :exec
 UPDATE climbs
-SET grade = $2, color = $3, hold_color = $4, climb_type = $5, finish_type = $6
+SET grade = $2, hold_color = $3, climb_type = $4, finish_type = $5
 WHERE id = $1
 `
 
 type ClimbUpdateParams struct {
 	ID         int32
 	Grade      int32
-	Color      string
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
@@ -148,7 +142,6 @@ func (q *Queries) ClimbUpdate(ctx context.Context, arg ClimbUpdateParams) error 
 	_, err := q.db.Exec(ctx, climbUpdate,
 		arg.ID,
 		arg.Grade,
-		arg.Color,
 		arg.HoldColor,
 		arg.ClimbType,
 		arg.FinishType,
