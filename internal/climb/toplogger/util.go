@@ -12,10 +12,6 @@ import (
 	"github.com/Topvennie/beta-log/internal/database/model"
 )
 
-func parseDate(date string) (time.Time, error) {
-	return time.Parse("2006-01-02", date)
-}
-
 func (c *Client) request(ctx context.Context, token, method, url string, body io.Reader) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s/%s", baseURL, url), body)
 	if err != nil {
@@ -25,7 +21,8 @@ func (c *Client) request(ctx context.Context, token, method, url string, body io
 	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, 0, fmt.Errorf("do http request %w", err)
 	}
@@ -44,7 +41,7 @@ func (c *Client) request(ctx context.Context, token, method, url string, body io
 func (c *Client) resetSetting(ctx context.Context, setting model.Setting) error {
 	setting.ClimbToploggerAuthToken = ""
 	setting.ClimbToploggerRefreshToken = ""
-	setting.ClimbTopLoggerExpiration = time.Time{}
+	setting.ClimbToploggerExpiration = time.Time{}
 
 	return c.setting.ToploggerUpdate(ctx, setting)
 }
@@ -64,12 +61,14 @@ func getError(data []byte) error {
 		return nil
 	}
 
-	switch result[0].Errors[0].Extension.OriginalError.StatusCode {
-	case 401:
-		return ErrUnauthorized
-	case 403:
-		return ErrUnauthorized
-	default:
-		return errors.New(result[0].Errors[0].Message)
+	var errs []error
+	for _, e := range result[0].Errors {
+		switch e.Extension.OriginalError.StatusCode {
+		case 401, 403:
+			errs = append(errs, ErrUnauthorized)
+		default:
+			errs = append(errs, errors.New(e.Message))
+		}
 	}
+	return errors.Join(errs...)
 }

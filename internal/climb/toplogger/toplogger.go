@@ -14,11 +14,14 @@ import (
 )
 
 const (
-	baseURL      = "https://app.toplogger.nu"
-	uploadURL    = "https://upload.toplogger.nu"
-	queryDayList = `[{"operationName":"climbDaysSessionsList","variables":{"pagination":{"page":%d,"perPage":10},"userId":"%s"},"query":"query climbDaysSessionsList($userId: ID!, $bouldersTotalTriesMin: Int, $routesTotalTriesMin: Int, $statsAtDateMin: DateTime, $statsAtDateMax: DateTime, $pagination: PaginationInputClimbDays) {\n  climbDaysPaginated(\n    userId: $userId\n    totalTriesMin: 1\n    bouldersTotalTriesMin: $bouldersTotalTriesMin\n    routesTotalTriesMin: $routesTotalTriesMin\n    statsAtDateMin: $statsAtDateMin\n    statsAtDateMax: $statsAtDateMax\n    pagination: $pagination\n    updateDayStatsIfOld: true\n  ) {\n    pagination {\n      ...pagination\n      __typename\n    }\n    data {\n      id\n      ...climbDayForSessionsList\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment climbDayForUseSessionSummaryTitle on ClimbDay {\n  id\n  title\n  routesTotalTries\n  bouldersTotalTries\n  routesDayGradeMax\n  bouldersDayGradeMax\n  __typename\n}\n\nfragment climbDayForSessionSummaryTitle on ClimbDay {\n  id\n  description\n  statsAtDate\n  bouldersDayGrade\n  routesDayGrade\n  gym {\n    id\n    name\n    nameSlug\n    iconPath\n    __typename\n  }\n  user {\n    id\n    fullName\n    avatarUploadPath\n    __typename\n  }\n  ...climbDayForUseSessionSummaryTitle\n  __typename\n}\n\nfragment gymForGradingSystem on Gym {\n  id\n  gradingSystemRoutes\n  gradingSystemBoulders\n  gradingSystemRoutesCustom\n  gradingSystemBouldersCustom\n  __typename\n}\n\nfragment climbDayForSessionSummaryMetrics on ClimbDay {\n  id\n  bouldersTotalTries\n  bouldersDayGrade\n  bouldersDayGradeFlPct\n  bouldersDayGradeRepeatPct\n  routesTotalTries\n  routesDayGrade\n  routesDayGradeOsPct\n  routesDayGradeRepeatPct\n  routesTotalHeight\n  gym {\n    ...gymForGradingSystem\n    __typename\n  }\n  __typename\n}\n\nfragment gymForClimbTagColor on Gym {\n  id\n  climbGroups {\n    id\n    climbGroupBy\n    color\n    __typename\n  }\n  __typename\n}\n\nfragment gymForSimpleMapClimb on Gym {\n  id\n  ...gymForGradingSystem\n  ...gymForClimbTagColor\n  __typename\n}\n\nfragment climbForClimbTagColor on Climb {\n  id\n  climbGroupClimbs {\n    id\n    climbGroupId\n    __typename\n  }\n  __typename\n}\n\nfragment climbForSimpleMapClimb on Climb {\n  id\n  positionX\n  positionY\n  grade\n  label\n  climbType\n  holdColor {\n    id\n    color\n    colorSecondary\n    __typename\n  }\n  ...climbForClimbTagColor\n  __typename\n}\n\nfragment climbDayForSessionMap on ClimbDay {\n  id\n  gym {\n    id\n    floorplanPath\n    ...gymForSimpleMapClimb\n    __typename\n  }\n  climbUserDaysRoutes: climbUserDays(climbType: \"route\", limit: 5) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  climbUserDaysBoulders: climbUserDays(climbType: \"boulder\", limit: 10) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionSummary on ClimbDay {\n  id\n  statsAtDate\n  bouldersTotalTries\n  bouldersDayGradeMax\n  routesTotalTries\n  routesDayGradeMax\n  ...climbDayForSessionSummaryTitle\n  ...climbDayForSessionSummaryMetrics\n  ...climbDayForSessionMap\n  __typename\n}\n\nfragment climbDayForSessionRoute on ClimbDay {\n  id\n  userId\n  __typename\n}\n\nfragment climbDayForFeedback on ClimbDay {\n  id\n  userId\n  likesCount\n  commentsCount\n  likeMe {\n    id\n    __typename\n  }\n  likesForAvatarStack: comments(type: \"LIKE\", limit: 3) {\n    id\n    user {\n      id\n      avatarUploadPath\n      __typename\n    }\n    __typename\n  }\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForLikeBtn on ClimbDay {\n  id\n  userId\n  likeMe {\n    id\n    __typename\n  }\n  ...climbDayForFeedback\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForSession on ClimbDay {\n  id\n  ...climbDayForSessionSummary\n  ...climbDayForSessionRoute\n  ...climbDayForFeedback\n  ...climbDayForLikeBtn\n  __typename\n}\n\nfragment pagination on Pagination {\n  total\n  page\n  perPage\n  orderBy {\n    key\n    order\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionsList on ClimbDay {\n  id\n  ...climbDayForSession\n  __typename\n}"}]`
-	queryDayLog  = `[{"operationName":"climbLogsSession","variables":{"pagination":{"orderBy":[{"key":"points","order":"desc"}]},"gymId":"%s","userId":"%s","climbedAtDate":"%s","climbType":"boulder"},"query":"query climbLogsSession($gymId: ID, $userId: ID!, $climbedAtDate: DateTime, $pagination: PaginationInputClimbLogs, $compRoundId: ID, $climbType: ClimbType) {\n  climbLogs(\n    gymId: $gymId\n    userId: $userId\n    climbedAtDate: $climbedAtDate\n    climbType: $climbType\n    pagination: $pagination\n  ) {\n    pagination {\n      ...pagination\n      __typename\n    }\n    data {\n      id\n      climbId\n      ...climbLogForSessionClimb\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment climbForClimbLog on Climb {\n  id\n  leadRequired\n  outAt\n  compRoundClimb(compRoundId: $compRoundId) {\n    id\n    leadRequired\n    __typename\n  }\n  __typename\n}\n\nfragment climbLogForRemove on ClimbLog {\n  id\n  gymId\n  climbId\n  __typename\n}\n\nfragment compClimbLogForScoreSystemResultsPoints on CompClimbLog {\n  id\n  points\n  pointsBase\n  pointsBonus\n  pointsJson\n  __typename\n}\n\nfragment compClimbLogForScoreSystemResults on CompClimbLog {\n  id\n  ...compClimbLogForScoreSystemResultsPoints\n  __typename\n}\n\nfragment climbLog on ClimbLog {\n  id\n  gymId\n  userId\n  climbId\n  climbType\n  topped\n  foreknowledge\n  zones\n  clips\n  holds\n  duration\n  lead\n  hangs\n  comments\n  tryIndex\n  tickIndex\n  ticked\n  tickType\n  points\n  climbedAtDate\n  ...climbLogForRemove\n  compClimbLog(compRoundId: $compRoundId) {\n    id\n    points\n    pointsBase\n    pointsBonus\n    pointsJson\n    ...compClimbLogForScoreSystemResults\n    __typename\n  }\n  __typename\n}\n\nfragment pagination on Pagination {\n  total\n  page\n  perPage\n  orderBy {\n    key\n    order\n    __typename\n  }\n  __typename\n}\n\nfragment climbLogForSessionClimb on ClimbLog {\n  id\n  userId\n  points\n  pointsBonus\n  tryIndex\n  tickIndex\n  ticked\n  tickType\n  climb {\n    id\n    name\n    grade\n    climbType\n    leadRequired\n    outAt\n    holdColor {\n      id\n      color\n      colorSecondary\n      __typename\n    }\n    wall {\n      id\n      nameLoc\n      __typename\n    }\n    gym {\n      id\n      name\n      nameSlug\n      __typename\n    }\n    ...climbForClimbLog\n    __typename\n  }\n  ...climbLog\n  __typename\n}"}]`
-	queryRefetch = `[{"operationName":"authSigninRefreshToken","variables":{"refreshToken":"%s"},"query":"mutation authSigninRefreshToken($refreshToken: JWT!) {\n  tokens: authSigninRefreshToken(refreshToken: $refreshToken) {\n    ...authTokens\n    __typename\n  }\n}\n\nfragment authTokens on AuthTokens {\n  access {\n    token\n    expiresAt\n    __typename\n  }\n  refresh {\n    token\n    expiresAt\n    __typename\n  }\n  __typename\n}"}]`
+	baseURL   = "https://app.toplogger.nu"
+	uploadURL = "https://upload.toplogger.nu"
+	// interDayDelay is an arbitrary pause to avoid spamming the toplogger
+	// endpoint when fetching many sessions in a row.
+	interDayDelay = 500 * time.Millisecond
+	queryDayList  = `[{"operationName":"climbDaysSessionsList","variables":{"pagination":{"page":%d,"perPage":10},"userId":"%s"},"query":"query climbDaysSessionsList($userId: ID!, $bouldersTotalTriesMin: Int, $routesTotalTriesMin: Int, $statsAtDateMin: DateTime, $statsAtDateMax: DateTime, $pagination: PaginationInputClimbDays) {\n  climbDaysPaginated(\n    userId: $userId\n    totalTriesMin: 1\n    bouldersTotalTriesMin: $bouldersTotalTriesMin\n    routesTotalTriesMin: $routesTotalTriesMin\n    statsAtDateMin: $statsAtDateMin\n    statsAtDateMax: $statsAtDateMax\n    pagination: $pagination\n    updateDayStatsIfOld: true\n  ) {\n    pagination {\n      ...pagination\n      __typename\n    }\n    data {\n      id\n      ...climbDayForSessionsList\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment climbDayForUseSessionSummaryTitle on ClimbDay {\n  id\n  title\n  routesTotalTries\n  bouldersTotalTries\n  routesDayGradeMax\n  bouldersDayGradeMax\n  __typename\n}\n\nfragment climbDayForSessionSummaryTitle on ClimbDay {\n  id\n  description\n  statsAtDate\n  bouldersDayGrade\n  routesDayGrade\n  gym {\n    id\n    name\n    nameSlug\n    iconPath\n    __typename\n  }\n  user {\n    id\n    fullName\n    avatarUploadPath\n    __typename\n  }\n  ...climbDayForUseSessionSummaryTitle\n  __typename\n}\n\nfragment gymForGradingSystem on Gym {\n  id\n  gradingSystemRoutes\n  gradingSystemBoulders\n  gradingSystemRoutesCustom\n  gradingSystemBouldersCustom\n  __typename\n}\n\nfragment climbDayForSessionSummaryMetrics on ClimbDay {\n  id\n  bouldersTotalTries\n  bouldersDayGrade\n  bouldersDayGradeFlPct\n  bouldersDayGradeRepeatPct\n  routesTotalTries\n  routesDayGrade\n  routesDayGradeOsPct\n  routesDayGradeRepeatPct\n  routesTotalHeight\n  gym {\n    ...gymForGradingSystem\n    __typename\n  }\n  __typename\n}\n\nfragment gymForClimbTagColor on Gym {\n  id\n  climbGroups {\n    id\n    climbGroupBy\n    color\n    __typename\n  }\n  __typename\n}\n\nfragment gymForSimpleMapClimb on Gym {\n  id\n  ...gymForGradingSystem\n  ...gymForClimbTagColor\n  __typename\n}\n\nfragment climbForClimbTagColor on Climb {\n  id\n  climbGroupClimbs {\n    id\n    climbGroupId\n    __typename\n  }\n  __typename\n}\n\nfragment climbForSimpleMapClimb on Climb {\n  id\n  positionX\n  positionY\n  grade\n  label\n  climbType\n  holdColor {\n    id\n    color\n    colorSecondary\n    __typename\n  }\n  ...climbForClimbTagColor\n  __typename\n}\n\nfragment climbDayForSessionMap on ClimbDay {\n  id\n  gym {\n    id\n    floorplanPath\n    ...gymForSimpleMapClimb\n    __typename\n  }\n  climbUserDaysRoutes: climbUserDays(climbType: \"route\", limit: 5) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  climbUserDaysBoulders: climbUserDays(climbType: \"boulder\", limit: 10) {\n    id\n    tickType\n    wasRepeat\n    climb {\n      id\n      ...climbForSimpleMapClimb\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionSummary on ClimbDay {\n  id\n  statsAtDate\n  bouldersTotalTries\n  bouldersDayGradeMax\n  routesTotalTries\n  routesDayGradeMax\n  ...climbDayForSessionSummaryTitle\n  ...climbDayForSessionSummaryMetrics\n  ...climbDayForSessionMap\n  __typename\n}\n\nfragment climbDayForSessionRoute on ClimbDay {\n  id\n  userId\n  __typename\n}\n\nfragment climbDayForFeedback on ClimbDay {\n  id\n  userId\n  likesCount\n  commentsCount\n  likeMe {\n    id\n    __typename\n  }\n  likesForAvatarStack: comments(type: \"LIKE\", limit: 3) {\n    id\n    user {\n      id\n      avatarUploadPath\n      __typename\n    }\n    __typename\n  }\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForLikeBtn on ClimbDay {\n  id\n  userId\n  likeMe {\n    id\n    __typename\n  }\n  ...climbDayForFeedback\n  ...climbDayForSessionRoute\n  __typename\n}\n\nfragment climbDayForSession on ClimbDay {\n  id\n  ...climbDayForSessionSummary\n  ...climbDayForSessionRoute\n  ...climbDayForFeedback\n  ...climbDayForLikeBtn\n  __typename\n}\n\nfragment pagination on Pagination {\n  total\n  page\n  perPage\n  orderBy {\n    key\n    order\n    __typename\n  }\n  __typename\n}\n\nfragment climbDayForSessionsList on ClimbDay {\n  id\n  ...climbDayForSession\n  __typename\n}"}]`
+	queryDayLog   = `[{"operationName":"climbLogsSession","variables":{"pagination":{"orderBy":[{"key":"points","order":"desc"}]},"gymId":"%s","userId":"%s","climbedAtDate":"%s","climbType":"boulder"},"query":"query climbLogsSession($gymId: ID, $userId: ID!, $climbedAtDate: DateTime, $pagination: PaginationInputClimbLogs, $compRoundId: ID, $climbType: ClimbType) {\n  climbLogs(\n    gymId: $gymId\n    userId: $userId\n    climbedAtDate: $climbedAtDate\n    climbType: $climbType\n    pagination: $pagination\n  ) {\n    pagination {\n      ...pagination\n      __typename\n    }\n    data {\n      id\n      climbId\n      ...climbLogForSessionClimb\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment climbForClimbLog on Climb {\n  id\n  leadRequired\n  outAt\n  compRoundClimb(compRoundId: $compRoundId) {\n    id\n    leadRequired\n    __typename\n  }\n  __typename\n}\n\nfragment climbLogForRemove on ClimbLog {\n  id\n  gymId\n  climbId\n  __typename\n}\n\nfragment compClimbLogForScoreSystemResultsPoints on CompClimbLog {\n  id\n  points\n  pointsBase\n  pointsBonus\n  pointsJson\n  __typename\n}\n\nfragment compClimbLogForScoreSystemResults on CompClimbLog {\n  id\n  ...compClimbLogForScoreSystemResultsPoints\n  __typename\n}\n\nfragment climbLog on ClimbLog {\n  id\n  gymId\n  userId\n  climbId\n  climbType\n  topped\n  foreknowledge\n  zones\n  clips\n  holds\n  duration\n  lead\n  hangs\n  comments\n  tryIndex\n  tickIndex\n  ticked\n  tickType\n  points\n  climbedAtDate\n  ...climbLogForRemove\n  compClimbLog(compRoundId: $compRoundId) {\n    id\n    points\n    pointsBase\n    pointsBonus\n    pointsJson\n    ...compClimbLogForScoreSystemResults\n    __typename\n  }\n  __typename\n}\n\nfragment pagination on Pagination {\n  total\n  page\n  perPage\n  orderBy {\n    key\n    order\n    __typename\n  }\n  __typename\n}\n\nfragment climbLogForSessionClimb on ClimbLog {\n  id\n  userId\n  points\n  pointsBonus\n  tryIndex\n  tickIndex\n  ticked\n  tickType\n  climb {\n    id\n    name\n    grade\n    climbType\n    leadRequired\n    outAt\n    holdColor {\n      id\n      color\n      colorSecondary\n      __typename\n    }\n    wall {\n      id\n      nameLoc\n      __typename\n    }\n    gym {\n      id\n      name\n      nameSlug\n      __typename\n    }\n    ...climbForClimbLog\n    __typename\n  }\n  ...climbLog\n  __typename\n}"}]`
+	queryRefetch  = `[{"operationName":"authSigninRefreshToken","variables":{"refreshToken":"%s"},"query":"mutation authSigninRefreshToken($refreshToken: JWT!) {\n  tokens: authSigninRefreshToken(refreshToken: $refreshToken) {\n    ...authTokens\n    __typename\n  }\n}\n\nfragment authTokens on AuthTokens {\n  access {\n    token\n    expiresAt\n    __typename\n  }\n  refresh {\n    token\n    expiresAt\n    __typename\n  }\n  __typename\n}"}]`
 )
 
 var (
@@ -28,13 +31,11 @@ var (
 )
 
 type Client struct {
-	day     repository.ClimbDay
 	setting repository.Setting
 }
 
 func New() *Client {
 	return &Client{
-		day:     *repository.NewClimbDay(),
 		setting: *repository.NewSetting(),
 	}
 }
@@ -44,10 +45,10 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	if err != nil {
 		return nil, err
 	}
-	if setting.ClimbToploggerUserID == "" || setting.ClimbToploggerAuthToken == "" || setting.ClimbToploggerRefreshToken == "" || setting.ClimbTopLoggerExpiration.IsZero() {
+	if setting.ClimbToploggerUserID == "" || setting.ClimbToploggerAuthToken == "" || setting.ClimbToploggerRefreshToken == "" || setting.ClimbToploggerExpiration.IsZero() {
 		return nil, nil
 	}
-	if setting.ClimbTopLoggerExpiration.Before(time.Now()) {
+	if setting.ClimbToploggerExpiration.Before(time.Now()) {
 		// Refresh token expired
 		// Remove the tokens from the settings
 		if err := c.resetSetting(ctx, *setting); err != nil {
@@ -70,7 +71,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 
 	setting.ClimbToploggerAuthToken = tokens.Access.Token
 	setting.ClimbToploggerRefreshToken = tokens.Refresh.Token
-	setting.ClimbTopLoggerExpiration = tokens.Refresh.ExpiresAt
+	setting.ClimbToploggerExpiration = tokens.Refresh.ExpiresAt
 
 	if err := c.setting.ToploggerUpdate(ctx, *setting); err != nil {
 		return nil, err
@@ -83,25 +84,20 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	}
 
 	// Process each day
-	gymMap := map[string]model.ClimbGym{}
 	days := make([]model.ClimbDay, 0, len(climbDays))
 
 	for _, day := range climbDays {
-		date, err := parseDate(day.StatsAtDate)
+		date, err := time.Parse("2006-01-02", day.StatsAtDate)
 		if err != nil {
 			return nil, err
 		}
 
-		gym, ok := gymMap[day.Gym.ID]
-		if !ok {
-			gym = model.ClimbGym{
-				UserID:     user.ID,
-				ExternalID: day.Gym.ID,
-				Name:       day.Gym.Name,
-				IconPath:   fmt.Sprintf("%s/%s", uploadURL, day.Gym.IconPath),
-				Source:     model.ClimbSourceToplogger,
-			}
-			gymMap[day.Gym.ID] = gym
+		gym := model.ClimbGym{
+			UserID:     user.ID,
+			ExternalID: day.Gym.ID,
+			Name:       day.Gym.Name,
+			IconPath:   fmt.Sprintf("%s/%s", uploadURL, strings.TrimLeft(day.Gym.IconPath, "/")),
+			Source:     model.ClimbSourceToplogger,
 		}
 
 		dayClimbs, err := c.getDayClimbs(ctx, *setting, day)
@@ -143,8 +139,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 			Source:     model.ClimbSourceToplogger,
 		})
 
-		// Small timeout
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(interDayDelay)
 	}
 
 	return days, nil

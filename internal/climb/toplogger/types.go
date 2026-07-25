@@ -11,15 +11,9 @@ type pagination struct {
 }
 
 type gym struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name"`
-	IconPath    string       `json:"iconPath"`
-	ClimbGroups []climbGroup `json:"climbGroups"`
-}
-
-type climbGroup struct {
-	ID    string `json:"id"`
-	Color string `json:"color"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	IconPath string `json:"iconPath"`
 }
 
 type holdColor struct {
@@ -27,31 +21,17 @@ type holdColor struct {
 	Color string `json:"color"`
 }
 
-type climbGroupClimb struct {
-	ID           string `json:"id"`
-	ClimbGroupID string `json:"climbGroupId"`
-}
-
 type climb struct {
-	ID               string            `json:"id"`
-	Grade            int               `json:"grade"`
-	ClimbType        string            `json:"climbType"`
-	HoldColor        holdColor         `json:"holdColor"`
-	ClimbGroupClimbs []climbGroupClimb `json:"climbGroupClimbs"`
-}
-
-type climbUserDaysBoulder struct {
-	ID        string `json:"id"`
-	TickType  int    `json:"tickType"` // 1 == top, 2 == flash
-	WasRepeat bool   `json:"wasRepeat"`
-	Climb     climb  `json:"climb"`
+	ID        string    `json:"id"`
+	Grade     int       `json:"grade"`
+	ClimbType string    `json:"climbType"`
+	HoldColor holdColor `json:"holdColor"`
 }
 
 type climbDay struct {
-	ID                    string                 `json:"id"`
-	StatsAtDate           string                 `json:"statsAtDate"`
-	Gym                   gym                    `json:"gym"`
-	ClimbUserDaysBoulders []climbUserDaysBoulder `json:"climbUserDaysBoulders"`
+	ID          string `json:"id"`
+	StatsAtDate string `json:"statsAtDate"`
+	Gym         gym    `json:"gym"`
 }
 
 type climbDayPaginated struct {
@@ -59,10 +39,8 @@ type climbDayPaginated struct {
 	Data       []climbDay `json:"data"`
 }
 
-// Climb log
-
 type climbLog struct {
-	TickType  int   `json:"tickType"`  // 1 == top, 2 == flash
+	TickType  int   `json:"tickType"`  // Semantics not fully documented; 1 == top (observed)
 	TickIndex int   `json:"tickIndex"` // -1 == skip, > 0 == repeat
 	Climb     climb `json:"climb"`
 }

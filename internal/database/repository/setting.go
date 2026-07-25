@@ -45,7 +45,7 @@ func (s *Setting) ToploggerUpdate(ctx context.Context, setting model.Setting) er
 		ClimbToploggerUserID:       toString(setting.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    toString(setting.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: toString(setting.ClimbToploggerRefreshToken),
-		ClimbToploggerExpiration:   toTime(setting.ClimbTopLoggerExpiration),
+		ClimbToploggerExpiration:   toTime(setting.ClimbToploggerExpiration),
 	}); err != nil {
 		return fmt.Errorf("update setting %+v | %w", setting, err)
 	}

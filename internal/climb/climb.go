@@ -71,17 +71,13 @@ func (m *Manager) updateAll(ctx context.Context, user model.User) (string, error
 	totalNewClimbs := 0
 
 	for _, fetcher := range m.fetchers {
-		ctx, cancel := context.WithTimeout(ctx, 600*time.Second)
-
 		newClimbs, err := m.update(ctx, user, fetcher)
 		if err != nil {
 			errs = append(errs, err)
-			cancel()
 			continue
 		}
 
 		totalNewClimbs += newClimbs
-		cancel()
 	}
 
 	var msg string
