@@ -40,7 +40,7 @@ func (c *Climb) GetDays(ctx fiber.Ctx, filter dto.ClimbDayFilter) ([]dto.ClimbDa
 	return utils.SliceMap(days, dto.ClimbDayDTO), nil
 }
 
-func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.ClimbStats, error) {
+func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, error) {
 	userID, err := getID(ctx)
 	if err != nil {
 		return dto.ClimbStats{}, err
