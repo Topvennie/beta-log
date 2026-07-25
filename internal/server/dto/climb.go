@@ -67,10 +67,31 @@ func (c ClimbDayFilter) ToModel() model.ClimbDayFilter {
 	return model.ClimbDayFilter(c)
 }
 
+type ClimbStatsGraphProgress struct {
+	Date   string `json:"date"`
+	Grade  int    `json:"grade"`
+	Volume int    `json:"volume"`
+}
+
+type ClimbStatsGraphGrade struct {
+	Grade  int `json:"grade"`
+	Flash  int `json:"flash"`
+	Top    int `json:"top"`
+	Repeat int `json:"repeat"`
+}
+
 type ClimbStats struct {
-	Total    int     `json:"total"`
-	Top      int     `json:"top"`
-	TopFlash int     `json:"top_flash"`
-	Sessions int     `json:"sessions"`
-	Repeats  float64 `json:"repeats"`
+	Total            int                       `json:"total"`
+	TotalUnique      int                       `json:"total_unique"`
+	Flash            int                       `json:"flash"`
+	Top              int                       `json:"top"`
+	Repeat           int                       `json:"repeat"`
+	Best             int                       `json:"best"`
+	BestAmount       int                       `json:"best_amount"`
+	BestFlash        int                       `json:"best_flash"`
+	BestFlashAmount  int                       `json:"best_flash_amount"`
+	Sessions         int                       `json:"sessions"`
+	ClimbsPerSession float64                   `json:"climbs_per_session"`
+	GraphProgress    []ClimbStatsGraphProgress `json:"graph_progress"`
+	GraphPerGrade    []ClimbStatsGraphGrade    `json:"graph_per_grade"`
 }

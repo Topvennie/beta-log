@@ -5,7 +5,7 @@ import { LuSearch } from "react-icons/lu";
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
   fontFamilyMonospace: "monospace",
-  defaultRadius: "sm",
+  defaultRadius: "lg",
   autoContrast: true,
 
   fontSizes: {
@@ -68,8 +68,8 @@ const theme = createTheme({
     }),
     Card: Card.extend({
       defaultProps: {
-        shadow: "sm",
-        padding: "lg",
+        shadow: "none",
+        padding: "md",
       },
     }),
     Modal: Modal.extend({

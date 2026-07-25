@@ -1,6 +1,8 @@
 package api
 
 import (
+	"time"
+
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/Topvennie/beta-log/internal/server/service"
 	"github.com/gofiber/fiber/v3"
@@ -43,7 +45,28 @@ func (cl *climb) getDays(c fiber.Ctx) error {
 }
 
 func (cl *climb) getStats(c fiber.Ctx) error {
-	stats, err := cl.climb.GetStats(c)
+	startStr := fiber.Query[string](c, "start", "")
+	endStr := fiber.Query[string](c, "end", "")
+
+	var err error
+
+	start := time.Time{}
+	if startStr != "" {
+		start, err = time.Parse("02-01-2006", startStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, "invalid start format")
+		}
+	}
+
+	end := time.Time{}
+	if endStr != "" {
+		end, err = time.Parse("02-01-2006", endStr)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, "invalid end format")
+		}
+	}
+
+	stats, err := cl.climb.GetStats(c, start, end)
 	if err != nil {
 		return err
 	}

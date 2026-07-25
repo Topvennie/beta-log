@@ -64,6 +64,7 @@ FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE d.external_id = ANY($1::int[]) AND d.source = $2
+ORDER BY d.date ASC
 `
 
 type ClimbDayGetAllPopulatedByExternalSourceParams struct {
@@ -126,6 +127,7 @@ FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE d.user_id = $1
+ORDER BY d.date ASC
 `
 
 type ClimbDayGetAllPopulatedByUserRow struct {
@@ -183,6 +185,7 @@ FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
 WHERE d.user_id = $1
+ORDER BY d.date ASC
 LIMIT $2 OFFSET $3
 `
 

@@ -1,6 +1,10 @@
 package service
 
 import (
+	"math"
+	"slices"
+	"time"
+
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/server/dto"
@@ -37,7 +41,7 @@ func (c *Climb) GetDays(ctx fiber.Ctx, filter dto.ClimbDayFilter) ([]dto.ClimbDa
 	return utils.SliceMap(days, dto.ClimbDayDTO), nil
 }
 
-func (c *Climb) GetStats(ctx fiber.Ctx) (dto.ClimbStats, error) {
+func (c *Climb) GetStats(ctx fiber.Ctx, start time.Time, end time.Time) (dto.ClimbStats, error) {
 	userID, err := getID(ctx)
 	if err != nil {
 		return dto.ClimbStats{}, err
@@ -50,28 +54,87 @@ func (c *Climb) GetStats(ctx fiber.Ctx) (dto.ClimbStats, error) {
 
 	// Get all stats
 	stats := dto.ClimbStats{
-		Sessions: len(days),
+		GraphProgress: make([]dto.ClimbStatsGraphProgress, 0, len(days)),
+		GraphPerGrade: []dto.ClimbStatsGraphGrade{},
 	}
 
+	graphGrades := make(map[int]dto.ClimbStatsGraphGrade)
+
 	for _, day := range days {
+		if !start.IsZero() && day.Date.Before(start) {
+			continue
+		}
+		if !end.IsZero() && day.Date.After(end) {
+			break
+		}
+
+		stats.Sessions++
 		stats.Total += len(day.Climbs)
 
-		for _, climb := range day.Climbs {
-			if climb.Grade > stats.Top {
-				stats.Top = climb.Grade
-			}
+		dayBest := 0
 
-			if climb.FinishType == model.ClimbFinishFlash {
-				if climb.Grade > stats.TopFlash {
-					stats.TopFlash = climb.Grade
+		for _, climb := range day.Climbs {
+			graphGrade, ok := graphGrades[climb.Grade]
+			if !ok {
+				graphGrade = dto.ClimbStatsGraphGrade{
+					Grade: climb.Grade,
 				}
 			}
 
-			if climb.FinishType == model.ClimbFinishRepeat {
-				stats.Repeats++
+			switch climb.FinishType {
+			case model.ClimbFinishFlash:
+				stats.Flash++
+				stats.TotalUnique++
+				graphGrade.Flash++
+
+				if climb.Grade >= stats.Best {
+					if climb.Grade > stats.Best {
+						stats.Best = climb.Grade
+						stats.BestAmount = 0
+					}
+					stats.BestAmount++
+				}
+				if climb.Grade >= stats.BestFlash {
+					if climb.Grade > stats.BestFlash {
+						stats.BestFlash = climb.Grade
+						stats.BestFlashAmount = 1
+					}
+					stats.BestFlashAmount++
+				}
+
+			case model.ClimbFinishTop:
+				stats.Top++
+				stats.TotalUnique++
+				graphGrade.Top++
+
+				if climb.Grade > stats.Best {
+					stats.Best = climb.Grade
+				}
+
+			case model.ClimbFinishRepeat:
+				graphGrade.Repeat++
+				stats.Repeat++
 			}
+
+			if climb.Grade > dayBest {
+				dayBest = climb.Grade
+			}
+
+			graphGrades[climb.Grade] = graphGrade
+		}
+
+		if dayBest > 0 {
+			stats.GraphProgress = append(stats.GraphProgress, dto.ClimbStatsGraphProgress{
+				Date:   day.Date.Format("Jan 02"),
+				Grade:  dayBest,
+				Volume: len(day.Climbs),
+			})
 		}
 	}
+
+	stats.ClimbsPerSession = math.Round(float64(stats.Total) / float64(stats.Sessions))
+	stats.GraphPerGrade = utils.MapValues(graphGrades)
+	slices.SortFunc(stats.GraphPerGrade, func(a, b dto.ClimbStatsGraphGrade) int { return a.Grade - b.Grade })
 
 	return stats, nil
 }
