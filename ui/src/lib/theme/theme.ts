@@ -5,7 +5,7 @@ import { LuSearch } from "react-icons/lu";
 const theme = createTheme({
   fontFamily: "Inter, sans-serif",
   fontFamilyMonospace: "monospace",
-  defaultRadius: "lg",
+  defaultRadius: "md",
   autoContrast: true,
 
   fontSizes: {

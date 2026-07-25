@@ -1,14 +1,16 @@
+import { LinkButton } from "@/components/atoms/LinkButton";
 import { ClimbStat } from "@/components/climb/ClimbStat";
 import { LoadingLayout } from "@/layout/LoadingLayout";
 import { useClimbGetStats } from "@/lib/api/climb";
-import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb";
+import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
 import { ClimbStats } from "@/lib/types/climb";
 import { BarChart, BarChartSeries, ChartTooltip, CompositeChart } from '@mantine/charts';
 import { getThemeColor, Group, Stack, useMantineTheme } from "@mantine/core";
+import { LuDatabase } from "react-icons/lu";
 import { BarShapeProps, Rectangle } from "recharts";
 
-export const Climbing = () => {
-  useBreadcrumb({ title: "Climbing", weight: 10, link: { to: "/climbing" } })
+export const ClimbingDashboard = () => {
+  useHeaderContent(<HeaderContent />)
 
   const { data: stats, isLoading } = useClimbGetStats()
 
@@ -38,24 +40,7 @@ export const Climbing = () => {
         <div className="col-span-3 row-span-2">
           <ClimbStat
             title="Grade Progress (Top per Session)"
-            stat={
-              <CompositeChart
-                h={250}
-                data={stats?.graphProgress ?? []}
-                dataKey="date"
-                maxBarWidth={30}
-                series={[
-                  { name: "grade", label: "Grade", color: "blue.7", type: "line" },
-                  { name: "volume", label: "Volume", color: "rgba(18, 129, 255, 0.2)", type: "bar", yAxisId: "right" },
-                ]}
-                tickLine="none"
-                withXAxis={false}
-                withRightYAxis
-                textColor="gray.4"
-                withLegend
-                legendProps={{ verticalAlign: "bottom" }}
-              />
-            }
+            stat={<ClimbGraph graphProgress={stats?.graphProgress ?? []} />}
           />
         </div>
         <ClimbStat
@@ -104,6 +89,27 @@ export const Climbing = () => {
         </div>
       </div>
     </LoadingLayout>
+  )
+}
+
+const ClimbGraph = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
+  return (
+    <CompositeChart
+      h={250}
+      data={graphProgress}
+      dataKey="date"
+      maxBarWidth={30}
+      series={[
+        { name: "grade", label: "Grade", color: "blue.7", type: "line" },
+        { name: "volume", label: "Volume", color: "rgba(18, 129, 255, 0.2)", type: "bar", yAxisId: "right" },
+      ]}
+      tickLine="none"
+      withXAxis={false}
+      withRightYAxis
+      textColor="gray.4"
+      withLegend
+      legendProps={{ verticalAlign: "bottom" }}
+    />
   )
 }
 
@@ -186,5 +192,13 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
       legendProps={{ verticalAlign: "bottom", itemSorter: null }}
       textColor="gray.4"
     />
+  )
+}
+
+const HeaderContent = () => {
+  return (
+    <LinkButton variant="outline" to="/climbing/data" leftSection={<LuDatabase />} size="xs">
+      Manage Data
+    </LinkButton>
   )
 }
