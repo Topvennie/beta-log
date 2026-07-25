@@ -29,7 +29,6 @@ type Climb struct {
 	ExternalID string
 	ClimbDayID int
 	Grade      int
-	Color      string
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType ClimbFinish
@@ -43,7 +42,6 @@ func ClimbModel(c sqlc.Climb) *Climb {
 		ExternalID: c.ExternalID,
 		ClimbDayID: int(c.ClimbDayID),
 		Grade:      int(c.Grade),
-		Color:      c.Color,
 		HoldColor:  c.HoldColor,
 		ClimbType:  ClimbType(c.ClimbType),
 		FinishType: ClimbFinish(c.FinishType),

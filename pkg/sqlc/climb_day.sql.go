@@ -59,7 +59,7 @@ func (q *Queries) ClimbDayGet(ctx context.Context, id int32) (ClimbDay, error) {
 }
 
 const climbDayGetAllPopulatedByExternalSource = `-- name: ClimbDayGetAllPopulatedByExternalSource :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -99,7 +99,6 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, a
 			&i.Climb.ExternalID,
 			&i.Climb.ClimbDayID,
 			&i.Climb.Grade,
-			&i.Climb.Color,
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
@@ -122,7 +121,7 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, a
 }
 
 const climbDayGetAllPopulatedByUser = `-- name: ClimbDayGetAllPopulatedByUser :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -157,7 +156,6 @@ func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int3
 			&i.Climb.ExternalID,
 			&i.Climb.ClimbDayID,
 			&i.Climb.Grade,
-			&i.Climb.Color,
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
@@ -180,7 +178,7 @@ func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int3
 }
 
 const climbDayGetAllPopulatedFiltered = `-- name: ClimbDayGetAllPopulatedFiltered :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -222,7 +220,6 @@ func (q *Queries) ClimbDayGetAllPopulatedFiltered(ctx context.Context, arg Climb
 			&i.Climb.ExternalID,
 			&i.Climb.ClimbDayID,
 			&i.Climb.Grade,
-			&i.Climb.Color,
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
@@ -270,7 +267,7 @@ func (q *Queries) ClimbDayGetByExternalSource(ctx context.Context, arg ClimbDayG
 }
 
 const climbDayGetPopulated = `-- name: ClimbDayGetPopulated :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -304,7 +301,6 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 			&i.Climb.ExternalID,
 			&i.Climb.ClimbDayID,
 			&i.Climb.Grade,
-			&i.Climb.Color,
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
@@ -327,7 +323,7 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 }
 
 const climbDayGetPopulatedByExternalSource = `-- name: ClimbDayGetPopulatedByExternalSource :many
-SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.color, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
+SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
@@ -366,7 +362,6 @@ func (q *Queries) ClimbDayGetPopulatedByExternalSource(ctx context.Context, arg 
 			&i.Climb.ExternalID,
 			&i.Climb.ClimbDayID,
 			&i.Climb.Grade,
-			&i.Climb.Color,
 			&i.Climb.HoldColor,
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,

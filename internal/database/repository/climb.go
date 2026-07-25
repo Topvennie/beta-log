@@ -59,7 +59,6 @@ func (c *Climb) Create(ctx context.Context, climb *model.Climb) error {
 		ExternalID: climb.ExternalID,
 		ClimbDayID: int32(climb.ClimbDayID),
 		Grade:      int32(climb.Grade),
-		Color:      climb.Color,
 		HoldColor:  climb.HoldColor,
 		ClimbType:  sqlc.ClimbType(climb.ClimbType),
 		FinishType: sqlc.FinishType(climb.FinishType),
@@ -78,7 +77,6 @@ func (c *Climb) Update(ctx context.Context, climb model.Climb) error {
 	if err := queries(ctx).ClimbUpdate(ctx, sqlc.ClimbUpdateParams{
 		ID:         int32(climb.ID),
 		Grade:      int32(climb.Grade),
-		Color:      climb.Color,
 		HoldColor:  climb.HoldColor,
 		ClimbType:  sqlc.ClimbType(climb.ClimbType),
 		FinishType: sqlc.FinishType(climb.FinishType),

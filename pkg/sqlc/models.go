@@ -185,7 +185,6 @@ type Climb struct {
 	ExternalID string
 	ClimbDayID int32
 	Grade      int32
-	Color      string
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType

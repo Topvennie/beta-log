@@ -84,7 +84,6 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 
 	// Process each day
 	gymMap := map[string]model.ClimbGym{}
-	gymColorsMap := map[string]string{}
 	days := make([]model.ClimbDay, 0, len(climbDays))
 
 	for _, day := range climbDays {
@@ -103,10 +102,6 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 				Source:     model.ClimbSourceToplogger,
 			}
 			gymMap[day.Gym.ID] = gym
-
-			for _, climbGroup := range day.Gym.ClimbGroups {
-				gymColorsMap[climbGroup.ID] = climbGroup.Color
-			}
 		}
 
 		dayClimbs, err := c.getDayClimbs(ctx, *setting, day)
@@ -128,22 +123,10 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 				finishType = model.ClimbFinishRepeat
 			}
 
-			// Get first color
-			color := ""
-			if len(climb.Climb.ClimbGroupClimbs) > 0 {
-				for _, climbGroupClimb := range climb.Climb.ClimbGroupClimbs {
-					if c, ok := gymColorsMap[climbGroupClimb.ClimbGroupID]; ok {
-						color = c
-						break
-					}
-				}
-			}
-
 			climbs = append(climbs, model.Climb{
 				UserID:     user.ID,
 				ExternalID: climb.Climb.ID,
 				Grade:      climb.Climb.Grade,
-				Color:      color,
 				HoldColor:  climb.Climb.HoldColor.Color,
 				ClimbType:  model.ClimbType(climb.Climb.ClimbType),
 				FinishType: finishType,
