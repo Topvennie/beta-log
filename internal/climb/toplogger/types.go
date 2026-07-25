@@ -59,6 +59,19 @@ type climbDayPaginated struct {
 	Data       []climbDay `json:"data"`
 }
 
+// Climb log
+
+type climbLog struct {
+	TickType  int   `json:"tickType"`  // 1 == top, 2 == flash
+	TickIndex int   `json:"tickIndex"` // -1 == skip, > 0 == repeat
+	Climb     climb `json:"climb"`
+}
+
+type climbLogPaginated struct {
+	Pagination pagination `json:"pagination"`
+	Data       []climbLog `json:"data"`
+}
+
 // Tokens
 
 type accessToken struct {
