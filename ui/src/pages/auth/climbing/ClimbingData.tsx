@@ -1,22 +1,24 @@
 import { LoadingLayout } from "@/layout/LoadingLayout"
 import useInfiniteScroll from "react-infinite-scroll-hook"
-import { useClimbDayGetFiltered, useClimbGymCreate, useClimbGymGetAll, useClimbGymUpdate } from "@/lib/api/climb"
+import { useClimbDayGetFiltered } from "@/lib/api/climb"
+import { useGymCreate, useGymGetAll, useGymUpdate } from "@/lib/api/gym"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
-import { ClimbDay, ClimbFinish, ClimbGym, ClimbGymCreate, ClimbGymUpdate } from "@/lib/types/climb"
+import { ClimbDay, ClimbFinish } from "@/lib/types/climb"
+import { Gym, GymCreate, GymUpdate } from "@/lib/types/gym"
 import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, ColorSwatch, Divider, Group, Modal, Scroller, Stack, Tabs } from "@mantine/core"
 import { format } from "date-fns"
 import { Fragment, useState } from "react"
 import { FaGear, FaPencil, FaPlus, FaTrashCan } from "react-icons/fa6"
 import { BottomOfPage } from "@/components/atoms/BottomOfPage"
 import { useDisclosure } from "@mantine/hooks"
-import { ClimbGymForm } from "@/components/climb/ClimbGymForm"
+import { GymForm } from "@/components/gym/GymForm"
 import { notifications } from "@mantine/notifications"
 
 export const ClimbingData = () => {
   useBreadcrumb({ title: "Manage Data", weight: 20, link: { to: "/climbing/data" } })
 
   const { days, isLoading: isLoadingDays, isFetchingNextPage, hasNextPage, fetchNextPage } = useClimbDayGetFiltered()
-  const { data: gyms, isLoading: isLoadingGyms } = useClimbGymGetAll()
+  const { data: gyms, isLoading: isLoadingGyms } = useGymGetAll()
 
   const [sentryRef] = useInfiniteScroll({
     loading: isFetchingNextPage,
@@ -42,30 +44,31 @@ export const ClimbingData = () => {
   )
 }
 
-const Gyms = ({ gyms }: { gyms: ClimbGym[] }) => {
+const Gyms = ({ gyms }: { gyms: Gym[] }) => {
   const [opened, { open, close }] = useDisclosure()
 
   const [activeTab, setActiveTab] = useState<string | null>(null)
-  const [selected, setSelected] = useState<ClimbGym | undefined>()
+  const [selected, setSelected] = useState<Gym | undefined>()
 
   const handleActiveTab = (value: string | null) => {
     setActiveTab(value)
     setSelected(value ? gyms.find(g => g.id === Number(value)) : undefined)
   }
 
-  const gymCreate = useClimbGymCreate()
-  const gymUpdate = useClimbGymUpdate()
+  const gymCreate = useGymCreate()
+  const gymUpdate = useGymUpdate()
 
-  const handleCreate = (gym: ClimbGymCreate) => {
+  const handleCreate = (gym: GymCreate) => {
     return gymCreate.mutateAsync(gym, {
       onSuccess: (resp) => {
         notifications.show({ color: "green", title: "Gym", message: `Created ${gym.name}` })
-        handleActiveTab(resp.data.id.toString())
+        setSelected(resp.data)
+        setActiveTab(resp.data.id.toString())
       }
     })
   }
 
-  const handleUpdate = (gym: ClimbGymUpdate) => {
+  const handleUpdate = (gym: GymUpdate) => {
     return gymUpdate.mutateAsync(gym, {
       onSuccess: () => {
         notifications.show({ color: "green", title: "Gym", message: `Updated ${gym.name}` })
@@ -85,19 +88,21 @@ const Gyms = ({ gyms }: { gyms: ClimbGym[] }) => {
 
       <Modal opened={opened} onClose={close}>
         <Stack>
-          <Group justify="space-between">
-            <Tabs value={activeTab} onChange={handleActiveTab}>
-              <Scroller>
-                {gyms.map(g => (
-                  <Tabs.Tab key={g.id} value={g.id.toString()} disabled={g.source !== "manual"}>{g.name}</Tabs.Tab>
-                ))}
-              </Scroller>
+          <Group justify="space-between" wrap="nowrap" gap="xs">
+            <Tabs value={activeTab} onChange={handleActiveTab} style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+              <Tabs.List style={{ minWidth: 0 }}>
+                <Scroller draggable style={{ flex: 1, minWidth: 0 }}>
+                  {gyms.map(g => (
+                    <Tabs.Tab key={g.id} value={g.id.toString()} disabled={g.source !== "manual"}>{g.name}</Tabs.Tab>
+                  ))}
+                </Scroller>
+              </Tabs.List>
             </Tabs>
             <ActionIcon onClick={() => handleActiveTab(null)}><FaPlus /></ActionIcon>
           </Group>
           {selected
-            ? <ClimbGymForm key={selected.id} gym={selected} onSubmit={handleUpdate} />
-            : <ClimbGymForm gym={undefined} onSubmit={handleCreate} />
+            ? <GymForm key={selected.id} gym={selected} onSubmit={handleUpdate} />
+            : <GymForm gym={undefined} onSubmit={handleCreate} />
           }
 
         </Stack>

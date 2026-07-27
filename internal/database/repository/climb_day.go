@@ -31,7 +31,7 @@ func (c *ClimbDay) Get(ctx context.Context, id int) (*model.ClimbDay, error) {
 	return model.ClimbDayModel(day), nil
 }
 
-func (c *ClimbDay) GetByExternalSource(ctx context.Context, source model.ClimbSource, externalID string) (*model.ClimbDay, error) {
+func (c *ClimbDay) GetByExternalSource(ctx context.Context, source model.Source, externalID string) (*model.ClimbDay, error) {
 	day, err := queries(ctx).ClimbDayGetByExternalSource(ctx, sqlc.ClimbDayGetByExternalSourceParams{
 		ExternalID: externalID,
 		Source:     sqlc.ClimbSource(source),
@@ -60,7 +60,7 @@ func (c *ClimbDay) GetPopulated(ctx context.Context, id int) (*model.ClimbDay, e
 	}
 
 	day := model.ClimbDayModel(rows[0].ClimbDay)
-	day.Gym = *model.ClimbGymModel(rows[0].ClimbGym)
+	day.Gym = *model.GymModel(rows[0].Gym)
 
 	for _, row := range rows {
 		climb := model.ClimbPopulatedModel(row.Climb)
@@ -70,7 +70,7 @@ func (c *ClimbDay) GetPopulated(ctx context.Context, id int) (*model.ClimbDay, e
 	return day, nil
 }
 
-func (c *ClimbDay) GetPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalID string) (*model.ClimbDay, error) {
+func (c *ClimbDay) GetPopulatedByExternalSource(ctx context.Context, source model.Source, externalID string) (*model.ClimbDay, error) {
 	rows, err := queries(ctx).ClimbDayGetPopulatedByExternalSource(ctx, sqlc.ClimbDayGetPopulatedByExternalSourceParams{
 		ExternalID: externalID,
 		Source:     sqlc.ClimbSource(source),
@@ -87,7 +87,7 @@ func (c *ClimbDay) GetPopulatedByExternalSource(ctx context.Context, source mode
 	}
 
 	day := model.ClimbDayModel(rows[0].ClimbDay)
-	day.Gym = *model.ClimbGymModel(rows[0].ClimbGym)
+	day.Gym = *model.GymModel(rows[0].Gym)
 
 	for _, row := range rows {
 		climb := model.ClimbPopulatedModel(row.Climb)
@@ -120,7 +120,7 @@ func (c *ClimbDay) GetAllPopulatedFiltered(ctx context.Context, filter model.Cli
 		day, ok := dayMap[int(row.ClimbDay.ID)]
 		if !ok {
 			day = model.ClimbDayModel(row.ClimbDay)
-			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+			day.Gym = *model.GymModel(row.Gym)
 		}
 
 		day.Climbs = append(day.Climbs, *model.ClimbPopulatedModel(row.Climb))
@@ -137,7 +137,7 @@ func (c *ClimbDay) GetAllPopulatedFiltered(ctx context.Context, filter model.Cli
 	return days, nil
 }
 
-func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source model.ClimbSource, externalIDs []int) ([]*model.ClimbDay, error) {
+func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source model.Source, externalIDs []int) ([]*model.ClimbDay, error) {
 	rows, err := queries(ctx).ClimbDayGetAllPopulatedByExternalSource(ctx, sqlc.ClimbDayGetAllPopulatedByExternalSourceParams{
 		Column1: utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }),
 		Source:  sqlc.ClimbSource(source),
@@ -159,7 +159,7 @@ func (c *ClimbDay) GetAllPopulatedByExternalSource(ctx context.Context, source m
 		day, ok := dayMap[int(row.ClimbDay.ID)]
 		if !ok {
 			day = model.ClimbDayModel(row.ClimbDay)
-			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+			day.Gym = *model.GymModel(row.Gym)
 		}
 
 		if climb := model.ClimbPopulatedModel(row.Climb); climb != nil {
@@ -194,7 +194,7 @@ func (c *ClimbDay) GetAllPopulatedByUser(ctx context.Context, userID int) ([]*mo
 		day, ok := dayMap[int(row.ClimbDay.ID)]
 		if !ok {
 			day = model.ClimbDayModel(row.ClimbDay)
-			day.Gym = *model.ClimbGymModel(row.ClimbGym)
+			day.Gym = *model.GymModel(row.Gym)
 		}
 
 		day.Climbs = append(day.Climbs, *model.ClimbPopulatedModel(row.Climb))

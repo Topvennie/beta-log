@@ -9,20 +9,17 @@ import (
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/Topvennie/beta-log/pkg/utils"
 	"github.com/gofiber/fiber/v3"
-	"github.com/google/uuid"
 )
 
 type Climb struct {
 	climb repository.Climb
 	day   repository.ClimbDay
-	gym   repository.ClimbGym
 }
 
 func NewClimb() *Climb {
 	return &Climb{
 		climb: *repository.NewClimb(),
 		day:   *repository.NewClimbDay(),
-		gym:   *repository.NewClimbGym(),
 	}
 }
 
@@ -147,65 +144,4 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 	slices.SortFunc(stats.GraphPerGrade, func(a, b dto.ClimbStatsGraphGrade) int { return a.Grade - b.Grade })
 
 	return stats, nil
-}
-
-func (c *Climb) GetGyms(ctx fiber.Ctx) ([]dto.ClimbGym, error) {
-	userID, err := getID(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	gyms, err := c.gym.GetAllByUser(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return utils.SliceMap(gyms, dto.ClimbGymDTO), nil
-}
-
-func (c *Climb) CreateGym(ctx fiber.Ctx, gymSave dto.ClimbGymCreate) (dto.ClimbGym, error) {
-	userID, err := getID(ctx)
-	if err != nil {
-		return dto.ClimbGym{}, err
-	}
-
-	gym := gymSave.ToModel()
-	gym.UserID = userID
-	gym.ExternalID = uuid.NewString()
-	gym.Source = model.ClimbSourceManual
-
-	if err := c.gym.Create(ctx, &gym); err != nil {
-		return dto.ClimbGym{}, err
-	}
-
-	return dto.ClimbGymDTO(&gym), nil
-}
-
-func (c *Climb) UpdateGym(ctx fiber.Ctx, gymSave dto.ClimbGymUpdate) (dto.ClimbGym, error) {
-	userID, err := getID(ctx)
-	if err != nil {
-		return dto.ClimbGym{}, err
-	}
-
-	oldGym, err := c.gym.Get(ctx, gymSave.ID)
-	if err != nil {
-		return dto.ClimbGym{}, err
-	}
-	if oldGym == nil || oldGym.UserID != userID {
-		return dto.ClimbGym{}, fiber.ErrNotFound
-	}
-	if oldGym.Source != model.ClimbSourceManual {
-		return dto.ClimbGym{}, fiber.NewError(fiber.StatusBadRequest, "only manual gyms can be updated")
-	}
-
-	gym := gymSave.ToModel()
-	gym.UserID = userID
-	gym.ExternalID = oldGym.ExternalID
-	gym.Source = oldGym.Source
-
-	if err := c.gym.Update(ctx, gym); err != nil {
-		return dto.ClimbGym{}, err
-	}
-
-	return dto.ClimbGymDTO(&gym), nil
 }

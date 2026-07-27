@@ -1,6 +1,6 @@
-import z from "zod";
 import type { API } from "./api";
-import { JSONBody } from "./general";
+import { convertGym } from "./gym";
+import type { Gym } from "./gym";
 
 export type ClimbType = "boulder" | "lead";
 export type ClimbFinish = "flash" | "top" | "repeat";
@@ -15,17 +15,10 @@ export interface Climb {
   source: ClimbSource;
 }
 
-export interface ClimbGym {
-  id: number;
-  name: string;
-  iconPath: string;
-  source: ClimbSource;
-}
-
 export interface ClimbDay {
   id: number;
   date: Date;
-  gym: ClimbGym;
+  gym: Gym;
   climbs: Climb[];
   source: ClimbSource;
 }
@@ -72,18 +65,10 @@ export const convertClimb = (c: API.Climb): Climb => ({
 
 export const convertClimbs = (c: API.Climb[]): Climb[] => c.map(convertClimb);
 
-export const convertClimbGym = (g: API.ClimbGym): ClimbGym => ({
-  id: g.id,
-  name: g.name,
-  iconPath: g.icon_path,
-  source: g.source as ClimbSource,
-});
-export const convertClimbGyms = (g: API.ClimbGym[]): ClimbGym[] => g.map(convertClimbGym)
-
 export const convertClimbDay = (d: API.ClimbDay): ClimbDay => ({
   id: d.id,
   date: new Date(d.date),
-  gym: convertClimbGym(d.gym),
+  gym: convertGym(d.gym),
   climbs: convertClimbs(d.climbs),
   source: d.source as ClimbSource,
 });
@@ -105,26 +90,3 @@ export const convertClimbStats = (s: API.ClimbStats): ClimbStats => ({
   graphProgress: s.graph_progress,
   graphPerGrade: s.graph_per_grade,
 });
-
-export const convertClimbGymUpdateSchema = (g: ClimbGym): ClimbGymUpdate => {
-  return {
-    id: g.id,
-    name: g.name,
-    iconPath: g.iconPath,
-  }
-}
-
-// Schemas
-
-export const climbGymCreateSchema = z.object({
-  name: z.string().min(1),
-  iconPath: z.string().optional(),
-})
-export type ClimbGymCreate = z.infer<typeof climbGymCreateSchema> & JSONBody
-
-export const climbGymUpdateSchema = z.object({
-  id: z.number().positive(),
-  name: z.string().min(1),
-  iconPath: z.string().optional(),
-})
-export type ClimbGymUpdate = z.infer<typeof climbGymUpdateSchema> & JSONBody

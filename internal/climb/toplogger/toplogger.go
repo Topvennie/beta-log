@@ -92,12 +92,12 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 			return nil, err
 		}
 
-		gym := model.ClimbGym{
+		gym := model.Gym{
 			UserID:     user.ID,
 			ExternalID: day.Gym.ID,
 			Name:       day.Gym.Name,
 			IconPath:   fmt.Sprintf("%s/%s", uploadURL, strings.TrimLeft(day.Gym.IconPath, "/")),
-			Source:     model.ClimbSourceToplogger,
+			Source:     model.SourceToplogger,
 		}
 
 		dayClimbs, err := c.getDayClimbs(ctx, *setting, day)
@@ -126,7 +126,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 				HoldColor:  climb.Climb.HoldColor.Color,
 				ClimbType:  model.ClimbType(climb.Climb.ClimbType),
 				FinishType: finishType,
-				Source:     model.ClimbSourceToplogger,
+				Source:     model.SourceToplogger,
 			})
 		}
 
@@ -136,7 +136,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 			Date:       date,
 			Gym:        gym,
 			Climbs:     climbs,
-			Source:     model.ClimbSourceToplogger,
+			Source:     model.SourceToplogger,
 		})
 
 		time.Sleep(interDayDelay)

@@ -2,22 +2,29 @@ package model
 
 import "github.com/Topvennie/beta-log/pkg/sqlc"
 
-type ClimbGym struct {
+type Source string
+
+const (
+	SourceToplogger Source = "toplogger"
+	SourceManual    Source = "manual"
+)
+
+type Gym struct {
 	ID         int
 	UserID     int
 	ExternalID string
 	Name       string
 	IconPath   string
-	Source     ClimbSource
+	Source     Source
 }
 
-func ClimbGymModel(c sqlc.ClimbGym) *ClimbGym {
-	return &ClimbGym{
+func GymModel(c sqlc.Gym) *Gym {
+	return &Gym{
 		ID:         int(c.ID),
 		UserID:     int(c.UserID),
 		ExternalID: c.ExternalID,
 		Name:       c.Name,
 		IconPath:   c.IconPath,
-		Source:     ClimbSource(c.Source),
+		Source:     Source(c.Source),
 	}
 }
