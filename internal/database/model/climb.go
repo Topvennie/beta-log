@@ -21,6 +21,7 @@ type ClimbSource string
 
 const (
 	ClimbSourceToplogger ClimbSource = "toplogger"
+	ClimbSourceManual    ClimbSource = "manual"
 )
 
 type Climb struct {
