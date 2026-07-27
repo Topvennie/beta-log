@@ -15,7 +15,7 @@ import (
 
 const (
 	baseURL   = "https://app.toplogger.nu"
-	uploadURL = "https://upload.toplogger.nu"
+	uploadURL = "https://uploads.toplogger.nu"
 	// interDayDelay is an arbitrary pause to avoid spamming the toplogger
 	// endpoint when fetching many sessions in a row.
 	interDayDelay = 500 * time.Millisecond
