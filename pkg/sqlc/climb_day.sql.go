@@ -62,7 +62,7 @@ const climbDayGetAllPopulatedByExternalSource = `-- name: ClimbDayGetAllPopulate
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
-LEFT JOIN climb_gyms g ON d.gym_id = g.id
+LEFT JOIN gyms g ON d.gym_id = g.id
 WHERE d.external_id = ANY($1::int[]) AND d.source = $2
 ORDER BY d.date ASC
 `
@@ -75,7 +75,7 @@ type ClimbDayGetAllPopulatedByExternalSourceParams struct {
 type ClimbDayGetAllPopulatedByExternalSourceRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
-	ClimbGym ClimbGym
+	Gym      Gym
 }
 
 func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, arg ClimbDayGetAllPopulatedByExternalSourceParams) ([]ClimbDayGetAllPopulatedByExternalSourceRow, error) {
@@ -103,12 +103,12 @@ func (q *Queries) ClimbDayGetAllPopulatedByExternalSource(ctx context.Context, a
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
 			&i.Climb.Source,
-			&i.ClimbGym.ID,
-			&i.ClimbGym.UserID,
-			&i.ClimbGym.ExternalID,
-			&i.ClimbGym.Name,
-			&i.ClimbGym.IconPath,
-			&i.ClimbGym.Source,
+			&i.Gym.ID,
+			&i.Gym.UserID,
+			&i.Gym.ExternalID,
+			&i.Gym.Name,
+			&i.Gym.IconPath,
+			&i.Gym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -124,7 +124,7 @@ const climbDayGetAllPopulatedByUser = `-- name: ClimbDayGetAllPopulatedByUser :m
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
-LEFT JOIN climb_gyms g ON d.gym_id = g.id
+LEFT JOIN gyms g ON d.gym_id = g.id
 WHERE d.user_id = $1
 ORDER BY d.date ASC
 `
@@ -132,7 +132,7 @@ ORDER BY d.date ASC
 type ClimbDayGetAllPopulatedByUserRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
-	ClimbGym ClimbGym
+	Gym      Gym
 }
 
 func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int32) ([]ClimbDayGetAllPopulatedByUserRow, error) {
@@ -160,12 +160,12 @@ func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int3
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
 			&i.Climb.Source,
-			&i.ClimbGym.ID,
-			&i.ClimbGym.UserID,
-			&i.ClimbGym.ExternalID,
-			&i.ClimbGym.Name,
-			&i.ClimbGym.IconPath,
-			&i.ClimbGym.Source,
+			&i.Gym.ID,
+			&i.Gym.UserID,
+			&i.Gym.ExternalID,
+			&i.Gym.Name,
+			&i.Gym.IconPath,
+			&i.Gym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -181,7 +181,7 @@ const climbDayGetAllPopulatedFiltered = `-- name: ClimbDayGetAllPopulatedFiltere
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT JOIN climbs c ON c.climb_day_id = d.id
-LEFT JOIN climb_gyms g ON d.gym_id = g.id
+LEFT JOIN gyms g ON d.gym_id = g.id
 WHERE d.id IN (
   SELECT id FROM climb_days AS cd
   WHERE cd.user_id = $1
@@ -200,7 +200,7 @@ type ClimbDayGetAllPopulatedFilteredParams struct {
 type ClimbDayGetAllPopulatedFilteredRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
-	ClimbGym ClimbGym
+	Gym      Gym
 }
 
 func (q *Queries) ClimbDayGetAllPopulatedFiltered(ctx context.Context, arg ClimbDayGetAllPopulatedFilteredParams) ([]ClimbDayGetAllPopulatedFilteredRow, error) {
@@ -228,12 +228,12 @@ func (q *Queries) ClimbDayGetAllPopulatedFiltered(ctx context.Context, arg Climb
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
 			&i.Climb.Source,
-			&i.ClimbGym.ID,
-			&i.ClimbGym.UserID,
-			&i.ClimbGym.ExternalID,
-			&i.ClimbGym.Name,
-			&i.ClimbGym.IconPath,
-			&i.ClimbGym.Source,
+			&i.Gym.ID,
+			&i.Gym.UserID,
+			&i.Gym.ExternalID,
+			&i.Gym.Name,
+			&i.Gym.IconPath,
+			&i.Gym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -274,14 +274,14 @@ const climbDayGetPopulated = `-- name: ClimbDayGetPopulated :many
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
-LEFT JOIN climb_gyms g ON d.gym_id = g.id
+LEFT JOIN gyms g ON d.gym_id = g.id
 WHERE d.id = $1
 `
 
 type ClimbDayGetPopulatedRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
-	ClimbGym ClimbGym
+	Gym      Gym
 }
 
 func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDayGetPopulatedRow, error) {
@@ -309,12 +309,12 @@ func (q *Queries) ClimbDayGetPopulated(ctx context.Context, id int32) ([]ClimbDa
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
 			&i.Climb.Source,
-			&i.ClimbGym.ID,
-			&i.ClimbGym.UserID,
-			&i.ClimbGym.ExternalID,
-			&i.ClimbGym.Name,
-			&i.ClimbGym.IconPath,
-			&i.ClimbGym.Source,
+			&i.Gym.ID,
+			&i.Gym.UserID,
+			&i.Gym.ExternalID,
+			&i.Gym.Name,
+			&i.Gym.IconPath,
+			&i.Gym.Source,
 		); err != nil {
 			return nil, err
 		}
@@ -330,7 +330,7 @@ const climbDayGetPopulatedByExternalSource = `-- name: ClimbDayGetPopulatedByExt
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
 LEFT  JOIN climbs c ON c.climb_day_id = d.id
-LEFT JOIN climb_gyms g ON d.gym_id = g.id
+LEFT JOIN gyms g ON d.gym_id = g.id
 WHERE d.external_id = $1 AND d.source = $2
 `
 
@@ -342,7 +342,7 @@ type ClimbDayGetPopulatedByExternalSourceParams struct {
 type ClimbDayGetPopulatedByExternalSourceRow struct {
 	ClimbDay ClimbDay
 	Climb    Climb
-	ClimbGym ClimbGym
+	Gym      Gym
 }
 
 func (q *Queries) ClimbDayGetPopulatedByExternalSource(ctx context.Context, arg ClimbDayGetPopulatedByExternalSourceParams) ([]ClimbDayGetPopulatedByExternalSourceRow, error) {
@@ -370,12 +370,12 @@ func (q *Queries) ClimbDayGetPopulatedByExternalSource(ctx context.Context, arg 
 			&i.Climb.ClimbType,
 			&i.Climb.FinishType,
 			&i.Climb.Source,
-			&i.ClimbGym.ID,
-			&i.ClimbGym.UserID,
-			&i.ClimbGym.ExternalID,
-			&i.ClimbGym.Name,
-			&i.ClimbGym.IconPath,
-			&i.ClimbGym.Source,
+			&i.Gym.ID,
+			&i.Gym.UserID,
+			&i.Gym.ExternalID,
+			&i.Gym.Name,
+			&i.Gym.IconPath,
+			&i.Gym.Source,
 		); err != nil {
 			return nil, err
 		}

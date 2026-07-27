@@ -201,15 +201,6 @@ type ClimbDay struct {
 	Source     ClimbSource
 }
 
-type ClimbGym struct {
-	ID         int32
-	UserID     int32
-	ExternalID string
-	Name       string
-	IconPath   string
-	Source     ClimbSource
-}
-
 type Exercise struct {
 	ID        int32
 	UserID    int32
@@ -222,6 +213,15 @@ type ExercisesView struct {
 	UserID    pgtype.Int4
 	Name      pgtype.Text
 	DeletedAt pgtype.Timestamptz
+}
+
+type Gym struct {
+	ID         int32
+	UserID     int32
+	ExternalID string
+	Name       string
+	IconPath   string
+	Source     ClimbSource
 }
 
 type Session struct {

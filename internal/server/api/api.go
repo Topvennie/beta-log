@@ -20,6 +20,7 @@ func New(router fiber.Router) error {
 	newTask(routerProtected)
 	newSetting(routerProtected)
 	newClimb(routerProtected)
+	newGym(routerProtected)
 
 	return nil
 }

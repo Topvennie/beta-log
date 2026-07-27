@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ClimbGymCreate, ClimbGymUpdate, convertClimbDays, convertClimbGym, convertClimbGyms, convertClimbStats } from "../types/climb";
-import { apiGet, apiPost, apiPut } from "./query";
+import { convertClimbDays, convertClimbStats } from "../types/climb";
+import { apiGet } from "./query";
 
 const ENDPOINT = "climb";
 const PAGE_LIMIT = 10;
@@ -58,29 +58,4 @@ export const useClimbStatGetFiltered = (start?: Date, end?: Date) => {
     },
     throwOnError: true,
   });
-}
-
-export const useClimbGymGetAll = () => {
-  return useQuery({
-    queryKey: ["climb", "gym"],
-    queryFn: async () => (await apiGet(`${ENDPOINT}/gym`, convertClimbGyms)).data,
-  })
-}
-
-export const useClimbGymCreate = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (gym: ClimbGymCreate) => apiPost(`${ENDPOINT}/gym`, gym, convertClimbGym),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["climb", "gym"] })
-  })
-}
-
-export const useClimbGymUpdate = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (gym: ClimbGymUpdate) => apiPut(`${ENDPOINT}/gym/${gym.id}`, gym, convertClimbGym),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["climb", "gym"] })
-  })
 }

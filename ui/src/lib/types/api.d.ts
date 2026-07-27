@@ -71,7 +71,7 @@ export namespace API {
     source: string;
   }
 
-  export interface ClimbGym {
+  export interface Gym {
     id: number;
     name: string;
     icon_path: string;
@@ -81,7 +81,7 @@ export namespace API {
   export interface ClimbDay {
     id: number;
     date: string;
-    gym: ClimbGym;
+    gym: Gym;
     climbs: Climb[];
     source: string;
   }

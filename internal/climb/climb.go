@@ -27,7 +27,7 @@ type Manager struct {
 
 	climb    repository.Climb
 	climbDay repository.ClimbDay
-	climbGym repository.ClimbGym
+	gym      repository.Gym
 }
 
 func New() *Manager {
@@ -36,7 +36,7 @@ func New() *Manager {
 		fetchers: []Fetcher{toplogger.New()},
 		climb:    *repository.NewClimb(),
 		climbDay: *repository.NewClimbDay(),
-		climbGym: *repository.NewClimbGym(),
+		gym:      *repository.NewGym(),
 	}
 }
 
@@ -99,12 +99,12 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 
 	for _, day := range days {
 		// Create gym if  necessary
-		dbGym, err := m.climbGym.GetByExternalSource(ctx, day.Gym.Source, day.Gym.ExternalID)
+		dbGym, err := m.gym.GetByExternalSource(ctx, day.Gym.Source, day.Gym.ExternalID)
 		if err != nil {
 			return 0, err
 		}
 		if dbGym == nil {
-			if err := m.climbGym.Create(ctx, &day.Gym); err != nil {
+			if err := m.gym.Create(ctx, &day.Gym); err != nil {
 				return 0, err
 			}
 
@@ -113,7 +113,7 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 			// Did any of the fields change?
 			if day.Gym.Name != dbGym.Name || day.Gym.IconPath != dbGym.IconPath {
 				day.Gym.ID = dbGym.ID
-				if err := m.climbGym.Update(ctx, day.Gym); err != nil {
+				if err := m.gym.Update(ctx, day.Gym); err != nil {
 					return 0, err
 				}
 			}

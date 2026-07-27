@@ -14,7 +14,7 @@ type climb struct {
 	HoldColor  string            `json:"hold_color"`
 	ClimbType  model.ClimbType   `json:"climb_type"`
 	FinishType model.ClimbFinish `json:"finish_type"`
-	Source     model.ClimbSource `json:"source"`
+	Source     model.Source      `json:"source"`
 }
 
 func climbDTO(c *model.Climb) climb {
@@ -28,61 +28,19 @@ func climbDTO(c *model.Climb) climb {
 	}
 }
 
-type ClimbGym struct {
-	ID       int               `json:"id"`
-	Name     string            `json:"name"`
-	IconPath string            `json:"icon_path"`
-	Source   model.ClimbSource `json:"source"`
-}
-
-func ClimbGymDTO(g *model.ClimbGym) ClimbGym {
-	return ClimbGym{
-		ID:       g.ID,
-		Name:     g.Name,
-		IconPath: g.IconPath,
-		Source:   g.Source,
-	}
-}
-
-type ClimbGymCreate struct {
-	Name     string `json:"name" validate:"required"`
-	IconPath string `json:"icon_path"`
-}
-
-func (g ClimbGymCreate) ToModel() model.ClimbGym {
-	return model.ClimbGym{
-		Name:     g.Name,
-		IconPath: g.IconPath,
-	}
-}
-
-type ClimbGymUpdate struct {
-	ID       int    `json:"id" validate:"required,min=1"`
-	Name     string `json:"name" validate:"required"`
-	IconPath string `json:"icon_path"`
-}
-
-func (g ClimbGymUpdate) ToModel() model.ClimbGym {
-	return model.ClimbGym{
-		ID:       g.ID,
-		Name:     g.Name,
-		IconPath: g.IconPath,
-	}
-}
-
 type ClimbDay struct {
-	ID     int               `json:"id"`
-	Date   time.Time         `json:"date"`
-	Gym    ClimbGym          `json:"gym"`
-	Climbs []climb           `json:"climbs"`
-	Source model.ClimbSource `json:"source"`
+	ID     int          `json:"id"`
+	Date   time.Time    `json:"date"`
+	Gym    Gym          `json:"gym"`
+	Climbs []climb      `json:"climbs"`
+	Source model.Source `json:"source"`
 }
 
 func ClimbDayDTO(d *model.ClimbDay) ClimbDay {
 	return ClimbDay{
 		ID:     d.ID,
 		Date:   d.Date,
-		Gym:    ClimbGymDTO(&d.Gym),
+		Gym:    GymDTO(&d.Gym),
 		Climbs: utils.SliceMap(d.Climbs, func(c model.Climb) climb { return climbDTO(&c) }),
 		Source: d.Source,
 	}
