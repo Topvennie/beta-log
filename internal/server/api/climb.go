@@ -28,6 +28,8 @@ func (cl *climb) routes() {
 	cl.router.Get("/day", cl.getDays)
 	cl.router.Get("/stat", cl.getStats)
 	cl.router.Get("/gym", cl.getGyms)
+	cl.router.Post("/gym", cl.createGym)
+	cl.router.Put("/gym/:id", cl.updateGym)
 }
 
 func (cl *climb) getDays(c fiber.Ctx) error {
@@ -82,4 +84,43 @@ func (cl *climb) getGyms(c fiber.Ctx) error {
 	}
 
 	return c.JSON(gyms)
+}
+
+func (cl *climb) createGym(c fiber.Ctx) error {
+	var gym dto.ClimbGymCreate
+	if err := c.Bind().Body(&gym); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if err := dto.Validate.Struct(gym); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	newGym, err := cl.climb.CreateGym(c, gym)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(newGym)
+}
+
+func (cl *climb) updateGym(c fiber.Ctx) error {
+	var gym dto.ClimbGymUpdate
+	if err := c.Bind().Body(&gym); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if err := dto.Validate.Struct(gym); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	id := fiber.Params[int](c, "id")
+	if id != gym.ID {
+		return fiber.NewError(fiber.StatusBadRequest, "params id doesn't match body id")
+	}
+
+	newGym, err := cl.climb.UpdateGym(c, gym)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(newGym)
 }
