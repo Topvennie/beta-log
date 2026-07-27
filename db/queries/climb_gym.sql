@@ -13,6 +13,12 @@ SELECT *
 FROM climb_gyms
 WHERE external_id = ANY($1::int[]) AND source = $2;
 
+-- name: ClimbGymGetAllByUser :many
+SELECT *
+FROM climb_gyms
+WHERE user_id = $1
+ORDER BY name;
+
 -- name: ClimbGymCreate :one
 INSERT INTO climb_gyms (user_id, external_id, name, icon_path, source)
 VALUES ($1, $2, $3, $4, $5)

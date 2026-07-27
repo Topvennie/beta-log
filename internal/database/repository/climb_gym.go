@@ -59,6 +59,18 @@ func (c *ClimbGym) GetByExternalSourceIDs(ctx context.Context, source model.Clim
 	return utils.SliceMap(gyms, model.ClimbGymModel), nil
 }
 
+func (c *ClimbGym) GetAllByUser(ctx context.Context, userID int) ([]*model.ClimbGym, error) {
+	gyms, err := queries(ctx).ClimbGymGetAllByUser(ctx, int32(userID))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get climb gyms by user id %d | %w", userID, err)
+	}
+
+	return utils.SliceMap(gyms, model.ClimbGymModel), nil
+}
+
 func (c *ClimbGym) Create(ctx context.Context, gym *model.ClimbGym) error {
 	id, err := queries(ctx).ClimbGymCreate(ctx, sqlc.ClimbGymCreateParams{
 		UserID:     int32(gym.UserID),

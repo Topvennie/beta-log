@@ -1,7 +1,7 @@
 import { LinkButton } from "@/components/atoms/LinkButton";
 import { ClimbStat } from "@/components/climb/ClimbStat";
 import { LoadingLayout } from "@/layout/LoadingLayout";
-import { useClimbGetStats } from "@/lib/api/climb";
+import { useClimbStatGetFiltered } from "@/lib/api/climb";
 import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
 import { ClimbStats } from "@/lib/types/climb";
 import { BarChart, BarChartSeries, ChartTooltip, CompositeChart } from '@mantine/charts';
@@ -12,7 +12,7 @@ import { BarShapeProps, Rectangle } from "recharts";
 export const ClimbingDashboard = () => {
   useHeaderContent(<HeaderContent />)
 
-  const { data: stats, isLoading } = useClimbGetStats()
+  const { data: stats, isLoading } = useClimbStatGetFiltered()
 
   return (
     <LoadingLayout isLoading={isLoading}>
@@ -134,6 +134,7 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
     617: "orange",
     633: "blue",
     650: "blue",
+    667: "red",
   }
 
   const finishShade: Record<string, number> = {
@@ -151,9 +152,9 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
   const theme = useMantineTheme()
 
   const series = [
-    { name: "flash", label: "Flash", color: `blue.${finishShade.flash}` },
-    { name: "top", label: "Top", color: `blue.${finishShade.top}` },
-    { name: "repeat", label: "Repeat", color: `blue.${finishShade.repeat}` },
+    { name: "flash", label: "Flash", color: `green.${finishShade.flash}` },
+    { name: "top", label: "Top", color: `green.${finishShade.top}` },
+    { name: "repeat", label: "Repeat", color: `green.${finishShade.repeat}` },
   ] as BarChartSeries[]
 
   const seriesByName = Object.fromEntries(series.map(s => [s.name, s]))

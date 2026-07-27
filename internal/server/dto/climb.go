@@ -26,14 +26,14 @@ func climbDTO(c *model.Climb) climb {
 	}
 }
 
-type climbGym struct {
+type ClimbGym struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	IconPath string `json:"icon_path"`
 }
 
-func climbGymDTO(gym *model.ClimbGym) climbGym {
-	return climbGym{
+func ClimbGymDTO(gym *model.ClimbGym) ClimbGym {
+	return ClimbGym{
 		ID:       gym.ID,
 		Name:     gym.Name,
 		IconPath: gym.IconPath,
@@ -43,7 +43,7 @@ func climbGymDTO(gym *model.ClimbGym) climbGym {
 type ClimbDay struct {
 	ID     int       `json:"id"`
 	Date   time.Time `json:"date"`
-	Gym    climbGym  `json:"gym"`
+	Gym    ClimbGym  `json:"gym"`
 	Climbs []climb   `json:"climbs"`
 }
 
@@ -51,7 +51,7 @@ func ClimbDayDTO(d *model.ClimbDay) ClimbDay {
 	return ClimbDay{
 		ID:     d.ID,
 		Date:   d.Date,
-		Gym:    climbGymDTO(&d.Gym),
+		Gym:    ClimbGymDTO(&d.Gym),
 		Climbs: utils.SliceMap(d.Climbs, func(c model.Climb) climb { return climbDTO(&c) }),
 	}
 }

@@ -71,6 +71,7 @@ export const convertClimbGym = (g: API.ClimbGym): ClimbGym => ({
   name: g.name,
   iconPath: g.icon_path,
 });
+export const convertClimbGyms = (g: API.ClimbGym[]): ClimbGym[] => g.map(convertClimbGym)
 
 export const convertClimbDay = (d: API.ClimbDay): ClimbDay => ({
   id: d.id,
