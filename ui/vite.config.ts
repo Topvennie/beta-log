@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
       checker({
         // e.g. use TypeScript check
         typescript: true,
+        overlay: {
+          initialIsOpen: false,
+        },
       }),
       imagetools(),
       mantineTheme({

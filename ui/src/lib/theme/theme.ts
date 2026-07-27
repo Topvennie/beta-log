@@ -76,6 +76,7 @@ const theme = createTheme({
       defaultProps: {
         centered: true,
         size: "xl",
+        withCloseButton: false,
       },
     }),
     Select: Select.extend({
