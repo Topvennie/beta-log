@@ -44,6 +44,32 @@ func ClimbGymDTO(g *model.ClimbGym) ClimbGym {
 	}
 }
 
+type ClimbGymCreate struct {
+	Name     string `json:"name" validate:"required"`
+	IconPath string `json:"icon_path"`
+}
+
+func (g ClimbGymCreate) ToModel() model.ClimbGym {
+	return model.ClimbGym{
+		Name:     g.Name,
+		IconPath: g.IconPath,
+	}
+}
+
+type ClimbGymUpdate struct {
+	ID       int    `json:"id" validate:"required,min=1"`
+	Name     string `json:"name" validate:"required"`
+	IconPath string `json:"icon_path"`
+}
+
+func (g ClimbGymUpdate) ToModel() model.ClimbGym {
+	return model.ClimbGym{
+		ID:       g.ID,
+		Name:     g.Name,
+		IconPath: g.IconPath,
+	}
+}
+
 type ClimbDay struct {
 	ID     int               `json:"id"`
 	Date   time.Time         `json:"date"`
