@@ -68,12 +68,14 @@ export namespace API {
     hold_color: string;
     climb_type: string;
     finish_type: string;
+    source: string;
   }
 
   export interface ClimbGym {
     id: number;
     name: string;
     icon_path: string;
+    source: string;
   }
 
   export interface ClimbDay {
@@ -81,6 +83,7 @@ export namespace API {
     date: string;
     gym: ClimbGym;
     climbs: Climb[];
+    source: string;
   }
 
   export interface ClimbStatsGraphProgress {

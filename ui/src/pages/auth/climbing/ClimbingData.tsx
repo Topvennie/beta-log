@@ -1,13 +1,16 @@
 import { LoadingLayout } from "@/layout/LoadingLayout"
 import useInfiniteScroll from "react-infinite-scroll-hook"
-import { useClimbDayGetFiltered, useClimbGymGetAll } from "@/lib/api/climb"
+import { useClimbDayGetFiltered, useClimbGymCreate, useClimbGymGetAll, useClimbGymUpdate } from "@/lib/api/climb"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
-import { ClimbDay, ClimbFinish, ClimbGym } from "@/lib/types/climb"
-import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, Divider, Group, Stack } from "@mantine/core"
+import { ClimbDay, ClimbFinish, ClimbGym, ClimbGymCreate, ClimbGymUpdate } from "@/lib/types/climb"
+import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, ColorSwatch, Divider, Group, Modal, Scroller, Stack, Tabs } from "@mantine/core"
 import { format } from "date-fns"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 import { FaGear, FaPencil, FaPlus, FaTrashCan } from "react-icons/fa6"
 import { BottomOfPage } from "@/components/atoms/BottomOfPage"
+import { useDisclosure } from "@mantine/hooks"
+import { ClimbGymForm } from "@/components/climb/ClimbGymForm"
+import { notifications } from "@mantine/notifications"
 
 export const ClimbingData = () => {
   useBreadcrumb({ title: "Manage Data", weight: 20, link: { to: "/climbing/data" } })
@@ -40,14 +43,66 @@ export const ClimbingData = () => {
 }
 
 const Gyms = ({ gyms }: { gyms: ClimbGym[] }) => {
+  const [opened, { open, close }] = useDisclosure()
+
+  const [activeTab, setActiveTab] = useState<string | null>(null)
+  const [selected, setSelected] = useState<ClimbGym | undefined>()
+
+  const handleActiveTab = (value: string | null) => {
+    setActiveTab(value)
+    setSelected(value ? gyms.find(g => g.id === Number(value)) : undefined)
+  }
+
+  const gymCreate = useClimbGymCreate()
+  const gymUpdate = useClimbGymUpdate()
+
+  const handleCreate = (gym: ClimbGymCreate) => {
+    return gymCreate.mutateAsync(gym, {
+      onSuccess: (resp) => {
+        notifications.show({ color: "green", title: "Gym", message: `Created ${gym.name}` })
+        handleActiveTab(resp.data.id.toString())
+      }
+    })
+  }
+
+  const handleUpdate = (gym: ClimbGymUpdate) => {
+    return gymUpdate.mutateAsync(gym, {
+      onSuccess: () => {
+        notifications.show({ color: "green", title: "Gym", message: `Updated ${gym.name}` })
+      }
+    })
+  }
+
   return (
-    <Group>
-      <p className="text-neutral-400">Gyms:</p>
-      <p>{gyms.map(g => g.name).join(", ")}</p>
-      <Button variant="subtle" leftSection={<FaGear />}>
-        Manage
-      </Button>
-    </Group>
+    <>
+      <Group>
+        <p className="text-neutral-400">Gyms:</p>
+        <p>{gyms.map(g => g.name).join(", ")}</p>
+        <Button onClick={open} variant="subtle" leftSection={<FaGear />}>
+          Manage
+        </Button>
+      </Group>
+
+      <Modal opened={opened} onClose={close}>
+        <Stack>
+          <Group justify="space-between">
+            <Tabs value={activeTab} onChange={handleActiveTab}>
+              <Scroller>
+                {gyms.map(g => (
+                  <Tabs.Tab key={g.id} value={g.id.toString()} disabled={g.source !== "manual"}>{g.name}</Tabs.Tab>
+                ))}
+              </Scroller>
+            </Tabs>
+            <ActionIcon onClick={() => handleActiveTab(null)}><FaPlus /></ActionIcon>
+          </Group>
+          {selected
+            ? <ClimbGymForm key={selected.id} gym={selected} onSubmit={handleUpdate} />
+            : <ClimbGymForm gym={undefined} onSubmit={handleCreate} />
+          }
+
+        </Stack>
+      </Modal>
+    </>
   )
 }
 
@@ -63,7 +118,7 @@ const Day = ({ day }: { day: ClimbDay }) => {
       <Stack>
         <Group justify="space-between">
           <Group>
-            <Avatar src={day.gym.iconPath} name={day.gym.name} />
+            <Avatar src={day.gym.iconPath} name={day.gym.name} className="border" />
             <Stack gap={2}>
               <p>{format(day.date, "EEE dd MMM yyyy")}</p>
               <p className="text-neutral-400">{day.gym.name}</p>
@@ -90,7 +145,7 @@ const Day = ({ day }: { day: ClimbDay }) => {
                 {i > 0 && <Divider />}
                 <div className="grid grid-cols-4 py-xs">
                   <p>{c.grade}</p>
-                  <div className="w-4 h-4 rounded-full border border-neutral-200" style={{ background: c.holdColor }} />
+                  <ColorSwatch color={c.holdColor} size={18} />
                   <p className="text-neutral-400">{c.climbType}</p>
                   <Badge size="sm" {...finishProps[c.finishType]}>{c.finishType}</Badge>
                 </div>
