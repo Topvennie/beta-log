@@ -128,7 +128,11 @@ func (c *ClimbDay) GetAllPopulatedFiltered(ctx context.Context, filter model.Cli
 	}
 
 	days := utils.MapValues(dayMap)
-	slices.SortFunc(days, func(a, b *model.ClimbDay) int { return a.Date.Compare(b.Date) })
+	slices.SortFunc(days, func(a, b *model.ClimbDay) int { return b.Date.Compare(a.Date) })
+
+	for _, day := range days {
+		slices.SortFunc(day.Climbs, func(a, b model.Climb) int { return b.Grade - a.Grade })
+	}
 
 	return days, nil
 }

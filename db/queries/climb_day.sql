@@ -25,11 +25,15 @@ WHERE d.external_id = $1 AND d.source = $2;
 -- name: ClimbDayGetAllPopulatedFiltered :many
 SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
 FROM climb_days d
-LEFT  JOIN climbs c ON c.climb_day_id = d.id
+LEFT JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.user_id = $1
-ORDER BY d.date ASC
-LIMIT $2 OFFSET $3;
+WHERE d.id IN (
+  SELECT id FROM climb_days AS cd
+  WHERE cd.user_id = $1
+  ORDER BY cd.date DESC
+  LIMIT $2 OFFSET $3
+)
+ORDER BY d.date DESC, c.grade DESC;
 
 -- name: ClimbDayGetAllPopulatedByExternalSource :many
 SELECT sqlc.embed(d), sqlc.embed(c), sqlc.embed(g)
