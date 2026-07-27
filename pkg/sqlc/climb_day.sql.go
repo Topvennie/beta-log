@@ -180,11 +180,15 @@ func (q *Queries) ClimbDayGetAllPopulatedByUser(ctx context.Context, userID int3
 const climbDayGetAllPopulatedFiltered = `-- name: ClimbDayGetAllPopulatedFiltered :many
 SELECT d.id, d.user_id, d.external_id, d.gym_id, d.date, d.source, c.id, c.user_id, c.external_id, c.climb_day_id, c.grade, c.hold_color, c.climb_type, c.finish_type, c.source, g.id, g.user_id, g.external_id, g.name, g.icon_path, g.source
 FROM climb_days d
-LEFT  JOIN climbs c ON c.climb_day_id = d.id
+LEFT JOIN climbs c ON c.climb_day_id = d.id
 LEFT JOIN climb_gyms g ON d.gym_id = g.id
-WHERE d.user_id = $1
-ORDER BY d.date ASC
-LIMIT $2 OFFSET $3
+WHERE d.id IN (
+  SELECT id FROM climb_days AS cd
+  WHERE cd.user_id = $1
+  ORDER BY cd.date DESC
+  LIMIT $2 OFFSET $3
+)
+ORDER BY d.date DESC, c.grade DESC
 `
 
 type ClimbDayGetAllPopulatedFilteredParams struct {

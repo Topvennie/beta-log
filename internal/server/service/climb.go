@@ -147,3 +147,17 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 
 	return stats, nil
 }
+
+func (c *Climb) GetGyms(ctx fiber.Ctx) ([]dto.ClimbGym, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	gyms, err := c.gym.GetAllByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.SliceMap(gyms, dto.ClimbGymDTO), nil
+}

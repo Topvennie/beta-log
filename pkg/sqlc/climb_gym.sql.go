@@ -94,6 +94,40 @@ func (q *Queries) ClimbGymGetAllByExternalSource(ctx context.Context, arg ClimbG
 	return items, nil
 }
 
+const climbGymGetAllByUser = `-- name: ClimbGymGetAllByUser :many
+SELECT id, user_id, external_id, name, icon_path, source
+FROM climb_gyms
+WHERE user_id = $1
+ORDER BY name
+`
+
+func (q *Queries) ClimbGymGetAllByUser(ctx context.Context, userID int32) ([]ClimbGym, error) {
+	rows, err := q.db.Query(ctx, climbGymGetAllByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ClimbGym
+	for rows.Next() {
+		var i ClimbGym
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ExternalID,
+			&i.Name,
+			&i.IconPath,
+			&i.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const climbGymGetByExternalSource = `-- name: ClimbGymGetByExternalSource :one
 SELECT id, user_id, external_id, name, icon_path, source
 FROM climb_gyms

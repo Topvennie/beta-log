@@ -12,7 +12,6 @@ import (
 	"github.com/Topvennie/beta-log/internal/database/repository"
 	"github.com/Topvennie/beta-log/internal/task"
 	"github.com/Topvennie/beta-log/pkg/config"
-	"go.uber.org/zap"
 )
 
 const TaskUpdateUID = "task-climb-update"
@@ -111,11 +110,9 @@ func (m *Manager) update(ctx context.Context, user model.User, fetcher Fetcher) 
 
 			day.GymID = day.Gym.ID
 		} else {
-			zap.S().Debug(day.Gym)
 			// Did any of the fields change?
 			if day.Gym.Name != dbGym.Name || day.Gym.IconPath != dbGym.IconPath {
 				day.Gym.ID = dbGym.ID
-				zap.S().Debug("Updating")
 				if err := m.climbGym.Update(ctx, day.Gym); err != nil {
 					return 0, err
 				}

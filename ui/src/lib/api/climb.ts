@@ -1,22 +1,22 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { convertClimbDays, convertClimbStats } from "../types/climb";
+import { convertClimbDays, convertClimbGyms, convertClimbStats } from "../types/climb";
 import { apiGet } from "./query";
 
 const ENDPOINT = "climb";
 const PAGE_LIMIT = 10;
 const DATE_FORMAT = "dd-MM-yyyy";
 
-export function useClimbGetDays() {
+export const useClimbDayGetFiltered = () => {
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage, error, refetch, isFetching } = useInfiniteQuery({
-    queryKey: ["climb_days"],
+    queryKey: ["climb", "day"],
     queryFn: async ({ pageParam = 1 }) => {
       const queryParams = new URLSearchParams({
         page: pageParam.toString(),
         limit: PAGE_LIMIT.toString(),
       });
 
-      const url = `${ENDPOINT}/days?${queryParams.toString()}`;
+      const url = `${ENDPOINT}/day?${queryParams.toString()}`;
       return (await apiGet(url, convertClimbDays)).data;
     },
     initialPageParam: 1,
@@ -40,9 +40,9 @@ export function useClimbGetDays() {
   };
 }
 
-export function useClimbGetStats(start?: Date, end?: Date) {
+export const useClimbStatGetFiltered = (start?: Date, end?: Date) => {
   return useQuery({
-    queryKey: ["climb_stats", start, end],
+    queryKey: ["climb", "stat", start, end],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
 
@@ -53,9 +53,16 @@ export function useClimbGetStats(start?: Date, end?: Date) {
         queryParams.append("end", format(end, DATE_FORMAT));
       }
 
-      const url = `${ENDPOINT}/stats${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+      const url = `${ENDPOINT}/stat${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
       return (await apiGet(url, convertClimbStats)).data;
     },
     throwOnError: true,
   });
+}
+
+export const useClimbGymGetAll = () => {
+  return useQuery({
+    queryKey: ["climb", "gym"],
+    queryFn: async () => (await apiGet(`${ENDPOINT}/gym`, convertClimbGyms)).data,
+  })
 }

@@ -3,7 +3,7 @@ import { Breadcrumb as BreadcrumbType } from "@/lib/contexts/breadcrumbContext";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useBreadcrumbs } from "@/lib/hooks/useBreadcrumb";
 import { useHeaderContents } from "@/lib/hooks/useHeaderContent";
-import { AppShell, Avatar, Burger, Group, Menu, ScrollArea, Stack } from "@mantine/core";
+import { AppShell, Avatar, Box, Burger, Group, Menu, ScrollArea, Stack } from "@mantine/core";
 import { useDisclosure, useHover } from '@mantine/hooks';
 import { LinkProps, useNavigate } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
@@ -103,7 +103,7 @@ export const NavLayout = ({ children }: Props) => {
               {breadcrumbs.map((breadcrumb, idx) => (
                 <Fragment key={breadcrumb.title}>
                   <Breadcrumb breadcrumb={breadcrumb} last={idx === breadcrumbs.length - 1} />
-                  {idx < breadcrumbs.length - 1 && <p className="text-neutral-400">{`>`}</p>}
+                  {idx < breadcrumbs.length - 1 && <p className="text-neutral-400 font-bold">{`>`}</p>}
                 </Fragment>
               ))}
             </Group>
@@ -144,8 +144,10 @@ export const NavLayout = ({ children }: Props) => {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <ScrollArea p="xl" h="calc(100vh - var(--app-shell-header-height, 0px) - var(--app-shell-footer-height, 0px))">
-          {children}
+        <ScrollArea h="calc(100vh - var(--app-shell-header-height, 0px) - var(--app-shell-footer-height, 0px))">
+          <Box p="xl">
+            {children}
+          </Box>
         </ScrollArea>
       </AppShell.Main>
     </AppShell>

@@ -25,8 +25,9 @@ func newClimb(router fiber.Router) *climb {
 }
 
 func (cl *climb) routes() {
-	cl.router.Get("/days", cl.getDays)
-	cl.router.Get("/stats", cl.getStats)
+	cl.router.Get("/day", cl.getDays)
+	cl.router.Get("/stat", cl.getStats)
+	cl.router.Get("/gym", cl.getGyms)
 }
 
 func (cl *climb) getDays(c fiber.Ctx) error {
@@ -72,4 +73,13 @@ func (cl *climb) getStats(c fiber.Ctx) error {
 	}
 
 	return c.JSON(stats)
+}
+
+func (cl *climb) getGyms(c fiber.Ctx) error {
+	gyms, err := cl.climb.GetGyms(c)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(gyms)
 }
