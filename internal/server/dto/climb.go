@@ -56,13 +56,13 @@ func (c ClimbDayFilter) ToModel() model.ClimbDayFilter {
 	return model.ClimbDayFilter(c)
 }
 
-type ClimbStatsGraphProgress struct {
+type ClimbStatsProgress struct {
 	Date   string `json:"date"`
 	Grade  int    `json:"grade"`
 	Volume int    `json:"volume"`
 }
 
-type ClimbStatsGraphGrade struct {
+type ClimbStatsGrade struct {
 	Grade  int `json:"grade"`
 	Flash  int `json:"flash"`
 	Top    int `json:"top"`
@@ -70,17 +70,17 @@ type ClimbStatsGraphGrade struct {
 }
 
 type ClimbStats struct {
-	Total                  int                       `json:"total"`
-	TotalUnique            int                       `json:"total_unique"`
-	Flash                  int                       `json:"flash"`
-	Top                    int                       `json:"top"`
-	Repeat                 int                       `json:"repeat"`
-	Best                   int                       `json:"best"`
-	BestAmount             int                       `json:"best_amount"`
-	BestFlash              int                       `json:"best_flash"`
-	BestFlashAmount        int                       `json:"best_flash_amount"`
-	Sessions               int                       `json:"sessions"`
-	MedianClimbsPerSession int                       `json:"median_climbs_per_session"`
-	GraphProgress          []ClimbStatsGraphProgress `json:"graph_progress"`
-	GraphPerGrade          []ClimbStatsGraphGrade    `json:"graph_per_grade"`
+	Total                  int                  `json:"total"`
+	TotalUnique            int                  `json:"total_unique"`
+	Flash                  int                  `json:"flash"`
+	Top                    int                  `json:"top"`
+	Repeat                 int                  `json:"repeat"`
+	Best                   int                  `json:"best"`
+	BestAmount             int                  `json:"best_amount"`
+	BestFlash              int                  `json:"best_flash"`
+	BestFlashAmount        int                  `json:"best_flash_amount"`
+	Sessions               int                  `json:"sessions"`
+	MedianClimbsPerSession int                  `json:"median_climbs_per_session"`
+	GraphProgress          []ClimbStatsProgress `json:"graph_progress"`
+	GraphPerGrade          []ClimbStatsGrade    `json:"graph_per_grade"`
 }

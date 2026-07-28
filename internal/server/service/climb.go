@@ -51,11 +51,11 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 
 	// Get all stats
 	stats := dto.ClimbStats{
-		GraphProgress: make([]dto.ClimbStatsGraphProgress, 0, len(days)),
-		GraphPerGrade: []dto.ClimbStatsGraphGrade{},
+		GraphProgress: make([]dto.ClimbStatsProgress, 0, len(days)),
+		GraphPerGrade: []dto.ClimbStatsGrade{},
 	}
 
-	graphGrades := make(map[int]dto.ClimbStatsGraphGrade)
+	graphGrades := make(map[int]dto.ClimbStatsGrade)
 	perSessionClimbs := make([]int, 0, len(days))
 
 	for _, day := range days {
@@ -75,7 +75,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 		for _, climb := range day.Climbs {
 			graphGrade, ok := graphGrades[climb.Grade]
 			if !ok {
-				graphGrade = dto.ClimbStatsGraphGrade{
+				graphGrade = dto.ClimbStatsGrade{
 					Grade: climb.Grade,
 				}
 			}
@@ -124,7 +124,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 		}
 
 		if dayBest > 0 {
-			stats.GraphProgress = append(stats.GraphProgress, dto.ClimbStatsGraphProgress{
+			stats.GraphProgress = append(stats.GraphProgress, dto.ClimbStatsProgress{
 				Date:   day.Date.Format("Jan 02"),
 				Grade:  dayBest,
 				Volume: len(day.Climbs),
@@ -141,7 +141,7 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 		}
 	}
 	stats.GraphPerGrade = utils.MapValues(graphGrades)
-	slices.SortFunc(stats.GraphPerGrade, func(a, b dto.ClimbStatsGraphGrade) int { return a.Grade - b.Grade })
+	slices.SortFunc(stats.GraphPerGrade, func(a, b dto.ClimbStatsGrade) int { return a.Grade - b.Grade })
 
 	return stats, nil
 }
