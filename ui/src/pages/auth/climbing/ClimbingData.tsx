@@ -29,13 +29,16 @@ export const ClimbingData = () => {
     <LoadingLayout isLoading={isLoadingGyms || isLoadingDays}>
       <Stack>
         <Gyms gyms={gyms ?? []} />
+
         <Group justify="space-between">
           <p className="font-bold">Climbing Days</p>
           <Button variant="outline" leftSection={<FaPlus />}>
             Add Day
           </Button>
         </Group>
+
         {days.map(d => <Day key={d.id} day={d} />)}
+
         <BottomOfPage ref={sentryRef} showLoading={isFetchingNextPage} hasNextPage={hasNextPage} />
       </Stack>
     </LoadingLayout>
@@ -72,12 +75,14 @@ const Day = ({ day }: { day: ClimbDay }) => {
               <p className="text-neutral-400">{day.gym.name}</p>
             </Stack>
           </Group>
+
           <Group gap={2}>
             <p className="text-neutral-400">{`${day.climbs.length} climbs`}</p>
             <ActionIcon color="black" variant="subtle"><FaPencil /></ActionIcon>
             <ActionIcon color="black" variant="subtle"><FaTrashCan /></ActionIcon>
           </Group>
         </Group>
+
         <Card.Section className="bg-neutral-200/40 border-t border-b border-neutral-200">
           <div className="grid grid-cols-4 px-md py-xs text-neutral-400">
             <p>Grade</p>
@@ -86,6 +91,7 @@ const Day = ({ day }: { day: ClimbDay }) => {
             <p>Finish</p>
           </div>
         </Card.Section>
+
         <div className="overflow-y-auto max-h-56 scroll-">
           <Stack gap={0}>
             {day.climbs.map((c, i) => (

@@ -136,6 +136,8 @@ export namespace API {
     best_flash: number;
     best_flash_amount: number;
     sessions: number;
+    boulder: number;
+    lead: number;
     median_climbs_per_session: number;
     graph_progress: ClimbStatsProgress[];
     graph_per_grade: ClimbStatsGrade[];
