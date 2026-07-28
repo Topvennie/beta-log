@@ -8,7 +8,7 @@ import { useDisclosure, useHover } from '@mantine/hooks';
 import { LinkProps, useNavigate } from "@tanstack/react-router";
 import { Fragment, PropsWithChildren, ReactNode } from "react";
 import { FaArrowRightFromBracket, FaChevronRight, FaDumbbell, FaGear } from "react-icons/fa6";
-import { LuClock, LuLayoutDashboard, LuLayoutList, LuMountain } from "react-icons/lu";
+import { LuClock, LuLayoutDashboard, LuLayoutList, LuMountain, LuWarehouse } from "react-icons/lu";
 
 type Props = PropsWithChildren
 
@@ -37,9 +37,14 @@ const routes: Route[] = [
     link: { to: "/exercises" },
   },
   {
-    title: "climbing",
+    title: "Climbing",
     icon: <LuMountain />,
     link: { to: "/climbing" },
+  },
+  {
+    title: "Gym",
+    icon: <LuWarehouse />,
+    link: { to: "/gym" },
   },
   {
     title: "Tasks",
@@ -52,7 +57,7 @@ const Breadcrumb = ({ breadcrumb: { title, link }, last }: { breadcrumb: Breadcr
   return (
     <LinkButton
       variant="subtle"
-      color={last ? "black" : "gray.4"}
+      color={last ? "black" : "neutral.4"}
       size="compact-md"
       {...link}
     >
@@ -121,7 +126,7 @@ export const NavLayout = ({ children }: Props) => {
             {routes.map(route => <NavLink key={route.title} route={route} />)}
           </Stack>
         </AppShell.Section>
-        <AppShell.Section p="md" className="border-t border-gray-200">
+        <AppShell.Section p="md" className="border-t border-neutral-200">
           <Menu position="right-end" trigger="click-hover">
             <Menu.Target>
               <Group ref={ref} className="cursor-pointer">

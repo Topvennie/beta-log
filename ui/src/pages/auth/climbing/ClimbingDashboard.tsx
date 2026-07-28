@@ -1,5 +1,5 @@
 import { LinkButton } from "@/components/atoms/LinkButton";
-import { ClimbStat } from "@/components/climb/ClimbStat";
+import { Stat } from "@/components/atoms/Stat";
 import { LoadingLayout } from "@/layout/LoadingLayout";
 import { useClimbStatGetFiltered } from "@/lib/api/climb";
 import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
@@ -17,36 +17,36 @@ export const ClimbingDashboard = () => {
   return (
     <LoadingLayout isLoading={isLoading}>
       <div className="grid grid-cols-4 gap-4">
-        <ClimbStat
+        <Stat
           title="Total Climbs"
           stat={stats?.total}
           description={`${stats?.totalUnique} Unique`}
         />
-        <ClimbStat
+        <Stat
           title="Top Grade"
           stat={stats?.best}
           description={`${stats?.bestAmount} Times`}
         />
-        <ClimbStat
+        <Stat
           title="Top Flash"
           stat={stats?.bestFlash}
           description={`${stats?.bestFlashAmount} Times`}
         />
-        <ClimbStat
+        <Stat
           title="Sessions"
           stat={stats?.sessions}
           description={`Med. ${stats?.medianClimbsPerSession} Climbs / Session`}
         />
         <div className="col-span-3 row-span-2">
-          <ClimbStat
+          <Stat
             title="Grade Progress (Top per Session)"
             stat={<ClimbGraph graphProgress={stats?.graphProgress ?? []} />}
           />
         </div>
-        <ClimbStat
+        <Stat
           title="Finish Types"
           stat={
-            <div className="flex h-4 overflow-hidden rounded bg-gray-200">
+            <div className="flex h-4 overflow-hidden rounded bg-neutral-200">
               <div
                 className="h-4 bg-blue-700"
                 style={{ width: `${Math.round((stats?.flash ?? 0) / (stats?.total ?? 0) * 100)}%` }}
@@ -82,7 +82,7 @@ export const ClimbingDashboard = () => {
           }
         />
         <div className="col-span-4 row-span-2">
-          <ClimbStat
+          <Stat
             title="Climbs per Grade"
             stat={<ClimbBar graphPerGrade={stats?.graphPerGrade ?? []} />}
           />
@@ -95,7 +95,6 @@ export const ClimbingDashboard = () => {
 const ClimbGraph = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
   return (
     <CompositeChart
-      h={250}
       data={graphProgress}
       dataKey="date"
       maxBarWidth={30}
@@ -106,7 +105,6 @@ const ClimbGraph = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
       tickLine="none"
       withXAxis={false}
       withRightYAxis
-      textColor="gray.4"
       withLegend
       legendProps={{ verticalAlign: "bottom" }}
     />
@@ -144,7 +142,7 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
   }
 
   const getColor = (grade: number, series: BarChartSeries) => {
-    const hue = gradeHue[grade] ?? "gray"
+    const hue = gradeHue[grade] ?? "neutral"
     const shade = finishShade[series.name] ?? 5
     return `${hue}.${shade}`
   }
@@ -155,13 +153,12 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
     { name: "flash", label: "Flash", color: `green.${finishShade.flash}` },
     { name: "top", label: "Top", color: `green.${finishShade.top}` },
     { name: "repeat", label: "Repeat", color: `green.${finishShade.repeat}` },
-  ] as BarChartSeries[]
+  ] satisfies BarChartSeries[]
 
   const seriesByName = Object.fromEntries(series.map(s => [s.name, s]))
 
   return (
     <BarChart
-      h={250}
       data={graphPerGrade}
       dataKey="grade"
       type="stacked"
@@ -191,7 +188,6 @@ const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
       }}
       withLegend
       legendProps={{ verticalAlign: "bottom", itemSorter: null }}
-      textColor="gray.4"
     />
   )
 }

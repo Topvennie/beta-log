@@ -29,6 +29,42 @@ export const convertGymUpdateSchema = (g: Gym): GymUpdate => {
   }
 }
 
+export interface GymStatsVisits {
+  gym: string;
+  amount: number;
+}
+
+export interface GymStatsTop {
+  gym: string;
+  top: number;
+  flash: number;
+}
+
+export interface GymStatsDistribution {
+  gym: string;
+  distribution: Record<number, number>;
+}
+
+export interface GymStats {
+  total: number;
+  mostVisited: string;
+  mostVisitedAmount: number;
+  sessions: number;
+  graphVisits: GymStatsVisits[];
+  graphTop: GymStatsTop[];
+  graphDistribution: GymStatsDistribution[];
+}
+
+export const convertGymStats = (s: API.GymStats): GymStats => ({
+  total: s.total,
+  mostVisited: s.most_visited,
+  mostVisitedAmount: s.most_visited_amount,
+  sessions: s.sessions,
+  graphVisits: s.graph_visits,
+  graphTop: s.graph_top,
+  graphDistribution: s.graph_distribution,
+});
+
 // Schemas
 
 export const gymCreateSchema = z.object({

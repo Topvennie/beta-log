@@ -158,7 +158,7 @@ const SessionFormInner = <T extends SessionCreate | SessionUpdate>({ form, onSub
             {form.getValues().exercises.map((exercise) => <Exercise key={exercise.clientId} clientId={exercise.clientId} form={form} onDelete={handleExerciseDelete} />)}
           </SortableContext>
         </DndContext>
-        <div onClick={handleExerciseAdd} className="cursor-pointer rounded-sm border-4 border-dotted border-gray-200 py-2 px-4">
+        <div onClick={handleExerciseAdd} className="cursor-pointer rounded-sm border-4 border-dotted border-neutral-200 py-2 px-4">
           <p className="text-center text-neutral-400">Add exercise</p>
         </div>
         <Button onClick={handleSubmit} loading={submitting}>Submit</Button>
@@ -205,9 +205,9 @@ const Exercise = <T extends SessionCreate | SessionUpdate>({ form, clientId, onD
   const selectedValue = sessionExercise.variantId ? `${sessionExercise.exerciseId}:${sessionExercise.variantId}` : String(sessionExercise.exerciseId)
 
   return (
-    <Stack ref={setNodeRef} style={style} p="xs" className="border border-gray-200 rounded-sm">
+    <Stack ref={setNodeRef} style={style} p="xs" className="border border-neutral-200 rounded-sm">
       <Group justify="space-between">
-        <ActionIcon variant="subtle" color="gray" {...attributes} {...listeners}>
+        <ActionIcon variant="subtle" color="neutral" {...attributes} {...listeners}>
           <FaGripVertical />
         </ActionIcon>
         <Select

@@ -43,7 +43,7 @@ export const SettingToplogger = ({ setting }: Props) => {
         <p className="text-pretty whitespace-pre-wrap">{`Automatically import your climbs. This method will log you out of the web app (NOT the mobile app). If you ever log back in on the webapp then you will have to enter this information again.`}</p>
       </Stack>
 
-      <div className="border-l border-gray-200" />
+      <div className="border-l border-neutral-200" />
 
       <Stack className="flex-2">
         <TextInput
@@ -71,8 +71,8 @@ export const SettingToplogger = ({ setting }: Props) => {
             <li>Open the dev tools (right click on the screen -&gt; inspect)</li>
             <li>Go to the storage tab</li>
             <li>Go to local storage</li>
-            <li>Open the key <code className="px-1 bg-gray-100 rounded">tl-auth</code>, you can find your access and refresh token in the object</li>
-            <li>Open the key <code className="px-1 bg-gray-100 rounded">tl-user-states</code>, you can find your user_id underneath the version</li>
+            <li>Open the key <code className="px-1 bg-neutral-100 rounded">tl-auth</code>, you can find your access and refresh token in the object</li>
+            <li>Open the key <code className="px-1 bg-neutral-100 rounded">tl-user-states</code>, you can find your user_id underneath the version</li>
           </ol>
         </Alert>
       </Stack>

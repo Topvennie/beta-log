@@ -65,7 +65,7 @@ export const Sessions = () => {
           </Stack>
         </Stack>
 
-        <div className="border-l border-gray-200" />
+        <div className="border-l border-neutral-200" />
 
         <div className="flex-2">
           {selected

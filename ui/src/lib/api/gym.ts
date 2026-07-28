@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GymCreate, GymUpdate, convertGym, convertGyms } from "../types/gym";
+import { GymCreate, GymUpdate, convertGym, convertGymStats, convertGyms } from "../types/gym";
 import { apiGet, apiPost, apiPut } from "./query";
 
 const ENDPOINT = "gym";
@@ -8,6 +8,14 @@ export const useGymGetAll = () => {
   return useQuery({
     queryKey: ["gym"],
     queryFn: async () => (await apiGet(`${ENDPOINT}`, convertGyms)).data,
+  })
+}
+
+export const useGymGetStats = () => {
+  return useQuery({
+    queryKey: ["gym", "stat"],
+    queryFn: async () => (await apiGet(`${ENDPOINT}/stat`, convertGymStats)).data,
+    throwOnError: true,
   })
 }
 
