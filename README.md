@@ -22,7 +22,7 @@ A web application focussed around bouldering.
 ### Recommended Deployment (Docker)
 
 1. Copy `docker-compose.prod.yml` -> `docker-compose.yml`.
-2. Copy `.env.prod.example` -> `.env`.
+2. Copy `.env.example` -> `.env`.
 3. Fill in the `.env` file (see later section).
 4. Run `docker compose up -d`.
 5. The server is reachable on port **3000**.
