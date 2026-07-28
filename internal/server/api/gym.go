@@ -24,6 +24,7 @@ func newGym(router fiber.Router) *gym {
 
 func (g *gym) routes() {
 	g.router.Get("/", g.getAll)
+	g.router.Get("/stat", g.getStats)
 	g.router.Post("/", g.create)
 	g.router.Put("/:id", g.update)
 }
@@ -35,6 +36,15 @@ func (g *gym) getAll(c fiber.Ctx) error {
 	}
 
 	return c.JSON(gyms)
+}
+
+func (g *gym) getStats(c fiber.Ctx) error {
+	stats, err := g.gym.GetStats(c)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(stats)
 }
 
 func (g *gym) create(c fiber.Ctx) error {
