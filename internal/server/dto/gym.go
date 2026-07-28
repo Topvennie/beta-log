@@ -43,3 +43,29 @@ func (g GymUpdate) ToModel() model.Gym {
 		IconPath: g.IconPath,
 	}
 }
+
+type GymStatsVisits struct {
+	Gym    string `json:"gym"`
+	Amount int    `json:"amount"`
+}
+
+type GymStatsTop struct {
+	Gym   string `json:"gym"`
+	Top   int    `json:"top"`
+	Flash int    `json:"flash"`
+}
+
+type GymStatsDistribution struct {
+	Gym          string      `json:"gym"`
+	Distribution map[int]int `json:"distribution"`
+}
+
+type GymStats struct {
+	Total             int                    `json:"total"`
+	MostVisited       string                 `json:"most_visited"`
+	MostVisitedAmount int                    `json:"most_visited_amount"`
+	Sessions          int                    `json:"sessions"`
+	GraphVisits       []GymStatsVisits       `json:"graph_visits"`
+	GraphTop          []GymStatsTop          `json:"graph_top"`
+	GraphDistribution []GymStatsDistribution `json:"graph_distribution"`
+}
