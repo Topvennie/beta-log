@@ -62,15 +62,6 @@ export namespace API {
     duration: number;
   }
 
-  export interface Climb {
-    id: number;
-    grade: number;
-    hold_color: string;
-    climb_type: string;
-    finish_type: string;
-    source: string;
-  }
-
   export interface Gym {
     id: number;
     name: string;
@@ -104,6 +95,15 @@ export namespace API {
     distribution: Record<number, number>;
   }
 
+  export interface Climb {
+    id: number;
+    grade: number;
+    hold_color: string;
+    climb_type: string;
+    finish_type: string;
+    source: string;
+  }
+
   export interface ClimbDay {
     id: number;
     date: string;
@@ -112,13 +112,13 @@ export namespace API {
     source: string;
   }
 
-  export interface ClimbStatsGraphProgress {
+  export interface ClimbStatsProgress {
     date: string;
     grade: number;
     volume: number;
   }
 
-  export interface ClimbStatsGraphGrade {
+  export interface ClimbStatsGrade {
     grade: number;
     flash: number;
     top: number;
@@ -137,7 +137,7 @@ export namespace API {
     best_flash_amount: number;
     sessions: number;
     median_climbs_per_session: number;
-    graph_progress: ClimbStatsGraphProgress[];
-    graph_per_grade: ClimbStatsGraphGrade[];
+    graph_progress: ClimbStatsProgress[];
+    graph_per_grade: ClimbStatsGrade[];
   }
 }

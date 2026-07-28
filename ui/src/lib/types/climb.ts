@@ -23,13 +23,13 @@ export interface ClimbDay {
   source: ClimbSource;
 }
 
-export interface ClimbStatsGraphProgress {
+export interface ClimbStatsProgress {
   date: string;
   grade: number;
   volume: number;
 }
 
-export interface ClimbStatsGraphGrade {
+export interface ClimbStatsGrade {
   grade: number;
   flash: number;
   top: number;
@@ -48,8 +48,8 @@ export interface ClimbStats {
   bestFlashAmount: number;
   sessions: number;
   medianClimbsPerSession: number;
-  graphProgress: ClimbStatsGraphProgress[];
-  graphPerGrade: ClimbStatsGraphGrade[];
+  graphProgress: ClimbStatsProgress[];
+  graphPerGrade: ClimbStatsGrade[];
 }
 
 // Converts
