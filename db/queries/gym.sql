@@ -28,3 +28,7 @@ RETURNING id;
 UPDATE gyms
 SET name = $2, icon_path = $3
 WHERE id = $1;
+
+-- name: GymDelete :exec
+DELETE FROM gyms
+WHERE id = $1;

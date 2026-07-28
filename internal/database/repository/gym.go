@@ -99,3 +99,11 @@ func (c *Gym) Update(ctx context.Context, gym model.Gym) error {
 
 	return nil
 }
+
+func (c *Gym) Delete(ctx context.Context, id int) error {
+	if err := queries(ctx).GymDelete(ctx, int32(id)); err != nil {
+		return fmt.Errorf("delete gym with id %d | %w", id, err)
+	}
+
+	return nil
+}

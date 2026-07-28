@@ -27,6 +27,7 @@ func (g *gym) routes() {
 	g.router.Get("/stat", g.getStats)
 	g.router.Post("/", g.create)
 	g.router.Put("/:id", g.update)
+	g.router.Delete("/:id", g.delete)
 }
 
 func (g *gym) getAll(c fiber.Ctx) error {
@@ -84,4 +85,17 @@ func (g *gym) update(c fiber.Ctx) error {
 	}
 
 	return c.JSON(newGym)
+}
+
+func (g *gym) delete(c fiber.Ctx) error {
+	id := fiber.Params[int](c, "id")
+	if id < 1 {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid id")
+	}
+
+	if err := g.gym.Delete(c, id); err != nil {
+		return err
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
 }
