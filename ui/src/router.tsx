@@ -13,6 +13,9 @@ import { Tasks } from "./pages/auth/Tasks";
 import { Climbing } from "./pages/auth/climbing/Climbing";
 import { ClimbingData } from "./pages/auth/climbing/ClimbingData";
 import { ClimbingDashboard } from "./pages/auth/climbing/ClimbingDashboard";
+import { Gym } from "./pages/auth/gym/Gym";
+import { GymDashboard } from "./pages/auth/gym/GymDashboard";
+import { GymData } from "./pages/auth/gym/GymData";
 
 type Context = {
   queryClient: QueryClient,
@@ -52,6 +55,8 @@ const tasks = createRoute({
   component: Tasks,
 })
 
+// Climbing
+
 const climbing = createRoute({
   getParentRoute: () => index,
   path: "/climbing",
@@ -70,6 +75,26 @@ const climbingData = createRoute({
   component: ClimbingData,
 })
 
+// Gym
+
+const gym = createRoute({
+  getParentRoute: () => index,
+  path: "/gym",
+  component: Gym,
+})
+
+const gymDashboard = createRoute({
+  getParentRoute: () => gym,
+  path: "/",
+  component: GymDashboard,
+})
+
+const gymData = createRoute({
+  getParentRoute: () => gym,
+  path: "/data",
+  component: GymData,
+})
+
 const settings = createRoute({
   getParentRoute: () => index,
   path: "/settings",
@@ -83,6 +108,7 @@ const routeTree = root.addChildren([
     sessions,
     tasks,
     climbing.addChildren([climbingDashboard, climbingData]),
+    gym.addChildren([gymDashboard, gymData]),
     settings,
   ]),
 ])

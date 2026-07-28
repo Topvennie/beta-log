@@ -33,7 +33,7 @@ export const ClimbingData = () => {
         <Gyms gyms={gyms ?? []} />
         <Group justify="space-between">
           <p className="font-bold">Climbing Days</p>
-          <Button leftSection={<FaPlus />}>
+          <Button variant="outline" leftSection={<FaPlus />}>
             Add Day
           </Button>
         </Group>
@@ -119,7 +119,7 @@ const Day = ({ day }: { day: ClimbDay }) => {
   }
 
   return (
-    <Card className="border border-gray-200">
+    <Card className="border border-neutral-200">
       <Stack>
         <Group justify="space-between">
           <Group>
@@ -135,7 +135,7 @@ const Day = ({ day }: { day: ClimbDay }) => {
             <ActionIcon color="black" variant="subtle"><FaTrashCan /></ActionIcon>
           </Group>
         </Group>
-        <Card.Section className="bg-neutral-200/40 border-t border-b border-gray-200">
+        <Card.Section className="bg-neutral-200/40 border-t border-b border-neutral-200">
           <div className="grid grid-cols-4 px-md py-xs text-neutral-400">
             <p>Grade</p>
             <p>Hold</p>

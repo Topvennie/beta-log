@@ -1,3 +1,4 @@
+import { BarChart, CompositeChart } from "@mantine/charts";
 import { Badge, Card, createTheme, Grid, Group, Modal, Notification, rem, SegmentedControl, Select, SimpleGrid, Stack, Title } from "@mantine/core";
 import { createElement } from "react";
 import { LuSearch } from "react-icons/lu";
@@ -7,6 +8,21 @@ const theme = createTheme({
   fontFamilyMonospace: "monospace",
   defaultRadius: "md",
   autoContrast: true,
+
+  colors: {
+    "neutral": [
+      "#fafafa",
+      "#f5f5f5",
+      "#e5e5e5",
+      "#d4d4d4",
+      "#a3a3a3",
+      "#737373",
+      "#525252",
+      "#404040",
+      "#262626",
+      "#171717",
+    ],
+  },
 
   fontSizes: {
     xs: rem(11),
@@ -121,6 +137,19 @@ const theme = createTheme({
     Badge: Badge.extend({
       defaultProps: {
         radius: "sm",
+      }
+    }),
+    BarChart: BarChart.extend({
+      defaultProps: {
+        h: 250,
+        textColor: "neutral.4",
+        barLabelColor: "neutral.4",
+      }
+    }),
+    CompositeChart: CompositeChart.extend({
+      defaultProps: {
+        h: 250,
+        textColor: "neutral.4",
       }
     })
   }

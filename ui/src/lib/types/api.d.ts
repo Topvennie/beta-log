@@ -78,6 +78,32 @@ export namespace API {
     source: string;
   }
 
+  export interface GymStats {
+    total: number;
+    most_visited: string;
+    most_visited_amount: number;
+    sessions: number;
+    graph_visits: GymStatsVisits[];
+    graph_top: GymStatsTop[];
+    graph_distribution: GymStatsDistribution[];
+  }
+
+  export interface GymStatsVisits {
+    gym: string;
+    amount: number;
+  }
+
+  export interface GymStatsTop {
+    gym: string;
+    top: number;
+    flash: number;
+  }
+
+  export interface GymStatsDistribution {
+    gym: string;
+    distribution: Record<number, number>;
+  }
+
   export interface ClimbDay {
     id: number;
     date: string;

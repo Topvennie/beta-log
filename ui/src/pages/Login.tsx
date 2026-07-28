@@ -10,7 +10,7 @@ export const Login = () => {
       <Paper shadow="sm" p="xl" className="w-96">
         <Stack align="center">
           <Title>Login</Title>
-          <Text c="gray">Beta-Log</Text>
+          <Text c="neutral">Beta-Log</Text>
           <Button onClick={login} size="lg" className="my-12">
             <FaOpenid size={"1.7rem"} className="mr-2" />
             OIDC

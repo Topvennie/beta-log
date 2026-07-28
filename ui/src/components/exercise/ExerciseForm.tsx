@@ -128,7 +128,7 @@ const ExerciseFormInner = <T extends ExerciseCreate | ExerciseUpdate>({ form, on
               </ActionIcon>
             </Group>
           ))}
-          <div onClick={handleAddVariant} className="cursor-pointer rounded-sm border-4 border-dotted border-gray-200 py-2 px-4">
+          <div onClick={handleAddVariant} className="cursor-pointer rounded-sm border-4 border-dotted border-neutral-200 py-2 px-4">
             <p className="text-center text-neutral-400">Add Variant</p>
           </div>
         </Stack>
