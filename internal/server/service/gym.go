@@ -84,6 +84,30 @@ func (g *Gym) Update(ctx fiber.Ctx, gymSave dto.GymUpdate) (dto.Gym, error) {
 	return dto.GymDTO(&gym), nil
 }
 
+func (g *Gym) Delete(ctx fiber.Ctx, id int) error {
+	userID, err := getID(ctx)
+	if err != nil {
+		return err
+	}
+
+	gym, err := g.gym.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if gym == nil || gym.UserID != userID {
+		return fiber.ErrNotFound
+	}
+	if gym.Source != model.SourceManual {
+		return fiber.NewError(fiber.StatusBadRequest, "only manual gyms can be deleted")
+	}
+
+	if err := g.gym.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (g *Gym) GetStats(ctx fiber.Ctx) (dto.GymStats, error) {
 	userID, err := getID(ctx)
 	if err != nil {

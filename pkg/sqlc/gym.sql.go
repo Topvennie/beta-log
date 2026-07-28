@@ -36,6 +36,16 @@ func (q *Queries) GymCreate(ctx context.Context, arg GymCreateParams) (int32, er
 	return id, err
 }
 
+const gymDelete = `-- name: GymDelete :exec
+DELETE FROM gyms
+WHERE id = $1
+`
+
+func (q *Queries) GymDelete(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, gymDelete, id)
+	return err
+}
+
 const gymGet = `-- name: GymGet :one
 SELECT id, user_id, external_id, name, icon_path, source
 FROM gyms
