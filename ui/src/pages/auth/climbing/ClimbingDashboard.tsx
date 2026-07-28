@@ -1,11 +1,12 @@
 import { LinkButton } from "@/components/atoms/LinkButton";
 import { Stat } from "@/components/atoms/Stat";
+import { ProportionBar } from "@/components/molecules/ProportionBar";
 import { LoadingLayout } from "@/layout/LoadingLayout";
 import { useClimbStatGetFiltered } from "@/lib/api/climb";
 import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
 import { ClimbStats } from "@/lib/types/climb";
 import { BarChart, BarChartSeries, ChartTooltip, CompositeChart } from '@mantine/charts';
-import { getThemeColor, Group, Stack, useMantineTheme } from "@mantine/core";
+import { getThemeColor, useMantineTheme } from "@mantine/core";
 import { LuDatabase } from "react-icons/lu";
 import { BarShapeProps, Rectangle } from "recharts";
 
@@ -40,51 +41,21 @@ export const ClimbingDashboard = () => {
         <div className="col-span-3 row-span-2">
           <Stat
             title="Grade Progress (Top per Session)"
-            stat={<ClimbGraph graphProgress={stats?.graphProgress ?? []} />}
+            stat={<GraphProgress graphProgress={stats?.graphProgress ?? []} />}
           />
         </div>
         <Stat
           title="Finish Types"
-          stat={
-            <div className="flex h-4 overflow-hidden rounded bg-neutral-200">
-              <div
-                className="h-4 bg-blue-700"
-                style={{ width: `${Math.round((stats?.flash ?? 0) / (stats?.total ?? 0) * 100)}%` }}
-              />
-              <div
-                className="h-4 bg-blue-500"
-                style={{ width: `${Math.round((stats?.top ?? 0) / (stats?.total ?? 0) * 100)}%` }}
-              />
-              <div
-                className="h-4 bg-blue-300"
-                style={{ width: `${Math.round((stats?.repeat ?? 0) / (stats?.total ?? 0) * 100)}%` }}
-              />
-            </div>
-          }
-          description={
-            <Stack gap={2}>
-              <Group>
-                <div className="w-2 h-2 rounded-full bg-blue-700" />
-                <p className="text-black mr-auto">Flash</p>
-                <p>{stats?.flash}</p>
-              </Group>
-              <Group>
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <p className="text-black mr-auto">Top</p>
-                <p>{stats?.top}</p>
-              </Group>
-              <Group>
-                <div className="w-2 h-2 rounded-full bg-blue-300" />
-                <p className="text-black mr-auto">Repeat</p>
-                <p>{stats?.repeat}</p>
-              </Group>
-            </Stack>
-          }
+          stat={<GraphFinishType total={stats?.total ?? 1} flash={stats?.flash ?? 0} top={stats?.top ?? 0} repeat={stats?.repeat ?? 0} />}
+        />
+        <Stat
+          title="Climb Types"
+          stat={<GraphClimbType boulder={stats?.boulder ?? 1} lead={stats?.lead ?? 1} />}
         />
         <div className="col-span-4 row-span-2">
           <Stat
             title="Climbs per Grade"
-            stat={<ClimbBar graphPerGrade={stats?.graphPerGrade ?? []} />}
+            stat={<GraphGrade graphPerGrade={stats?.graphPerGrade ?? []} />}
           />
         </div>
       </div>
@@ -92,7 +63,34 @@ export const ClimbingDashboard = () => {
   )
 }
 
-const ClimbGraph = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
+const GraphFinishType = ({ total, flash, top, repeat }: Pick<ClimbStats, "total" | "flash" | "top" | "repeat">) => {
+  return (
+    <ProportionBar
+      items={[
+        { label: "Flash", color: "blue-700", amount: flash },
+        { label: "Top", color: "blue-500", amount: top },
+        { label: "Repeat", color: "blue-300", amount: repeat },
+      ]}
+      total={total}
+      withDescription
+    />
+  )
+}
+
+const GraphClimbType = ({ boulder, lead }: Pick<ClimbStats, "boulder" | "lead">) => {
+  return (
+    <ProportionBar
+      items={[
+        { label: "Boulder", color: "blue-500", amount: boulder },
+        { label: "Lead", color: "blue-300", amount: lead },
+      ]}
+      total={boulder + lead}
+      withDescription
+    />
+  )
+}
+
+const GraphProgress = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
   return (
     <CompositeChart
       data={graphProgress}
@@ -111,7 +109,7 @@ const ClimbGraph = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
   )
 }
 
-const ClimbBar = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
+const GraphGrade = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
   const gradeHue: Record<number, string> = {
     0: "green",
     200: "green",

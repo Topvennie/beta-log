@@ -94,6 +94,13 @@ func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, e
 				graphGrade.Repeat++
 			}
 
+			switch climb.ClimbType {
+			case model.ClimbTypeBoulder:
+				stats.Boulder++
+			case model.ClimbTypeLead:
+				stats.Lead++
+			}
+
 			// Best grade is advanced only by tops and flashes
 			// Repeats don't move your best.
 			// BestAmount counts every send (top + flash + repeat) at the current best grade.
