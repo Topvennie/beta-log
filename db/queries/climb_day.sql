@@ -60,3 +60,7 @@ RETURNING id;
 UPDATE climb_days
 SET gym_id = $2, date = $3
 WHERE id = $1;
+
+-- name: ClimbDayDelete :exec
+DELETE FROM climb_days
+WHERE id = $1;

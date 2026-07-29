@@ -2,6 +2,7 @@ import { GymForm } from "@/components/gym/GymForm"
 import { LoadingLayout } from "@/layout/LoadingLayout"
 import { useGymCreate, useGymDelete, useGymGetAll, useGymUpdate } from "@/lib/api/gym"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
+import { ClimbSource } from "@/lib/types/climb"
 import { Gym, GymCreate, GymUpdate } from "@/lib/types/gym"
 import { cn } from "@/lib/utils"
 import { Avatar, Button, Card, CardProps, Group, Stack, Tooltip } from "@mantine/core"
@@ -78,7 +79,7 @@ type GymCardProps = {
 } & CardProps
 
 const GymCard = ({ gym, selected, onClick, className, ...props }: GymCardProps) => {
-  const external = gym.source !== "manual"
+  const external = gym.source !== ClimbSource.Manual
 
   const handleClick = () => {
     if (external) return

@@ -235,3 +235,11 @@ func (c *ClimbDay) Update(ctx context.Context, day model.ClimbDay) error {
 
 	return nil
 }
+
+func (c *ClimbDay) Delete(ctx context.Context, id int) error {
+	if err := queries(ctx).ClimbDayDelete(ctx, int32(id)); err != nil {
+		return fmt.Errorf("delete climb day id %d | %w", id, err)
+	}
+
+	return nil
+}

@@ -22,3 +22,7 @@ RETURNING id;
 UPDATE climbs
 SET grade = $2, hold_color = $3, climb_type = $4, finish_type = $5
 WHERE id = $1;
+
+-- name: ClimbDeleteByClimbDay :exec
+DELETE FROM climbs
+WHERE climb_day_id = $1;
