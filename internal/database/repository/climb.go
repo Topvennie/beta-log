@@ -62,7 +62,7 @@ func (c *Climb) Create(ctx context.Context, climb *model.Climb) error {
 		HoldColor:  climb.HoldColor,
 		ClimbType:  sqlc.ClimbType(climb.ClimbType),
 		FinishType: sqlc.FinishType(climb.FinishType),
-		Source:     sqlc.ClimbSource(climb.Source),
+		Source:     sqlc.Source(climb.Source),
 	})
 	if err != nil {
 		return fmt.Errorf("create climb %+v | %w", *climb, err)

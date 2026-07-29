@@ -11,48 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type ClimbSource string
-
-const (
-	ClimbSourceToplogger ClimbSource = "toplogger"
-	ClimbSourceManual    ClimbSource = "manual"
-)
-
-func (e *ClimbSource) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = ClimbSource(s)
-	case string:
-		*e = ClimbSource(s)
-	default:
-		return fmt.Errorf("unsupported scan type for ClimbSource: %T", src)
-	}
-	return nil
-}
-
-type NullClimbSource struct {
-	ClimbSource ClimbSource
-	Valid       bool // Valid is true if ClimbSource is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullClimbSource) Scan(value interface{}) error {
-	if value == nil {
-		ns.ClimbSource, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.ClimbSource.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullClimbSource) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.ClimbSource), nil
-}
-
 type ClimbType string
 
 const (
@@ -138,6 +96,48 @@ func (ns NullFinishType) Value() (driver.Value, error) {
 	return string(ns.FinishType), nil
 }
 
+type Source string
+
+const (
+	SourceToplogger Source = "toplogger"
+	SourceManual    Source = "manual"
+)
+
+func (e *Source) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Source(s)
+	case string:
+		*e = Source(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Source: %T", src)
+	}
+	return nil
+}
+
+type NullSource struct {
+	Source Source
+	Valid  bool // Valid is true if Source is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSource) Scan(value interface{}) error {
+	if value == nil {
+		ns.Source, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Source.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSource) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Source), nil
+}
+
 type TaskResult string
 
 const (
@@ -189,7 +189,7 @@ type Climb struct {
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
-	Source     ClimbSource
+	Source     Source
 }
 
 type ClimbDay struct {
@@ -198,7 +198,7 @@ type ClimbDay struct {
 	ExternalID string
 	GymID      int32
 	Date       pgtype.Timestamptz
-	Source     ClimbSource
+	Source     Source
 }
 
 type Exercise struct {
@@ -221,7 +221,7 @@ type Gym struct {
 	ExternalID string
 	Name       string
 	IconPath   string
-	Source     ClimbSource
+	Source     Source
 }
 
 type Session struct {

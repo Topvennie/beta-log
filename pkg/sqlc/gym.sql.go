@@ -20,7 +20,7 @@ type GymCreateParams struct {
 	ExternalID string
 	Name       string
 	IconPath   string
-	Source     ClimbSource
+	Source     Source
 }
 
 func (q *Queries) GymCreate(ctx context.Context, arg GymCreateParams) (int32, error) {
@@ -74,7 +74,7 @@ WHERE external_id = ANY($1::int[]) AND source = $2
 
 type GymGetAllByExternalSourceParams struct {
 	Column1 []int32
-	Source  ClimbSource
+	Source  Source
 }
 
 func (q *Queries) GymGetAllByExternalSource(ctx context.Context, arg GymGetAllByExternalSourceParams) ([]Gym, error) {
@@ -146,7 +146,7 @@ WHERE external_id = $1 AND source = $2
 
 type GymGetByExternalSourceParams struct {
 	ExternalID string
-	Source     ClimbSource
+	Source     Source
 }
 
 func (q *Queries) GymGetByExternalSource(ctx context.Context, arg GymGetByExternalSourceParams) (Gym, error) {
