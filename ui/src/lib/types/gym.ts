@@ -1,13 +1,18 @@
 import z from "zod";
 import type { API } from "./api";
 import { JSONBody } from "./general";
-import type { ClimbSource } from "./climb";
+
+export enum Source {
+  Toplogger = "toplogger",
+  Manual = "manual",
+}
+
 
 export interface Gym {
   id: number;
   name: string;
   iconPath: string;
-  source: ClimbSource;
+  source: Source;
 }
 
 // Converts
@@ -16,7 +21,7 @@ export const convertGym = (g: API.Gym): Gym => ({
   id: g.id,
   name: g.name,
   iconPath: g.icon_path,
-  source: g.source as ClimbSource,
+  source: g.source as Source,
 });
 
 export const convertGyms = (g: API.Gym[]): Gym[] => g.map(convertGym);

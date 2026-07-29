@@ -23,7 +23,7 @@ type ClimbCreateParams struct {
 	HoldColor  string
 	ClimbType  ClimbType
 	FinishType FinishType
-	Source     ClimbSource
+	Source     Source
 }
 
 func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32, error) {

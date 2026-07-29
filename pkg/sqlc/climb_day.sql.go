@@ -22,7 +22,7 @@ type ClimbDayCreateParams struct {
 	ExternalID string
 	GymID      int32
 	Date       pgtype.Timestamptz
-	Source     ClimbSource
+	Source     Source
 }
 
 func (q *Queries) ClimbDayCreate(ctx context.Context, arg ClimbDayCreateParams) (int32, error) {
@@ -79,7 +79,7 @@ ORDER BY d.date ASC
 
 type ClimbDayGetAllPopulatedByExternalSourceParams struct {
 	Column1 []int32
-	Source  ClimbSource
+	Source  Source
 }
 
 type ClimbDayGetAllPopulatedByExternalSourceRow struct {
@@ -263,7 +263,7 @@ WHERE external_id = $1 AND source = $2
 
 type ClimbDayGetByExternalSourceParams struct {
 	ExternalID string
-	Source     ClimbSource
+	Source     Source
 }
 
 func (q *Queries) ClimbDayGetByExternalSource(ctx context.Context, arg ClimbDayGetByExternalSourceParams) (ClimbDay, error) {
@@ -346,7 +346,7 @@ WHERE d.external_id = $1 AND d.source = $2
 
 type ClimbDayGetPopulatedByExternalSourceParams struct {
 	ExternalID string
-	Source     ClimbSource
+	Source     Source
 }
 
 type ClimbDayGetPopulatedByExternalSourceRow struct {

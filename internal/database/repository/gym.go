@@ -32,7 +32,7 @@ func (c *Gym) Get(ctx context.Context, id int) (*model.Gym, error) {
 func (c *Gym) GetByExternalSource(ctx context.Context, source model.Source, externalID string) (*model.Gym, error) {
 	gym, err := queries(ctx).GymGetByExternalSource(ctx, sqlc.GymGetByExternalSourceParams{
 		ExternalID: externalID,
-		Source:     sqlc.ClimbSource(source),
+		Source:     sqlc.Source(source),
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -47,7 +47,7 @@ func (c *Gym) GetByExternalSource(ctx context.Context, source model.Source, exte
 func (c *Gym) GetByExternalSourceIDs(ctx context.Context, source model.Source, externalIDs []int) ([]*model.Gym, error) {
 	gyms, err := queries(ctx).GymGetAllByExternalSource(ctx, sqlc.GymGetAllByExternalSourceParams{
 		Column1: utils.SliceMap(externalIDs, func(id int) int32 { return int32(id) }),
-		Source:  sqlc.ClimbSource(source),
+		Source:  sqlc.Source(source),
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -77,7 +77,7 @@ func (c *Gym) Create(ctx context.Context, gym *model.Gym) error {
 		ExternalID: gym.ExternalID,
 		Name:       gym.Name,
 		IconPath:   gym.IconPath,
-		Source:     sqlc.ClimbSource(gym.Source),
+		Source:     sqlc.Source(gym.Source),
 	})
 	if err != nil {
 		return fmt.Errorf("create gym %+v | %w", *gym, err)

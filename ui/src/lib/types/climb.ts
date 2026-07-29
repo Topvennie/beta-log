@@ -1,8 +1,8 @@
 import z from "zod";
 import type { API } from "./api";
-import { convertGym } from "./gym";
-import type { Gym } from "./gym";
 import { JSONBody } from "./general";
+import type { Gym, Source } from "./gym";
+import { convertGym } from "./gym";
 
 export enum ClimbType {
   Boulder = "boulder",
@@ -15,18 +15,13 @@ export enum ClimbFinish {
   Repeat = "repeat",
 }
 
-export enum ClimbSource {
-  Toplogger = "toplogger",
-  Manual = "manual",
-}
-
 export interface Climb {
   id: number;
   grade: number;
   holdColor: string;
   climbType: ClimbType;
   finishType: ClimbFinish;
-  source: ClimbSource;
+  source: Source;
 }
 
 export interface ClimbDay {
@@ -34,7 +29,7 @@ export interface ClimbDay {
   date: Date;
   gym: Gym;
   climbs: Climb[];
-  source: ClimbSource;
+  source: Source;
 }
 
 export interface ClimbStatsProgress {
@@ -76,7 +71,7 @@ export const convertClimb = (c: API.Climb): Climb => ({
   holdColor: c.hold_color,
   climbType: c.climb_type as ClimbType,
   finishType: c.finish_type as ClimbFinish,
-  source: c.source as ClimbSource,
+  source: c.source as Source,
 });
 
 export const convertClimbs = (c: API.Climb[]): Climb[] => c.map(convertClimb);
@@ -86,7 +81,7 @@ export const convertClimbDay = (d: API.ClimbDay): ClimbDay => ({
   date: new Date(d.date),
   gym: convertGym(d.gym),
   climbs: convertClimbs(d.climbs),
-  source: d.source as ClimbSource,
+  source: d.source as Source,
 });
 
 export const convertClimbDays = (d: API.ClimbDay[]): ClimbDay[] => d.map(convertClimbDay);

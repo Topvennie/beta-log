@@ -5,8 +5,8 @@ import { LoadingLayout } from "@/layout/LoadingLayout"
 import { useClimbDayCreate, useClimbDayDelete, useClimbDayGetFiltered, useClimbDayUpdate } from "@/lib/api/climb"
 import { useGymGetAll } from "@/lib/api/gym"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
-import { ClimbDay, ClimbDayCreate, ClimbDayUpdate, ClimbFinish, ClimbSource } from "@/lib/types/climb"
-import { Gym } from "@/lib/types/gym"
+import { ClimbDay, ClimbDayCreate, ClimbDayUpdate, ClimbFinish } from "@/lib/types/climb"
+import { Gym, Source } from "@/lib/types/gym"
 import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, ColorSwatch, Divider, Group, Modal, Stack, Tooltip } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
@@ -112,7 +112,7 @@ const Gyms = ({ gyms }: { gyms: Gym[] }) => {
 }
 
 const Day = ({ day, onClick }: { day: ClimbDay, onClick: (day: ClimbDay) => void }) => {
-  const external = day.source !== ClimbSource.Manual
+  const external = day.source !== Source.Manual
 
   const finishProps: Record<ClimbFinish, Partial<BadgeProps>> = {
     [ClimbFinish.Flash]: {},
