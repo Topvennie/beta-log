@@ -86,3 +86,11 @@ func (c *Climb) Update(ctx context.Context, climb model.Climb) error {
 
 	return nil
 }
+
+func (c *Climb) DeleteByClimbDay(ctx context.Context, climbDayID int) error {
+	if err := queries(ctx).ClimbDeleteByClimbDay(ctx, int32(climbDayID)); err != nil {
+		return fmt.Errorf("delete climbs by climb day id %d | %w", climbDayID, err)
+	}
+
+	return nil
+}

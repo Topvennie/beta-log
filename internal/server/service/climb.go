@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"slices"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/Topvennie/beta-log/pkg/utils"
 	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
 )
 
 type Climb struct {
@@ -36,6 +38,141 @@ func (c *Climb) GetDays(ctx fiber.Ctx, filter dto.ClimbDayFilter) ([]dto.ClimbDa
 	}
 
 	return utils.SliceMap(days, dto.ClimbDayDTO), nil
+}
+
+func (c *Climb) CreateDay(ctx fiber.Ctx, daySave dto.ClimbDayCreate) (dto.ClimbDay, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return dto.ClimbDay{}, err
+	}
+
+	day := daySave.ToModel()
+	day.UserID = userID
+	day.ExternalID = uuid.NewString()
+	day.Source = model.SourceManual
+
+	climbs := day.Climbs
+	day.Climbs = nil
+
+	if err := withRollback(ctx, func(ctx context.Context) error {
+		if err := c.day.Create(ctx, &day); err != nil {
+			return err
+		}
+
+		for i := range climbs {
+			climbs[i].UserID = userID
+			climbs[i].ExternalID = uuid.NewString()
+			climbs[i].Source = model.SourceManual
+			climbs[i].ClimbDayID = day.ID
+
+			if err := c.climb.Create(ctx, &climbs[i]); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return dto.ClimbDay{}, err
+	}
+
+	populated, err := c.day.GetPopulated(ctx, day.ID)
+	if err != nil {
+		return dto.ClimbDay{}, err
+	}
+	if populated == nil {
+		return dto.ClimbDay{}, fiber.ErrNotFound
+	}
+
+	return dto.ClimbDayDTO(populated), nil
+}
+
+func (c *Climb) UpdateDay(ctx fiber.Ctx, daySave dto.ClimbDayUpdate) (dto.ClimbDay, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return dto.ClimbDay{}, err
+	}
+
+	oldDay, err := c.day.Get(ctx, daySave.ID)
+	if err != nil {
+		return dto.ClimbDay{}, err
+	}
+	if oldDay == nil || oldDay.UserID != userID {
+		return dto.ClimbDay{}, fiber.ErrNotFound
+	}
+	if oldDay.Source != model.SourceManual {
+		return dto.ClimbDay{}, fiber.NewError(fiber.StatusBadRequest, "only manual climb days can be updated")
+	}
+
+	day := daySave.ToModel()
+	day.UserID = userID
+	day.ExternalID = oldDay.ExternalID
+	day.Source = oldDay.Source
+
+	climbs := day.Climbs
+	day.Climbs = nil
+
+	if err := withRollback(ctx, func(ctx context.Context) error {
+		if err := c.day.Update(ctx, day); err != nil {
+			return err
+		}
+
+		if err := c.climb.DeleteByClimbDay(ctx, day.ID); err != nil {
+			return err
+		}
+
+		for i := range climbs {
+			climbs[i].UserID = userID
+			climbs[i].ExternalID = uuid.NewString()
+			climbs[i].Source = model.SourceManual
+			climbs[i].ClimbDayID = day.ID
+
+			if err := c.climb.Create(ctx, &climbs[i]); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return dto.ClimbDay{}, err
+	}
+
+	populated, err := c.day.GetPopulated(ctx, day.ID)
+	if err != nil {
+		return dto.ClimbDay{}, err
+	}
+	if populated == nil {
+		return dto.ClimbDay{}, fiber.ErrNotFound
+	}
+
+	return dto.ClimbDayDTO(populated), nil
+}
+
+func (c *Climb) DeleteDay(ctx fiber.Ctx, id int) error {
+	userID, err := getID(ctx)
+	if err != nil {
+		return err
+	}
+
+	day, err := c.day.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if day == nil || day.UserID != userID {
+		return fiber.ErrNotFound
+	}
+	if day.Source != model.SourceManual {
+		return fiber.NewError(fiber.StatusBadRequest, "only manual climb days can be deleted")
+	}
+
+	return withRollback(ctx, func(ictx context.Context) error {
+		if err := c.climb.DeleteByClimbDay(ictx, id); err != nil {
+			return err
+		}
+		if err := c.day.Delete(ictx, id); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (c *Climb) GetStats(ctx fiber.Ctx, start, end time.Time) (dto.ClimbStats, error) {

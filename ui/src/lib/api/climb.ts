@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { convertClimbDays, convertClimbStats } from "../types/climb";
-import { apiGet } from "./query";
+import { ClimbDay, ClimbDayCreate, ClimbDayUpdate, convertClimbDays, convertClimbStats, convertClimbDay } from "../types/climb";
+import { apiDelete, apiGet, apiPost, apiPut, NO_CONVERTER } from "./query";
 
 const ENDPOINT = "climb";
 const PAGE_LIMIT = 10;
@@ -57,5 +57,32 @@ export const useClimbStatGetFiltered = (start?: Date, end?: Date) => {
       return (await apiGet(url, convertClimbStats)).data;
     },
     throwOnError: true,
+  });
+}
+
+export const useClimbDayCreate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (day: ClimbDayCreate) => apiPost(`${ENDPOINT}/day`, day, convertClimbDay),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["climb"] }),
+  });
+}
+
+export const useClimbDayUpdate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (day: ClimbDayUpdate) => apiPut(`${ENDPOINT}/day/${day.id}`, day, convertClimbDay),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["climb"] }),
+  });
+}
+
+export const useClimbDayDelete = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id }: Pick<ClimbDay, "id">) => apiDelete(`${ENDPOINT}/day/${id}`, NO_CONVERTER),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["climb"] }),
   });
 }

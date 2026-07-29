@@ -42,6 +42,16 @@ func (q *Queries) ClimbCreate(ctx context.Context, arg ClimbCreateParams) (int32
 	return id, err
 }
 
+const climbDeleteByClimbDay = `-- name: ClimbDeleteByClimbDay :exec
+DELETE FROM climbs
+WHERE climb_day_id = $1
+`
+
+func (q *Queries) ClimbDeleteByClimbDay(ctx context.Context, climbDayID int32) error {
+	_, err := q.db.Exec(ctx, climbDeleteByClimbDay, climbDayID)
+	return err
+}
+
 const climbGet = `-- name: ClimbGet :one
 SELECT id, user_id, external_id, climb_day_id, grade, hold_color, climb_type, finish_type, source
 FROM climbs

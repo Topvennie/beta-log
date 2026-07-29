@@ -1,15 +1,18 @@
 import { BottomOfPage } from "@/components/atoms/BottomOfPage"
 import { LinkButton } from "@/components/atoms/LinkButton"
+import { ClimbDayForm } from "@/components/climb/ClimbDayForm"
 import { LoadingLayout } from "@/layout/LoadingLayout"
-import { useClimbDayGetFiltered } from "@/lib/api/climb"
+import { useClimbDayCreate, useClimbDayDelete, useClimbDayGetFiltered, useClimbDayUpdate } from "@/lib/api/climb"
 import { useGymGetAll } from "@/lib/api/gym"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
-import { ClimbDay, ClimbFinish } from "@/lib/types/climb"
+import { ClimbDay, ClimbDayCreate, ClimbDayUpdate, ClimbFinish, ClimbSource } from "@/lib/types/climb"
 import { Gym } from "@/lib/types/gym"
-import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, ColorSwatch, Divider, Group, Stack } from "@mantine/core"
+import { ActionIcon, Avatar, Badge, BadgeProps, Button, Card, ColorSwatch, Divider, Group, Modal, Stack, Tooltip } from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
+import { notifications } from "@mantine/notifications"
 import { format } from "date-fns"
-import { Fragment } from "react"
-import { FaGear, FaPencil, FaPlus, FaTrashCan } from "react-icons/fa6"
+import { Fragment, useState } from "react"
+import { FaGear, FaPencil, FaPlus } from "react-icons/fa6"
 import useInfiniteScroll from "react-infinite-scroll-hook"
 
 export const ClimbingData = () => {
@@ -25,6 +28,50 @@ export const ClimbingData = () => {
     rootMargin: "0px",
   });
 
+  const [opened, { open, close }] = useDisclosure()
+  const [selected, setSelected] = useState<ClimbDay | null>(null)
+
+  const dayCreate = useClimbDayCreate()
+  const dayUpdate = useClimbDayUpdate()
+  const dayDelete = useClimbDayDelete()
+
+  const handleCreate = (day: ClimbDayCreate) => {
+    return dayCreate.mutateAsync(day, {
+      onSuccess: () => {
+        notifications.show({ color: "green", title: "Climb Day", message: `Created` })
+        handleClose()
+      }
+    })
+  }
+
+  const handleUpdate = (day: ClimbDayUpdate) => {
+    return dayUpdate.mutateAsync(day, {
+      onSuccess: () => {
+        notifications.show({ color: "green", title: "Climb Day", message: `Updated` })
+        handleClose()
+      }
+    })
+  }
+
+  const handleDelete = ({ id }: Pick<ClimbDay, "id">) => {
+    return dayDelete.mutateAsync({ id }, {
+      onSuccess: () => {
+        notifications.show({ color: "green", title: "ClimbDay", message: `Deleted` })
+        handleClose()
+      },
+    })
+  }
+
+  const handleSelect = (s: ClimbDay | null = null) => {
+    setSelected(s)
+    open()
+  }
+
+  const handleClose = () => {
+    setSelected(null)
+    close()
+  }
+
   return (
     <LoadingLayout isLoading={isLoadingGyms || isLoadingDays}>
       <Stack>
@@ -32,15 +79,22 @@ export const ClimbingData = () => {
 
         <Group justify="space-between">
           <p className="font-bold">Climbing Days</p>
-          <Button variant="outline" leftSection={<FaPlus />}>
+          <Button onClick={() => handleSelect()} variant="outline" leftSection={<FaPlus />}>
             Add Day
           </Button>
         </Group>
 
-        {days.map(d => <Day key={d.id} day={d} />)}
+        {days.map(d => <Day key={d.id} onClick={handleSelect} day={d} />)}
 
         <BottomOfPage ref={sentryRef} showLoading={isFetchingNextPage} hasNextPage={hasNextPage} />
       </Stack>
+
+      <Modal title="Climbing Day" opened={opened} onClose={handleClose}>
+        {selected
+          ? <ClimbDayForm climbDay={selected} onSubmit={handleUpdate} onCancel={handleClose} onDelete={handleDelete} />
+          : <ClimbDayForm onSubmit={handleCreate} onCancel={handleClose} />
+        }
+      </Modal>
     </LoadingLayout>
   )
 }
@@ -57,11 +111,13 @@ const Gyms = ({ gyms }: { gyms: Gym[] }) => {
   )
 }
 
-const Day = ({ day }: { day: ClimbDay }) => {
+const Day = ({ day, onClick }: { day: ClimbDay, onClick: (day: ClimbDay) => void }) => {
+  const external = day.source !== ClimbSource.Manual
+
   const finishProps: Record<ClimbFinish, Partial<BadgeProps>> = {
-    "flash": {},
-    "top": { variant: "light" },
-    "repeat": { variant: "light", color: "black" },
+    [ClimbFinish.Flash]: {},
+    [ClimbFinish.Top]: { variant: "light" },
+    [ClimbFinish.Repeat]: { variant: "light", color: "black" },
   }
 
   return (
@@ -76,10 +132,11 @@ const Day = ({ day }: { day: ClimbDay }) => {
             </Stack>
           </Group>
 
-          <Group gap={2}>
+          <Group>
             <p className="text-neutral-400">{`${day.climbs.length} climbs`}</p>
-            <ActionIcon color="black" variant="subtle"><FaPencil /></ActionIcon>
-            <ActionIcon color="black" variant="subtle"><FaTrashCan /></ActionIcon>
+            <Tooltip label="Day is managed externally" disabled={!external}>
+              <ActionIcon onClick={() => onClick(day)} color="black" variant="subtle" disabled={external}><FaPencil /></ActionIcon>
+            </Tooltip>
           </Group>
         </Group>
 

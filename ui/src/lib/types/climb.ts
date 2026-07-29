@@ -1,10 +1,24 @@
+import z from "zod";
 import type { API } from "./api";
 import { convertGym } from "./gym";
 import type { Gym } from "./gym";
+import { JSONBody } from "./general";
 
-export type ClimbType = "boulder" | "lead";
-export type ClimbFinish = "flash" | "top" | "repeat";
-export type ClimbSource = "toplogger" | "manual";
+export enum ClimbType {
+  Boulder = "boulder",
+  Lead = "lead",
+}
+
+export enum ClimbFinish {
+  Flash = "flash",
+  Top = "top",
+  Repeat = "repeat",
+}
+
+export enum ClimbSource {
+  Toplogger = "toplogger",
+  Manual = "manual",
+}
 
 export interface Climb {
   id: number;
@@ -94,3 +108,44 @@ export const convertClimbStats = (s: API.ClimbStats): ClimbStats => ({
   graphProgress: s.graph_progress,
   graphPerGrade: s.graph_per_grade,
 });
+
+export const convertClimbCreateSchema = (c: Climb): ClimbCreate => ({
+  _clientId: crypto.randomUUID(),
+  grade: c.grade,
+  holdColor: c.holdColor,
+  climbType: c.climbType,
+  finishType: c.finishType,
+})
+
+export const convertClimbDayUpdateSchema = (c: ClimbDay): ClimbDayUpdate => ({
+  id: c.id,
+  date: c.date,
+  gymId: c.gym.id,
+  climbs: c.climbs.map(convertClimbCreateSchema),
+})
+
+// Schemas
+
+export const climbCreateSchema = z.object({
+  _clientId: z.string(),
+  grade: z.number().positive(),
+  holdColor: z.string(),
+  climbType: z.enum(ClimbType),
+  finishType: z.enum(ClimbFinish),
+})
+export type ClimbCreate = z.infer<typeof climbCreateSchema> & JSONBody
+
+export const climbDayCreateSchema = z.object({
+  date: z.date(),
+  gymId: z.number().positive(),
+  climbs: z.array(climbCreateSchema).min(1),
+})
+export type ClimbDayCreate = z.infer<typeof climbDayCreateSchema> & JSONBody
+
+export const climbDayUpdateSchema = z.object({
+  id: z.number().positive(),
+  date: z.date(),
+  gymId: z.number().positive(),
+  climbs: z.array(climbCreateSchema).min(1),
+})
+export type ClimbDayUpdate = z.infer<typeof climbDayUpdateSchema> & JSONBody
