@@ -17,7 +17,7 @@ export function camelToSnake(obj: unknown): unknown {
 
   if (typeof obj === "object") {
     return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [
+      Object.entries(obj).filter(([key]) => key?.[0] !== "_").map(([key, value]) => [
         stringCamelToSnake(key),
         camelToSnake(value),
       ]),
