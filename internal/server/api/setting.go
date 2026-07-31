@@ -25,7 +25,8 @@ func newSetting(router fiber.Router) *setting {
 
 func (s *setting) routes() {
 	s.router.Get("/", s.get)
-	s.router.Put("/toplogger", s.toploggerUpdate)
+	s.router.Put("/grade_system", s.updateGradeSystem)
+	s.router.Put("/toplogger", s.updateToplogger)
 }
 
 func (s *setting) get(c fiber.Ctx) error {
@@ -37,8 +38,8 @@ func (s *setting) get(c fiber.Ctx) error {
 	return c.JSON(setting)
 }
 
-func (s *setting) toploggerUpdate(c fiber.Ctx) error {
-	var setting dto.SettingToploggerUpdate
+func (s *setting) updateGradeSystem(c fiber.Ctx) error {
+	var setting dto.SettingUpdateGradeSystem
 	if err := c.Bind().Body(&setting); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -46,7 +47,24 @@ func (s *setting) toploggerUpdate(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	newSetting, err := s.setting.ToploggerUpdate(c, setting)
+	newSetting, err := s.setting.UpdateGradeSystem(c, setting)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(newSetting)
+}
+
+func (s *setting) updateToplogger(c fiber.Ctx) error {
+	var setting dto.SettingUpdateToplogger
+	if err := c.Bind().Body(&setting); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+	if err := dto.Validate.Struct(setting); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	newSetting, err := s.setting.UpdateToplogger(c, setting)
 	if err != nil {
 		return err
 	}

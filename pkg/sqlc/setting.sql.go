@@ -25,7 +25,7 @@ func (q *Queries) SettingCreate(ctx context.Context, userID int32) (int32, error
 }
 
 const settingGetByUser = `-- name: SettingGetByUser :one
-SELECT id, user_id, climb_toplogger_user_id, climb_toplogger_auth_token, climb_toplogger_refresh_token, climb_toplogger_expiration
+SELECT id, user_id, climb_toplogger_user_id, climb_toplogger_auth_token, climb_toplogger_refresh_token, climb_toplogger_expiration, grade_system
 FROM settings
 WHERE user_id = $1
 `
@@ -40,17 +40,34 @@ func (q *Queries) SettingGetByUser(ctx context.Context, userID int32) (Setting, 
 		&i.ClimbToploggerAuthToken,
 		&i.ClimbToploggerRefreshToken,
 		&i.ClimbToploggerExpiration,
+		&i.GradeSystem,
 	)
 	return i, err
 }
 
-const settingToploggerUpdate = `-- name: SettingToploggerUpdate :exec
+const settingUpdateGradeSystem = `-- name: SettingUpdateGradeSystem :exec
+UPDATE settings
+SET grade_system = $2
+WHERE id = $1
+`
+
+type SettingUpdateGradeSystemParams struct {
+	ID          int32
+	GradeSystem GradeSystem
+}
+
+func (q *Queries) SettingUpdateGradeSystem(ctx context.Context, arg SettingUpdateGradeSystemParams) error {
+	_, err := q.db.Exec(ctx, settingUpdateGradeSystem, arg.ID, arg.GradeSystem)
+	return err
+}
+
+const settingUpdateToplogger = `-- name: SettingUpdateToplogger :exec
 UPDATE settings
 SET climb_toplogger_user_id = $2, climb_toplogger_auth_token = $3, climb_toplogger_refresh_token = $4, climb_toplogger_expiration = $5
 WHERE id = $1
 `
 
-type SettingToploggerUpdateParams struct {
+type SettingUpdateToploggerParams struct {
 	ID                         int32
 	ClimbToploggerUserID       pgtype.Text
 	ClimbToploggerAuthToken    pgtype.Text
@@ -58,8 +75,8 @@ type SettingToploggerUpdateParams struct {
 	ClimbToploggerExpiration   pgtype.Timestamptz
 }
 
-func (q *Queries) SettingToploggerUpdate(ctx context.Context, arg SettingToploggerUpdateParams) error {
-	_, err := q.db.Exec(ctx, settingToploggerUpdate,
+func (q *Queries) SettingUpdateToplogger(ctx context.Context, arg SettingUpdateToploggerParams) error {
+	_, err := q.db.Exec(ctx, settingUpdateToplogger,
 		arg.ID,
 		arg.ClimbToploggerUserID,
 		arg.ClimbToploggerAuthToken,

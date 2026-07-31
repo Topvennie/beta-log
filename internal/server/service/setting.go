@@ -42,7 +42,43 @@ func (s *Setting) Get(ctx fiber.Ctx) (dto.Setting, error) {
 	return dto.SettingDTO(setting), nil
 }
 
-func (s *Setting) ToploggerUpdate(ctx fiber.Ctx, settingSave dto.SettingToploggerUpdate) (dto.Setting, error) {
+func (s *Setting) UpdateGradeSystem(ctx fiber.Ctx, settingSave dto.SettingUpdateGradeSystem) (dto.Setting, error) {
+	userID, err := getID(ctx)
+	if err != nil {
+		return dto.Setting{}, err
+	}
+	user, err := s.user.GetByID(ctx, userID)
+	if err != nil {
+		return dto.Setting{}, err
+	}
+	if user == nil {
+		return dto.Setting{}, fmt.Errorf("user %d not found", userID)
+	}
+
+	setting, err := s.setting.GetByUser(ctx, userID)
+	if err != nil {
+		return dto.Setting{}, err
+	}
+	if setting == nil {
+		return dto.Setting{}, fmt.Errorf("user %d has no settings", userID)
+	}
+
+	setting.GradeSystem = settingSave.GradeSystem
+
+	if err := s.setting.UpdateGradeSystem(ctx, *setting); err != nil {
+		return dto.Setting{}, err
+	}
+
+	// Refetch data
+	newSetting, err := s.setting.GetByUser(ctx, userID)
+	if err != nil {
+		return dto.Setting{}, err
+	}
+
+	return dto.SettingDTO(newSetting), nil
+}
+
+func (s *Setting) UpdateToplogger(ctx fiber.Ctx, settingSave dto.SettingUpdateToplogger) (dto.Setting, error) {
 	userID, err := getID(ctx)
 	if err != nil {
 		return dto.Setting{}, err
@@ -86,7 +122,7 @@ func (s *Setting) ToploggerUpdate(ctx fiber.Ctx, settingSave dto.SettingToplogge
 		setting.ClimbToploggerExpiration = tokens.Refresh.ExpiresAt
 	}
 
-	if err := s.setting.ToploggerUpdate(ctx, *setting); err != nil {
+	if err := s.setting.UpdateToplogger(ctx, *setting); err != nil {
 		return dto.Setting{}, err
 	}
 

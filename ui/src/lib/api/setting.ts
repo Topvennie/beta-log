@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { convertSetting, SettingToploggerUpdate } from "../types/setting";
+import { convertSetting, SettingUpdateGradeSystem, SettingUpdateToplogger } from "../types/setting";
 import { apiGet, apiPut } from "./query";
 
 const ENDPOINT = "setting";
@@ -11,11 +11,23 @@ export const useSettingGet = () => {
   });
 }
 
-export const useSettingToploggerUpdate = () => {
+export const useSettingUpdateGradeSystem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (setting: SettingToploggerUpdate) => apiPut(`${ENDPOINT}/toplogger`, setting, convertSetting),
+    mutationFn: (setting: SettingUpdateGradeSystem) => apiPut(`${ENDPOINT}/grade_system`, setting, convertSetting),
+    onSuccess: () => {
+      queryClient.invalidateQueries()
+
+    },
+  })
+}
+
+export const useSettingUpdateToplogger = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (setting: SettingUpdateToplogger) => apiPut(`${ENDPOINT}/toplogger`, setting, convertSetting),
     onSuccess: () => {
       queryClient.invalidateQueries()
 

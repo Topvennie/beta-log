@@ -6,6 +6,13 @@ import (
 	"github.com/Topvennie/beta-log/pkg/sqlc"
 )
 
+type GradeSystem string
+
+const (
+	GradeSystemFont GradeSystem = "font"
+	GradeSystemV    GradeSystem = "v"
+)
+
 type Setting struct {
 	ID                         int
 	UserID                     int
@@ -13,6 +20,7 @@ type Setting struct {
 	ClimbToploggerAuthToken    string
 	ClimbToploggerRefreshToken string
 	ClimbToploggerExpiration   time.Time
+	GradeSystem                GradeSystem
 }
 
 func SettingModel(s sqlc.Setting) *Setting {
@@ -23,5 +31,6 @@ func SettingModel(s sqlc.Setting) *Setting {
 		ClimbToploggerAuthToken:    fromString(s.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: fromString(s.ClimbToploggerRefreshToken),
 		ClimbToploggerExpiration:   fromTime(s.ClimbToploggerExpiration),
+		GradeSystem:                GradeSystem(s.GradeSystem),
 	}
 }
