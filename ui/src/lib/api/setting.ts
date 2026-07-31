@@ -17,7 +17,8 @@ export const useSettingToploggerUpdate = () => {
   return useMutation({
     mutationFn: (setting: SettingToploggerUpdate) => apiPut(`${ENDPOINT}/toplogger`, setting, convertSetting),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["setting"] })
+      queryClient.invalidateQueries()
+
     },
   })
 }
