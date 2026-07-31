@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Topvennie/beta-log/internal/climb"
-	"github.com/Topvennie/beta-log/internal/climb/toplogger"
 	"github.com/Topvennie/beta-log/internal/database/repository"
+	"github.com/Topvennie/beta-log/internal/fetch"
+	"github.com/Topvennie/beta-log/internal/fetch/toplogger"
 	"github.com/Topvennie/beta-log/internal/server/dto"
 	"github.com/Topvennie/beta-log/internal/task"
 	"github.com/gofiber/fiber/v3"
@@ -92,7 +92,7 @@ func (s *Setting) ToploggerUpdate(ctx fiber.Ctx, settingSave dto.SettingToplogge
 
 	if setting.ClimbToploggerUserID != "" {
 		// Start the climb update task
-		if err := task.Manager.RunRecurringByUID(climb.TaskUpdateUID, *user); err != nil {
+		if err := task.Manager.RunRecurringByUID(fetch.TaskUpdateUID, *user); err != nil {
 			return dto.Setting{}, err
 		}
 	}
