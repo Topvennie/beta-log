@@ -42,7 +42,7 @@ export const useClimbDayGetFiltered = () => {
 
 export const useClimbStatGetFiltered = (start?: Date, end?: Date) => {
   return useQuery({
-    queryKey: ["climb", "stat", start, end],
+    queryKey: ["climb", "stat", start?.toDateString(), end?.toDateString()],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
 
