@@ -1,4 +1,5 @@
 import { LinkButton } from "@/components/atoms/LinkButton";
+import { DatePreset, SelectDatePreset } from "@/components/atoms/SelectDatePreset";
 import { Stat } from "@/components/atoms/Stat";
 import { ProportionBar } from "@/components/molecules/ProportionBar";
 import { LoadingLayout } from "@/layout/LoadingLayout";
@@ -6,14 +7,17 @@ import { useClimbStatGetFiltered } from "@/lib/api/climb";
 import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
 import { ClimbStats } from "@/lib/types/climb";
 import { BarChart, BarChartSeries, ChartTooltip, CompositeChart } from '@mantine/charts';
-import { getThemeColor, useMantineTheme } from "@mantine/core";
+import { getThemeColor, Group, useMantineTheme } from "@mantine/core";
+import { subMonths, subYears } from "date-fns";
+import { useState } from "react";
 import { LuDatabase } from "react-icons/lu";
 import { BarShapeProps, Rectangle } from "recharts";
 
 export const ClimbingDashboard = () => {
-  useHeaderContent(<HeaderContent />)
+  const [dates, setDates] = useState<[Date | null, Date | null]>([null, null])
+  useHeaderContent(<HeaderContent setValue={setDates} />)
 
-  const { data: stats, isLoading } = useClimbStatGetFiltered()
+  const { data: stats, isLoading } = useClimbStatGetFiltered(dates[0] ?? undefined, dates[1] ?? undefined)
 
   return (
     <LoadingLayout isLoading={isLoading}>
@@ -190,10 +194,46 @@ const GraphGrade = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
   )
 }
 
-const HeaderContent = () => {
+type HeaderContentProps = {
+  setValue: (value: [Date | null, Date | null]) => void
+}
+
+const HeaderContent = ({ setValue }: HeaderContentProps) => {
+  const [preset, setPreset] = useState<DatePreset>("All Time")
+
+  const onChange = (p: DatePreset) => {
+    const now = new Date()
+
+    let start: Date | null = null
+    let end: Date | null = null
+
+    switch (p) {
+      case "1 Month":
+        end = now
+        start = subMonths(now, 1)
+        break
+      case "3 Months":
+        end = now
+        start = subMonths(now, 3)
+        break
+      case "1 Year":
+        end = now
+        start = subYears(now, 1)
+        break
+      case "All Time":
+        break
+    }
+
+    setPreset(p)
+    setValue([start, end])
+  }
+
   return (
-    <LinkButton variant="outline" to="/climbing/data" leftSection={<LuDatabase />} size="xs">
-      Manage Data
-    </LinkButton>
+    <Group>
+      <SelectDatePreset value={preset} setValue={onChange} />
+      <LinkButton variant="outline" to="/climbing/data" leftSection={<LuDatabase />} size="xs">
+        Manage Data
+      </LinkButton>
+    </Group>
   )
 }
