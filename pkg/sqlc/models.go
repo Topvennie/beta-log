@@ -96,6 +96,48 @@ func (ns NullFinishType) Value() (driver.Value, error) {
 	return string(ns.FinishType), nil
 }
 
+type GradeSystem string
+
+const (
+	GradeSystemFont GradeSystem = "font"
+	GradeSystemV    GradeSystem = "v"
+)
+
+func (e *GradeSystem) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = GradeSystem(s)
+	case string:
+		*e = GradeSystem(s)
+	default:
+		return fmt.Errorf("unsupported scan type for GradeSystem: %T", src)
+	}
+	return nil
+}
+
+type NullGradeSystem struct {
+	GradeSystem GradeSystem
+	Valid       bool // Valid is true if GradeSystem is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGradeSystem) Scan(value interface{}) error {
+	if value == nil {
+		ns.GradeSystem, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.GradeSystem.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGradeSystem) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.GradeSystem), nil
+}
+
 type Source string
 
 const (
@@ -262,6 +304,7 @@ type Setting struct {
 	ClimbToploggerAuthToken    pgtype.Text
 	ClimbToploggerRefreshToken pgtype.Text
 	ClimbToploggerExpiration   pgtype.Timestamptz
+	GradeSystem                GradeSystem
 }
 
 type Task struct {

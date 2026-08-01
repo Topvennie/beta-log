@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Topvennie/beta-log/internal/climb"
 	"github.com/Topvennie/beta-log/internal/database/repository"
+	"github.com/Topvennie/beta-log/internal/fetch"
 	"github.com/Topvennie/beta-log/internal/server"
 	"github.com/Topvennie/beta-log/internal/task"
 	"github.com/Topvennie/beta-log/pkg/config"
@@ -52,7 +52,7 @@ func main() {
 	if err := task.Init(); err != nil {
 		zap.S().Fatalf("Failed to init task %v", err)
 	}
-	if err := climb.New().Start(context.Background()); err != nil {
+	if err := fetch.New().Start(context.Background()); err != nil {
 		zap.S().Fatalf("Failed to start climb %v", err)
 	}
 

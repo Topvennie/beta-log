@@ -73,7 +73,7 @@ func (c *Client) Fetch(ctx context.Context, user model.User) ([]model.ClimbDay, 
 	setting.ClimbToploggerRefreshToken = tokens.Refresh.Token
 	setting.ClimbToploggerExpiration = tokens.Refresh.ExpiresAt
 
-	if err := c.setting.ToploggerUpdate(ctx, *setting); err != nil {
+	if err := c.setting.UpdateToplogger(ctx, *setting); err != nil {
 		return nil, err
 	}
 

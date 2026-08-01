@@ -39,15 +39,26 @@ func (s *Setting) Create(ctx context.Context, setting *model.Setting) error {
 	return nil
 }
 
-func (s *Setting) ToploggerUpdate(ctx context.Context, setting model.Setting) error {
-	if err := queries(ctx).SettingToploggerUpdate(ctx, sqlc.SettingToploggerUpdateParams{
+func (s *Setting) UpdateGradeSystem(ctx context.Context, setting model.Setting) error {
+	if err := queries(ctx).SettingUpdateGradeSystem(ctx, sqlc.SettingUpdateGradeSystemParams{
+		ID:          int32(setting.ID),
+		GradeSystem: sqlc.GradeSystem(setting.GradeSystem),
+	}); err != nil {
+		return fmt.Errorf("update setting grade system %+v | %w", setting, err)
+	}
+
+	return nil
+}
+
+func (s *Setting) UpdateToplogger(ctx context.Context, setting model.Setting) error {
+	if err := queries(ctx).SettingUpdateToplogger(ctx, sqlc.SettingUpdateToploggerParams{
 		ID:                         int32(setting.ID),
 		ClimbToploggerUserID:       toString(setting.ClimbToploggerUserID),
 		ClimbToploggerAuthToken:    toString(setting.ClimbToploggerAuthToken),
 		ClimbToploggerRefreshToken: toString(setting.ClimbToploggerRefreshToken),
 		ClimbToploggerExpiration:   toTime(setting.ClimbToploggerExpiration),
 	}); err != nil {
-		return fmt.Errorf("update setting %+v | %w", setting, err)
+		return fmt.Errorf("update setting toplogger %+v | %w", setting, err)
 	}
 
 	return nil

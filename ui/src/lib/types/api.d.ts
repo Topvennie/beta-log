@@ -34,6 +34,7 @@ export namespace API {
   }
 
   export interface Setting {
+    grade_system: string;
     climb_toplogger_user_id?: string;
     climb_toplogger_auth_token?: string;
     climb_toplogger_refresh_token?: string;
@@ -97,7 +98,7 @@ export namespace API {
 
   export interface Climb {
     id: number;
-    grade: number;
+    grade: string;
     hold_color: string;
     climb_type: string;
     finish_type: string;
@@ -114,12 +115,12 @@ export namespace API {
 
   export interface ClimbStatsProgress {
     date: string;
-    grade: number;
+    grade: string;
     volume: number;
   }
 
   export interface ClimbStatsGrade {
-    grade: number;
+    grade: string;
     flash: number;
     top: number;
     repeat: number;
@@ -131,9 +132,9 @@ export namespace API {
     flash: number;
     top: number;
     repeat: number;
-    best: number;
+    best: string;
     best_amount: number;
-    best_flash: number;
+    best_flash: string;
     best_flash_amount: number;
     sessions: number;
     boulder: number;

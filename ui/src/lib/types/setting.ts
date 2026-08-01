@@ -2,7 +2,13 @@ import z from "zod";
 import { API } from "./api";
 import { JSONBody } from "./general";
 
+export enum GradeSystem {
+  Font = "font",
+  V = "v",
+}
+
 export interface Setting {
+  gradeSystem: GradeSystem;
   climbToploggerUserId?: string;
   climbToploggerAuthToken?: string;
   climbToploggerRefreshToken?: string;
@@ -11,12 +17,17 @@ export interface Setting {
 // Converts
 
 export const convertSetting = (s: API.Setting): Setting => ({
+  gradeSystem: s.grade_system as GradeSystem,
   climbToploggerUserId: s.climb_toplogger_user_id,
   climbToploggerAuthToken: s.climb_toplogger_auth_token,
   climbToploggerRefreshToken: s.climb_toplogger_refresh_token,
 })
 
-export const convertSettingToploggerUpdateSchema = (s: Setting): SettingToploggerUpdate => ({
+export const convertSettingUpdateGradeSystem = (s: Setting): SettingUpdateGradeSystem => ({
+  gradeSystem: s.gradeSystem,
+})
+
+export const convertSettingUpdateToploggerSchema = (s: Setting): SettingUpdateToplogger => ({
   climbToploggerUserId: s.climbToploggerUserId,
   climbToploggerAuthToken: s.climbToploggerAuthToken,
   climbToploggerRefreshToken: s.climbToploggerRefreshToken
@@ -24,7 +35,12 @@ export const convertSettingToploggerUpdateSchema = (s: Setting): SettingToplogge
 
 // Schemas
 
-export const settingToploggerUpdateSchema = z.object({
+export const settingUpdateGradeSystem = z.object({
+  gradeSystem: z.enum(GradeSystem),
+})
+export type SettingUpdateGradeSystem = z.infer<typeof settingUpdateGradeSystem> & JSONBody
+
+export const settingUpdateToploggerSchema = z.object({
   climbToploggerUserId: z.string().optional(),
   climbToploggerAuthToken: z.string().optional(),
   climbToploggerRefreshToken: z.string().optional(),
@@ -47,4 +63,4 @@ export const settingToploggerUpdateSchema = z.object({
     })
   }
 })
-export type SettingToploggerUpdate = z.infer<typeof settingToploggerUpdateSchema> & JSONBody;
+export type SettingUpdateToplogger = z.infer<typeof settingUpdateToploggerSchema> & JSONBody;

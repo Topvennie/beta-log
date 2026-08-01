@@ -43,7 +43,7 @@ func (c *Client) resetSetting(ctx context.Context, setting model.Setting) error 
 	setting.ClimbToploggerRefreshToken = ""
 	setting.ClimbToploggerExpiration = time.Time{}
 
-	return c.setting.ToploggerUpdate(ctx, setting)
+	return c.setting.UpdateToplogger(ctx, setting)
 }
 
 func getError(data []byte) error {

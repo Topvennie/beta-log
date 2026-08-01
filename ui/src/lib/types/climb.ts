@@ -17,7 +17,7 @@ export enum ClimbFinish {
 
 export interface Climb {
   id: number;
-  grade: number;
+  grade: string;
   holdColor: string;
   climbType: ClimbType;
   finishType: ClimbFinish;
@@ -34,12 +34,12 @@ export interface ClimbDay {
 
 export interface ClimbStatsProgress {
   date: string;
-  grade: number;
+  grade: string;
   volume: number;
 }
 
 export interface ClimbStatsGrade {
-  grade: number;
+  grade: string;
   flash: number;
   top: number;
   repeat: number;
@@ -51,9 +51,9 @@ export interface ClimbStats {
   flash: number;
   top: number;
   repeat: number;
-  best: number;
+  best: string;
   bestAmount: number;
-  bestFlash: number;
+  bestFlash: string;
   bestFlashAmount: number;
   sessions: number;
   boulder: number;
@@ -123,7 +123,7 @@ export const convertClimbDayUpdateSchema = (c: ClimbDay): ClimbDayUpdate => ({
 
 export const climbCreateSchema = z.object({
   _clientId: z.string(),
-  grade: z.number().positive(),
+  grade: z.string(),
   holdColor: z.string(),
   climbType: z.enum(ClimbType),
   finishType: z.enum(ClimbFinish),

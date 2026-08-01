@@ -1,5 +1,5 @@
-import { useSettingToploggerUpdate } from "@/lib/api/setting";
-import { convertSettingToploggerUpdateSchema, Setting, settingToploggerUpdateSchema } from "@/lib/types/setting";
+import { useSettingUpdateToplogger } from "@/lib/api/setting";
+import { convertSettingUpdateToploggerSchema, Setting, settingUpdateToploggerSchema } from "@/lib/types/setting";
 import { Alert, Button, PasswordInput, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
@@ -12,14 +12,14 @@ type Props = {
 }
 
 export const SettingToplogger = ({ setting }: Props) => {
-  const settingUpdate = useSettingToploggerUpdate()
+  const settingUpdate = useSettingUpdateToplogger()
 
   const [disabled, setDisabled] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const form = useForm({
-    initialValues: convertSettingToploggerUpdateSchema(setting),
-    validate: zod4Resolver(settingToploggerUpdateSchema),
+    initialValues: convertSettingUpdateToploggerSchema(setting),
+    validate: zod4Resolver(settingUpdateToploggerSchema),
   })
 
   const handleSubmit = () => {

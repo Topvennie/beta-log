@@ -1,7 +1,9 @@
+import { SettingGradeSystem } from "@/components/setting/SettingGradeSystem"
 import { SettingToplogger } from "@/components/setting/SettingToplogger"
 import { LoadingLayout } from "@/layout/LoadingLayout"
 import { useSettingGet } from "@/lib/api/setting"
 import { useBreadcrumb } from "@/lib/hooks/useBreadcrumb"
+import { Stack } from "@mantine/core"
 
 export const Settings = () => {
   useBreadcrumb({ title: "Settings", weight: 10, link: { to: "/settings" } })
@@ -10,7 +12,10 @@ export const Settings = () => {
 
   return (
     <LoadingLayout isLoading={isLoading || !setting}>
-      <SettingToplogger setting={setting!} />
+      <Stack gap="xl">
+        <SettingGradeSystem setting={setting!} />
+        <SettingToplogger setting={setting!} />
+      </Stack>
     </LoadingLayout>
   )
 }

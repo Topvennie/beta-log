@@ -1,4 +1,4 @@
-package climb
+package fetch
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/Topvennie/beta-log/internal/climb/toplogger"
 	"github.com/Topvennie/beta-log/internal/database/model"
 	"github.com/Topvennie/beta-log/internal/database/repository"
+	"github.com/Topvennie/beta-log/internal/fetch/toplogger"
 	"github.com/Topvennie/beta-log/internal/task"
 	"github.com/Topvennie/beta-log/pkg/config"
 )
