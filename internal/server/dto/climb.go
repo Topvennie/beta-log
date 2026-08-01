@@ -4,22 +4,23 @@ import (
 	"time"
 
 	"github.com/Topvennie/beta-log/internal/database/model"
+	"github.com/Topvennie/beta-log/internal/grade"
 	"github.com/Topvennie/beta-log/pkg/utils"
 )
 
 type climb struct {
 	ID         int               `json:"id"`
-	Grade      int               `json:"grade"`
+	Grade      string            `json:"grade"`
 	HoldColor  string            `json:"hold_color"`
 	ClimbType  model.ClimbType   `json:"climb_type"`
 	FinishType model.ClimbFinish `json:"finish_type"`
 	Source     model.Source      `json:"source"`
 }
 
-func climbDTO(c *model.Climb) climb {
+func climbDTO(c *model.Climb, setting model.Setting) climb {
 	return climb{
 		ID:         c.ID,
-		Grade:      c.Grade,
+		Grade:      grade.Grade(c.Grade).Format(setting.GradeSystem),
 		HoldColor:  c.HoldColor,
 		ClimbType:  c.ClimbType,
 		FinishType: c.FinishType,
@@ -35,12 +36,12 @@ type ClimbDay struct {
 	Source model.Source `json:"source"`
 }
 
-func ClimbDayDTO(d *model.ClimbDay) ClimbDay {
+func ClimbDayDTO(d *model.ClimbDay, setting model.Setting) ClimbDay {
 	return ClimbDay{
 		ID:     d.ID,
 		Date:   d.Date,
 		Gym:    GymDTO(&d.Gym),
-		Climbs: utils.SliceMap(d.Climbs, func(c model.Climb) climb { return climbDTO(&c) }),
+		Climbs: utils.SliceMap(d.Climbs, func(c model.Climb) climb { return climbDTO(&c, setting) }),
 		Source: d.Source,
 	}
 }
@@ -56,15 +57,15 @@ func (c ClimbDayFilter) ToModel() model.ClimbDayFilter {
 }
 
 type ClimbCreate struct {
-	Grade      int               `json:"grade" validate:"required,min=1"`
+	Grade      string            `json:"grade"`
 	HoldColor  string            `json:"hold_color" validate:"hexcolor"`
 	ClimbType  model.ClimbType   `json:"climb_type" validate:"required"`
 	FinishType model.ClimbFinish `json:"finish_type" validate:"required"`
 }
 
-func (c ClimbCreate) ToModel() model.Climb {
+func (c ClimbCreate) ToModel(setting model.Setting) model.Climb {
 	return model.Climb{
-		Grade:      c.Grade,
+		Grade:      int(grade.FromString(c.Grade, setting.GradeSystem)),
 		HoldColor:  c.HoldColor,
 		ClimbType:  c.ClimbType,
 		FinishType: c.FinishType,
@@ -77,11 +78,11 @@ type ClimbDayCreate struct {
 	Climbs []ClimbCreate `json:"climbs" validate:"required,min=1,dive"`
 }
 
-func (c ClimbDayCreate) ToModel() model.ClimbDay {
+func (c ClimbDayCreate) ToModel(setting model.Setting) model.ClimbDay {
 	return model.ClimbDay{
 		Date:   c.Date,
 		GymID:  c.GymID,
-		Climbs: utils.SliceMap(c.Climbs, func(c ClimbCreate) model.Climb { return c.ToModel() }),
+		Climbs: utils.SliceMap(c.Climbs, func(c ClimbCreate) model.Climb { return c.ToModel(setting) }),
 	}
 }
 
@@ -92,26 +93,26 @@ type ClimbDayUpdate struct {
 	Climbs []ClimbCreate `json:"climbs" validate:"required,min=1,dive"`
 }
 
-func (c ClimbDayUpdate) ToModel() model.ClimbDay {
+func (c ClimbDayUpdate) ToModel(setting model.Setting) model.ClimbDay {
 	return model.ClimbDay{
 		ID:     c.ID,
 		Date:   c.Date,
 		GymID:  c.GymID,
-		Climbs: utils.SliceMap(c.Climbs, func(c ClimbCreate) model.Climb { return c.ToModel() }),
+		Climbs: utils.SliceMap(c.Climbs, func(c ClimbCreate) model.Climb { return c.ToModel(setting) }),
 	}
 }
 
 type ClimbStatsProgress struct {
 	Date   string `json:"date"`
-	Grade  int    `json:"grade"`
+	Grade  string `json:"grade"`
 	Volume int    `json:"volume"`
 }
 
 type ClimbStatsGrade struct {
-	Grade  int `json:"grade"`
-	Flash  int `json:"flash"`
-	Top    int `json:"top"`
-	Repeat int `json:"repeat"`
+	Grade  string `json:"grade"`
+	Flash  int    `json:"flash"`
+	Top    int    `json:"top"`
+	Repeat int    `json:"repeat"`
 }
 
 type ClimbStats struct {
@@ -120,9 +121,9 @@ type ClimbStats struct {
 	Flash                  int                  `json:"flash"`
 	Top                    int                  `json:"top"`
 	Repeat                 int                  `json:"repeat"`
-	Best                   int                  `json:"best"`
+	Best                   string               `json:"best"`
 	BestAmount             int                  `json:"best_amount"`
-	BestFlash              int                  `json:"best_flash"`
+	BestFlash              string               `json:"best_flash"`
 	BestFlashAmount        int                  `json:"best_flash_amount"`
 	Sessions               int                  `json:"sessions"`
 	Boulder                int                  `json:"boulder"`

@@ -4,8 +4,11 @@ import { Stat } from "@/components/atoms/Stat";
 import { ProportionBar } from "@/components/molecules/ProportionBar";
 import { LoadingLayout } from "@/layout/LoadingLayout";
 import { useClimbStatGetFiltered } from "@/lib/api/climb";
+import { useSettingGet } from "@/lib/api/setting";
+import { gradeValue, gradeHue, formatGradeValue } from "@/lib/grade";
 import { useHeaderContent } from "@/lib/hooks/useHeaderContent";
 import { ClimbStats } from "@/lib/types/climb";
+import { GradeSystem } from "@/lib/types/setting";
 import { BarChart, BarChartSeries, ChartTooltip, CompositeChart } from '@mantine/charts';
 import { getThemeColor, Group, useMantineTheme } from "@mantine/core";
 import { subMonths, subYears } from "date-fns";
@@ -30,12 +33,12 @@ export const ClimbingDashboard = () => {
         <Stat
           title="Top Grade"
           stat={stats?.best}
-          description={`${stats?.bestAmount} Times`}
+          description={`${stats?.bestAmount} Time${stats?.bestAmount !== 1 ? "s" : ""}`}
         />
         <Stat
           title="Top Flash"
           stat={stats?.bestFlash}
-          description={`${stats?.bestFlashAmount} Times`}
+          description={`${stats?.bestFlashAmount} Time${stats?.bestFlashAmount !== 1 ? "s" : ""}`}
         />
         <Stat
           title="Sessions"
@@ -95,13 +98,24 @@ const GraphClimbType = ({ boulder, lead }: Pick<ClimbStats, "boulder" | "lead">)
 }
 
 const GraphProgress = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => {
+  const { data: setting } = useSettingGet()
+  const system = setting?.gradeSystem ?? GradeSystem.Font
+
+  const data = graphProgress.map(p => ({
+    ...p,
+    _gradeValue: gradeValue(p.grade, system),
+  }))
+
+  const domainMin = gradeValue(system === GradeSystem.V ? "V0" : "4a", system)
+  const domainMax = gradeValue(system === GradeSystem.V ? "V8" : "7b+", system)
+
   return (
     <CompositeChart
-      data={graphProgress}
+      data={data}
       dataKey="date"
       maxBarWidth={30}
       series={[
-        { name: "grade", label: "Grade", color: "blue.7", type: "line" },
+        { name: "_gradeValue", label: "Grade", color: "blue.7", type: "line" },
         { name: "volume", label: "Volume", color: "rgba(18, 129, 255, 0.2)", type: "bar", yAxisId: "right" },
       ]}
       tickLine="none"
@@ -109,33 +123,32 @@ const GraphProgress = ({ graphProgress }: Pick<ClimbStats, "graphProgress">) => 
       withRightYAxis
       withLegend
       legendProps={{ verticalAlign: "bottom" }}
+      yAxisProps={{
+        domain: [domainMin, domainMax],
+        allowDecimals: false,
+        tickFormatter: (v: number) => formatGradeValue(v, system),
+      }}
+      tooltipProps={{
+        content: ({ label, payload }) => (
+          <ChartTooltip
+            label={label}
+            payload={payload?.map(item => ({
+              ...item,
+              name: item.name === "_gradeValue" ? "grade" : item.name,
+            }))}
+            series={[
+              { name: "grade", label: "Grade", color: "blue.7" },
+              { name: "volume", label: "Volume", color: "rgba(18, 129, 255, 0.2)" },
+            ]}
+          />
+        ),
+      }}
     />
   )
 }
 
 const GraphGrade = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
-  const gradeHue: Record<number, string> = {
-    0: "green",
-    200: "green",
-    250: "green",
-    300: "green",
-    333: "green",
-    367: "green",
-    400: "yellow",
-    433: "yellow",
-    467: "yellow",
-    500: "yellow",
-    517: "orange",
-    533: "orange",
-    550: "orange",
-    567: "orange",
-    583: "orange",
-    600: "orange",
-    617: "orange",
-    633: "blue",
-    650: "blue",
-    667: "red",
-  }
+  const { data: setting } = useSettingGet()
 
   const finishShade: Record<string, number> = {
     flash: 7,
@@ -143,8 +156,8 @@ const GraphGrade = ({ graphPerGrade }: Pick<ClimbStats, "graphPerGrade">) => {
     repeat: 3,
   }
 
-  const getColor = (grade: number, series: BarChartSeries) => {
-    const hue = gradeHue[grade] ?? "neutral"
+  const getColor = (grade: string, series: BarChartSeries) => {
+    const hue = gradeHue(grade, setting?.gradeSystem ?? GradeSystem.Font)
     const shade = finishShade[series.name] ?? 5
     return `${hue}.${shade}`
   }
@@ -237,3 +250,7 @@ const HeaderContent = ({ setValue }: HeaderContentProps) => {
     </Group>
   )
 }
+
+// TODO: Move grade system to user
+// TODO: Change modifying data to use string
+// TODO: Fix gym graph
